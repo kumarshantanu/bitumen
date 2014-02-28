@@ -1,11 +1,14 @@
 package starfish.helper;
 
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +63,7 @@ public class JdbcUtil {
     }
 
     public static int update(Connection conn, String sql, Object[] args) {
+        Util.echo("Update SQL: [%s], args: %s\n", sql, Arrays.toString(args));
         final PreparedStatement pstmt = prepareStatementWithArgs(conn, sql, args);
         try {
             return pstmt.executeUpdate();
@@ -72,6 +76,7 @@ public class JdbcUtil {
     }
 
     public static int[] batchUpdate(Connection conn, String sql, Object[][] argsArray) {
+        Util.echo("Update SQL: [%s], batch-size: %d, args: %s\n", sql, argsArray.length, Arrays.toString(argsArray));
         PreparedStatement pstmt = prepareStatement(conn, sql);
         for (Object[] args: argsArray) {
             prepareArgs(pstmt, args);
@@ -98,7 +103,7 @@ public class JdbcUtil {
         return new RowExtractor<T>() {
             public T extract(ResultSet rs) {
                 try {
-                    return columnClass.cast(rs.getObject(columnIndex));
+                    return columnClass.cast(getValue(rs, columnIndex));
                 } catch (SQLException e) {
                     throw new IllegalStateException("Unable to extract column number " + columnIndex, e);
                 }
@@ -107,6 +112,7 @@ public class JdbcUtil {
     }
 
     public static <T> List<T> queryVals(Connection conn, String sql, Object[] args, RowExtractor<T> extractor) {
+        Util.echo("Query SQL: [%s], args: %s\n", sql, Arrays.toString(args));
         final PreparedStatement pstmt = prepareStatementWithArgs(conn, sql, args);
         ResultSet rs = null;
         try {
@@ -126,6 +132,7 @@ public class JdbcUtil {
 
     public static <K, V> Map<K, V> queryMap(Connection conn, String sql, Object[] args, RowExtractor<K> keyExtractor,
             RowExtractor<V> valueExtractor) {
+        Util.echo("Query SQL: [%s], args: %s\n", sql, Arrays.toString(args));
         final PreparedStatement pstmt = prepareStatementWithArgs(conn, sql, args);
         ResultSet rs = null;
         try {
@@ -141,6 +148,37 @@ public class JdbcUtil {
             close(rs);
             close(pstmt);
         }
+    }
+
+    public static Object getValue(ResultSet rs, int columnIndex) throws SQLException {
+        final Object data = rs.getObject(columnIndex);
+        if (data instanceof Clob) {
+            return rs.getString(columnIndex);
+        }
+        if (data instanceof Blob) {
+            return rs.getBytes(columnIndex);
+        }
+        if (data != null) {
+            final String className = data.getClass().getName();
+            if (className.startsWith("oracle.sql.TIMESTAMP")) {
+                return rs.getTimestamp(columnIndex);
+            }
+            if (className.startsWith("oracle.sql.DATE")) {
+                final String metaDataClassName = rs.getMetaData().getColumnClassName(columnIndex);
+                if ("java.sql.Timestamp".equals(metaDataClassName) ||
+                        "oracle.sql.TIMESTAMP".equals(metaDataClassName)) {
+                    return rs.getTimestamp(columnIndex);
+                } else {
+                    return rs.getDate(columnIndex);
+                }
+            }
+            if (data instanceof java.sql.Date) {
+                if ("java.sql.Timestamp".equals(rs.getMetaData().getColumnClassName(columnIndex))) {
+                    return rs.getTimestamp(columnIndex);
+                }
+            }
+        }
+        return data;
     }
 
     public static Connection getConnection(DataSource dataSource) {
@@ -194,7 +232,7 @@ public class JdbcUtil {
             int i = -1;
             try {
                 for (i = 1; i <= args.length; i++) {
-                    pstmt.setObject(i, args[i]);
+                    pstmt.setObject(i, args[i - 1]);
                 }
             } catch (SQLException e) {
                 close(pstmt);
