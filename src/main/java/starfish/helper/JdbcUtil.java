@@ -181,7 +181,7 @@ public class JdbcUtil {
         try {
             return conn.prepareStatement(sql);
         } catch (SQLException e) {
-            throw new IllegalStateException("Unable to prepare statement", e);
+            throw new IllegalStateException("Unable to prepare statement for [" + sql + "]", e);
         } catch (RuntimeException e) {
             throw e;
         }
