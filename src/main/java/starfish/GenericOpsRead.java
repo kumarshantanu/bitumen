@@ -48,6 +48,7 @@ public class GenericOpsRead<K, V> implements IOpsRead<K, V> {
     }
 
     public final RowExtractor<K> keyExtractor1;
+    public final RowExtractor<V> valExtractor1;
     public final RowExtractor<V> valExtractor2;
     public final RowExtractor<ValueVersion<V>> valueVersionExtractor12;
     public final RowExtractor<ValueVersion<V>> valueVersionExtractor23;
@@ -68,6 +69,7 @@ public class GenericOpsRead<K, V> implements IOpsRead<K, V> {
         this.fetchAllSql         = meta.groovyReplace(fetchAllFormat);
         this.batchFetchAllSql    = meta.groovyReplaceKeep(batchFetchAllFormat);
         this.keyExtractor1 = JdbcUtil.makeColumnExtractor(keyClass, 1);
+        this.valExtractor1 = JdbcUtil.makeColumnExtractor(valClass, 1);
         this.valExtractor2 = JdbcUtil.makeColumnExtractor(valClass, 2);
         this.valueVersionExtractor12 = ValueVersion.makeExtractor(valClass, 1, 2);
         this.valueVersionExtractor23 = ValueVersion.makeExtractor(valClass, 2, 3);
@@ -121,7 +123,7 @@ public class GenericOpsRead<K, V> implements IOpsRead<K, V> {
     // ---- read ----
 
     public V read(Connection conn, K key) {
-        final List<V> rows = JdbcUtil.queryVals(conn, fetchSql, new Object[] { key }, valExtractor2);
+        final List<V> rows = JdbcUtil.queryVals(conn, fetchSql, new Object[] { key }, valExtractor1);
         return rows.isEmpty()? null: rows.get(0);
     }
 
@@ -134,7 +136,7 @@ public class GenericOpsRead<K, V> implements IOpsRead<K, V> {
     // ---- readVersion ----
 
     public V readVersion(Connection conn, K key, long version) {
-        final List<V> rows = JdbcUtil.queryVals(conn, condFetchSql, new Object[] { key, version }, valExtractor2);
+        final List<V> rows = JdbcUtil.queryVals(conn, condFetchSql, new Object[] { key, version }, valExtractor1);
         return rows.isEmpty()? null: rows.get(0);
     }
 
