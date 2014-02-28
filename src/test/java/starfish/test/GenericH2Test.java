@@ -28,16 +28,16 @@ public class GenericH2Test {
     @Test
     public void test() {
         final TableMetadata meta = TableMetadata.create("session", "id", "value", "version", "updated");
-        final IOpsWrite<String, String> writer = new GenericOpsWrite<String, String>(meta);
+        final IOpsWrite<Integer, String> writer = new GenericOpsWrite<Integer, String>(meta);
         final Long version = JdbcUtil.withConnection(ds, new ConnectionActivity<Long>() {
             public Long execute(Connection conn) {
-                return writer.save(conn, "id=1", "value=abc");
+                return writer.save(conn, 1, "abc");
             }
         });
-        final IOpsRead<String, String> reader = new GenericOpsRead<String, String>(meta, String.class, String.class);
+        final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
         final String value = JdbcUtil.withConnection(ds, new ConnectionActivity<String>() {
             public String execute(Connection conn) {
-                return reader.read(conn, "id=1");
+                return reader.read(conn, 1);
             }
         });
         List<Long> count = JdbcUtil.withConnection(ds, new ConnectionActivity<List<Long>>() {
@@ -46,7 +46,7 @@ public class GenericH2Test {
                         JdbcUtil.makeColumnExtractor(Long.class, 1));
             }
         });
-        Assert.assertEquals(0, count.get(0).longValue());
+        Assert.assertEquals(1, count.get(0).longValue());
     }
 
 }

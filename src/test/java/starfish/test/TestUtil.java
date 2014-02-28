@@ -15,6 +15,7 @@ public class TestUtil {
             + "id INT PRIMARY KEY AUTO_INCREMENT,"
             + "key VARCHAR(30),"
             + "value TEXT,"
+            + "version BIGINT,"
             + "updated DATETIME"
             + ")";
 
