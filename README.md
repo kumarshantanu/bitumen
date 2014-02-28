@@ -81,7 +81,7 @@ import starfish.helper.ConnectionActivity;
 import starfish.helper.JdbcUtil;
 import starfish.type.TableMetadata;
 
-public class SOmeClass {
+public class SomeClass {
     final TableMetadata meta = TableMetadata.create("session", "id", "value", "version", "updated");
     final IOpsWrite<String, String> writer = new GenericOpsWrite<String, String>(meta);
     final IOpsRead<String, String> reader = new GenericOpsRead<String, String>(meta, String.class, String.class);
@@ -89,7 +89,7 @@ public class SOmeClass {
     public void savePair(DataSource ds) {
       final Long version = JdbcUtil.withConnection(ds, new ConnectionActivity<Long>() {
           public Long execute(Connection conn) {
-              return writer.save(conn, "id=1", "value=abc");
+              return writer.save(conn, "ABCD", "{\"email\": \"foo@bar.com\", \"age\": 29}");
           }
       });
       // do something with `version`...
@@ -98,7 +98,7 @@ public class SOmeClass {
     public void readValue(DataSource ds) {
       final String value = JdbcUtil.withConnection(ds, new ConnectionActivity<String>() {
           public String execute(Connection conn) {
-              return reader.read(conn, "id=1");
+              return reader.read(conn, "ABCD");
           }
       });
       // do something with `value`...
