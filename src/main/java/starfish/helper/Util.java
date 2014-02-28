@@ -82,7 +82,11 @@ public class Util {
                 }
                 final StringBuilder name = new StringBuilder();
                 name.append(first);
-                for (char x = format.charAt(++i); i < len && Character.isJavaIdentifierPart(x); i++, x = format.charAt(i)) {
+                for (++i; i < len; i++) {
+                    final char x = format.charAt(i);
+                    if (!Character.isJavaIdentifierPart(x)) {
+                        break;
+                    }
                     name.append(x);
                 }
                 final String nameStr = name.toString();
@@ -94,7 +98,9 @@ public class Util {
                     }
                 } else {
                     sb.append(values.get(nameStr));
-                    i -= (i == len? 0: 1);  // push back index if not end-of-string, so current char is picked in next pass
+                }
+                if (i < len) {
+                    i--;  // push back index if not end-of-string, so current char is picked in next pass
                 }
                 break;
 
@@ -191,6 +197,10 @@ public class Util {
             }
         }
         return true;
+    }
+
+    public static void echo(String format, Object...args) {
+        //System.out.printf(format, args);
     }
 
 }
