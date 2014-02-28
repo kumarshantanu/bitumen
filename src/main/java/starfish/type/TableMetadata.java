@@ -30,6 +30,17 @@ public class TableMetadata implements Serializable {
         return new TableMetadata(names);
     }
 
+    public static TableMetadata create(String tableName, String keyColname, String valueColname, String versionColname,
+            String timestampColname) {
+        Map<String, String> names = new HashMap<String, String>();
+        names.put("tableName", tableName);
+        names.put("keyColname", keyColname);
+        names.put("valueColname", valueColname);
+        names.put("versionColname", versionColname);
+        names.put("timestampColname", timestampColname);
+        return new TableMetadata(names);
+    }
+
     public String groovyReplace(String format) {
         return Util.groovyReplace(format, toMap(), true);
     }
