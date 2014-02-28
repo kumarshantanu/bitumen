@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import starfish.helper.JdbcUtil;
 import starfish.helper.RowExtractor;
 import starfish.helper.Util;
 
@@ -46,7 +47,7 @@ public class ValueVersion<V> implements Serializable {
             
             public ValueVersion<V> extract(ResultSet rs) {
                 try {
-                    return new ValueVersion<V>(valueClass.cast(rs.getObject(valueColumnIndex)),
+                    return new ValueVersion<V>(valueClass.cast(JdbcUtil.getValue(rs, valueColumnIndex)),
                             rs.getLong(versionColumnIndex));
                 } catch (SQLException e) {
                     throw new IllegalStateException("Unable to extract value and version", e);
