@@ -6,7 +6,7 @@
   <name>Starfish</name>
   <description>Emulating key-value store over JDBC</description>
   <dependencies>
-      <dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
