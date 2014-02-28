@@ -64,7 +64,8 @@ public class JdbcUtil {
         try {
             return pstmt.executeUpdate();
         } catch (SQLException e) {
-            throw new IllegalStateException("Unable to execute SQL statement: " + sql, e);
+            throw new IllegalStateException(
+                    String.format("Unable to execute SQL statement: [%s], args: %s", sql, args), e);
         } finally {
             close(pstmt);
         }
@@ -181,7 +182,8 @@ public class JdbcUtil {
         try {
             return conn.prepareStatement(sql);
         } catch (SQLException e) {
-            throw new IllegalStateException("Unable to prepare statement for [" + sql + "]", e);
+            throw new IllegalStateException(
+                    String.format("Unable to prepare statement for SQL: [%s]", sql), e);
         } catch (RuntimeException e) {
             throw e;
         }
