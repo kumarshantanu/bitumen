@@ -25,7 +25,7 @@ public class TestUtil {
         ds.setUrl("jdbc:h2:mem:test");
         ds.setUsername("sa");
         ds.setValidationQuery("SELECT 1");
-        JdbcUtil.withConnectionNoResult(ds, new ConnectionActivityWithoutResult() {
+        JdbcUtil.withConnectionWithoutResult(ds, new ConnectionActivityWithoutResult() {
             public void execute(Connection conn) {
                 JdbcUtil.update(conn, H2_DDL, null);
             }
