@@ -80,18 +80,22 @@ public class Util {
                 if (!Character.isJavaIdentifierStart(first)) {
                     throw new IllegalStateException("Illegal identifier name start '" + first + "' in: " + format);
                 }
-                final StringBuilder name = new StringBuilder(first);
-                for (char x = format.charAt(++i); i < len && Character.isJavaIdentifierPart(x); i++) {
+                final StringBuilder name = new StringBuilder();
+                name.append(first);
+                for (char x = format.charAt(++i); i < len && Character.isJavaIdentifierPart(x); i++, x = format.charAt(i)) {
                     name.append(x);
                 }
                 final String nameStr = name.toString();
-                if (throwOnMissing && !values.containsKey(nameStr)) {
-                    throw new IllegalArgumentException("No such key '" + nameStr + "' in: " + values.toString());
+                if (!values.containsKey(nameStr)) {
+                    if (throwOnMissing) {
+                        throw new IllegalArgumentException("No such key '" + nameStr + "' in: " + values.toString());
+                    } else {
+                        sb.append('$').append(nameStr);
+                    }
                 } else {
-                    sb.append('$').append(nameStr);
+                    sb.append(values.get(nameStr));
+                    i -= (i == len? 0: 1);  // push back index if not end-of-string, so current char is picked in next pass
                 }
-                sb.append(values.get(nameStr));
-                i -= (i == len? 0: 1);  // push back index if not end-of-string, so current char is picked in next pass
                 break;
 
             default:
