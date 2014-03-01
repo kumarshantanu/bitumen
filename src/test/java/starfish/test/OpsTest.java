@@ -18,7 +18,7 @@ import starfish.helper.DataSourceTemplate;
 import starfish.helper.JdbcUtil;
 import starfish.type.TableMetadata;
 
-public class GenericH2Test {
+public class OpsTest {
 
     DataSource ds = TestUtil.makeTestDataSource();
     DataSourceTemplate dst = new DataSourceTemplate(ds);
