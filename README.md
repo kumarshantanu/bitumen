@@ -4,7 +4,7 @@ Java client library to emulate key-value store over JDBC backed database.
 
 ## Usage
 
-_This library is in Alpha. Expected breaking changes._
+_This library is in Alpha. Expect breaking changes._
 
 ### Maven Coordinates
 
@@ -35,9 +35,7 @@ value columns. The columns are:
 | Version |    Long   | NOT NULL    |
 | Updated | Timestamp | NOT NULL    |
 
-#### MySQL Example:
-
-##### Minimal version:
+##### Minimal MySQL example:
 
 ```sql
 CREATE TABLE session (
@@ -48,7 +46,7 @@ CREATE TABLE session (
 ) ENGINE=InnoDB;
 ```
 
-##### Elaborate version
+##### Elaborate MySQL example:
 
 ```sql
 CREATE TABLE session (
@@ -56,7 +54,7 @@ CREATE TABLE session (
   value   TEXT        NOT NULL,
   version BIGINT      NOT NULL,
   updated DATETIME    NOT NULL,
-  INDEX updated_index (updated) -- for faster search
+  INDEX updated_index (updated) -- for faster manual search
 ) ENGINE=InnoDB
   PARTITION BY HASH( id ) -- for faster updates and individual reads
   PARTITIONS 10;
