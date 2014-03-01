@@ -20,7 +20,7 @@ import starfish.type.TableMetadata;
 
 public class GenericH2Test {
 
-    DataSource ds = TestUtil.makeH2DataSource();
+    DataSource ds = TestUtil.makeTestDataSource();
     DataSourceTemplate dst = new DataSourceTemplate(ds);
 
     @BeforeClass
