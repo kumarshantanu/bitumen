@@ -14,7 +14,7 @@ import starfish.helper.JdbcUtil;
 
 public class TestUtil {
 
-    public static DataSource makeTestDataSource() {
+    public static Properties loadProperties() {
         InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("database.properties");
         final Properties properties = new Properties();
         try {
@@ -22,6 +22,11 @@ public class TestUtil {
         } catch (IOException e) {
             throw new IllegalStateException("Unable to load test properties", e);
         }
+        return properties;
+    }
+
+    public static DataSource makeTestDataSource() {
+        final Properties properties = loadProperties();
         BasicDataSource ds = new BasicDataSource();
         ds.setDriverClassName(properties.getProperty("driver.classname"));
         ds.setUrl(properties.getProperty("jdbc.url"));
@@ -34,6 +39,15 @@ public class TestUtil {
             }
         });
         return ds;
+    }
+
+    public static void destroy(DataSource ds) {
+        final Properties properties = loadProperties();
+        JdbcUtil.withConnectionWithoutResult(ds, new ConnectionActivityWithoutResult() {
+            public void execute(Connection conn) {
+                JdbcUtil.update(conn, properties.getProperty("drop.table.ddl"), null);
+            }
+        });
     }
 
 }
