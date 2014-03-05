@@ -37,13 +37,21 @@ public class OpsTest {
         }).get(0).longValue();
     }
 
+    private String readValue(final Integer key) {
+        return dst.withConnection(new ConnectionActivity<String>() {
+            public String execute(Connection conn) {
+                return reader.read(conn, key);
+            }
+        });
+    }
+
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
     }
 
     @Test
     public void crudTest() {
-        // ----- INSERT -----
+        // ----- INSERT (SAVE) -----
 
         // write (actually insert, because the value doesn't exist) key-value pair
         final int key = 1;
@@ -56,17 +64,12 @@ public class OpsTest {
         Assert.assertNotNull(version1);
 
         // read value for given key
-        final String savedValue1 = dst.withConnection(new ConnectionActivity<String>() {
-            public String execute(Connection conn) {
-                return reader.read(conn, key);
-            }
-        });
-        Assert.assertEquals(newValue1, savedValue1);
+        Assert.assertEquals(newValue1, readValue(key));
 
         // make sure database table has the value
         Assert.assertEquals(1, findRowCountForKey(key));
 
-        // ----- UPDATE -----
+        // ----- UPDATE (SAVE) -----
 
         // write again (it is an update this time)
         final String newValue2 = "xyz";
@@ -79,15 +82,33 @@ public class OpsTest {
         Assert.assertNotEquals(version1, version2);
 
         // read value again for given key
-        final String savedValue2 = dst.withConnection(new ConnectionActivity<String>() {
-            public String execute(Connection conn) {
-                return reader.read(conn, key);
-            }
-        });
-        Assert.assertEquals(newValue2, savedValue2);
+        Assert.assertEquals(newValue2, readValue(key));
 
         // make sure database table has the value
         Assert.assertEquals(1, findRowCountForKey(key));
+
+        // ----- SWAP -----
+
+        // swap using invalid version, which should fail
+        final String newValue3 = "pqr";
+        final Long version3 = dst.withConnection(new ConnectionActivity<Long>() {
+            public Long execute(Connection conn) {
+                return writer.swap(conn, key, newValue3, version1);
+            }
+        });
+        Assert.assertNull(version3);
+        Assert.assertEquals(newValue2, readValue(key));
+
+        // swap using valid version, which should succeed
+        final String newValue4 = "pqr";
+        final Long version4 = dst.withConnection(new ConnectionActivity<Long>() {
+            public Long execute(Connection conn) {
+                return writer.swap(conn, key, newValue4, version2);
+            }
+        });
+        Assert.assertNotNull(version4);
+        Assert.assertNotEquals(version2, version4);
+        Assert.assertEquals(newValue4, readValue(key));
 
         // ----- DELETE -----
 
@@ -99,12 +120,7 @@ public class OpsTest {
         });
 
         // read value again
-        final String deletedValue = dst.withConnection(new ConnectionActivity<String>() {
-            public String execute(Connection conn) {
-                return reader.read(conn, key);
-            }
-        });
-        Assert.assertNull(deletedValue);
+        Assert.assertNull(readValue(key));
 
         // make sure database table has the value
         Assert.assertEquals(0, findRowCountForKey(key));
