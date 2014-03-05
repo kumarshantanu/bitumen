@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -17,12 +18,13 @@ import starfish.helper.ConnectionActivity;
 import starfish.helper.ConnectionActivityWithoutResult;
 import starfish.helper.DataSourceTemplate;
 import starfish.helper.JdbcUtil;
+import starfish.helper.Util;
 import starfish.type.TableMetadata;
 
 public class OpsTest {
 
-    final DataSource ds = TestUtil.makeTestDataSource();
-    final DataSourceTemplate dst = new DataSourceTemplate(ds);
+    private static DataSource ds = null;
+    private static DataSourceTemplate dst = null;
 
     final TableMetadata meta = TableMetadata.create("session", "id", "value", "version", "updated");
     final IOpsWrite<Integer, String> writer = new GenericOpsWrite<Integer, String>(meta);
@@ -47,6 +49,14 @@ public class OpsTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
+        ds = TestUtil.makeTestDataSource();
+        dst = new DataSourceTemplate(ds);
+    }
+
+    @AfterClass
+    public static void tearDownAfterClass() throws Exception {
+        dst = null;
+        TestUtil.destroy(ds);
     }
 
     @Test
@@ -87,29 +97,6 @@ public class OpsTest {
         // make sure database table has the value
         Assert.assertEquals(1, findRowCountForKey(key));
 
-        // ----- SWAP -----
-
-        // swap using invalid version, which should fail
-        final String newValue3 = "pqr";
-        final Long version3 = dst.withConnection(new ConnectionActivity<Long>() {
-            public Long execute(Connection conn) {
-                return writer.swap(conn, key, newValue3, version1);
-            }
-        });
-        Assert.assertNull(version3);
-        Assert.assertEquals(newValue2, readValue(key));
-
-        // swap using valid version, which should succeed
-        final String newValue4 = "pqr";
-        final Long version4 = dst.withConnection(new ConnectionActivity<Long>() {
-            public Long execute(Connection conn) {
-                return writer.swap(conn, key, newValue4, version2);
-            }
-        });
-        Assert.assertNotNull(version4);
-        Assert.assertNotEquals(version2, version4);
-        Assert.assertEquals(newValue4, readValue(key));
-
         // ----- DELETE -----
 
         // delete key-value pair
@@ -124,6 +111,60 @@ public class OpsTest {
 
         // make sure database table has the value
         Assert.assertEquals(0, findRowCountForKey(key));
+    }
+
+    @Test
+    public void versionTest() {
+        // save (insert)
+        final int key = 2;
+        final String newValue1 = "abc";
+        final Long version1 = dst.withConnection(new ConnectionActivity<Long>() {
+            public Long execute(Connection conn) {
+                return writer.save(conn, key, newValue1);
+            }
+        });
+        Assert.assertNotNull(version1);
+
+        // ----- SWAP -----
+
+        // swap using invalid version, which should fail
+        final String newValue2 = "pqr";
+        final Long version2 = dst.withConnection(new ConnectionActivity<Long>() {
+            public Long execute(Connection conn) {
+                return writer.swap(conn, key, newValue2, Util.newVersion());
+            }
+        });
+        Assert.assertNull(version2);
+        Assert.assertEquals(newValue1, readValue(key));
+
+        // swap using valid version, which should succeed
+        final String newValue3 = "pqr";
+        final Long version3 = dst.withConnection(new ConnectionActivity<Long>() {
+            public Long execute(Connection conn) {
+                return writer.swap(conn, key, newValue3, version1);
+            }
+        });
+        Assert.assertNotNull(version3);
+        Assert.assertNotEquals(version2, version3);
+        Assert.assertEquals(newValue3, readValue(key));
+
+        // ----- REMOVE -----
+
+        // remove with wrong version, which should fail
+        dst.withConnectionWithoutResult(new ConnectionActivityWithoutResult() {
+            public void execute(Connection conn) {
+                writer.remove(conn, key, version1);
+            }
+        });
+        Assert.assertEquals(newValue3, readValue(key));
+
+        // remove with correct version, which should pass
+        dst.withConnectionWithoutResult(new ConnectionActivityWithoutResult() {
+            public void execute(Connection conn) {
+                writer.remove(conn, key, version3);
+            }
+        });
+        Assert.assertNull(readValue(key));
     }
 
 }
