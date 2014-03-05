@@ -15,7 +15,7 @@ import starfish.GenericOpsWrite;
 import starfish.IOpsRead;
 import starfish.IOpsWrite;
 import starfish.helper.ConnectionActivity;
-import starfish.helper.ConnectionActivityWithoutResult;
+import starfish.helper.ConnectionActivityNoResult;
 import starfish.helper.DataSourceTemplate;
 import starfish.helper.JdbcUtil;
 import starfish.helper.Util;
@@ -100,7 +100,7 @@ public class OpsTest {
         // ----- DELETE -----
 
         // delete key-value pair
-        dst.withConnectionWithoutResult(new ConnectionActivityWithoutResult() {
+        dst.withConnectionNoResult(new ConnectionActivityNoResult() {
             public void execute(Connection conn) {
                 writer.delete(conn, key);
             }
@@ -151,7 +151,7 @@ public class OpsTest {
         // ----- REMOVE -----
 
         // remove with wrong version, which should fail
-        dst.withConnectionWithoutResult(new ConnectionActivityWithoutResult() {
+        dst.withConnectionNoResult(new ConnectionActivityNoResult() {
             public void execute(Connection conn) {
                 writer.remove(conn, key, version1);
             }
@@ -159,7 +159,7 @@ public class OpsTest {
         Assert.assertEquals(newValue3, readValue(key));
 
         // remove with correct version, which should pass
-        dst.withConnectionWithoutResult(new ConnectionActivityWithoutResult() {
+        dst.withConnectionNoResult(new ConnectionActivityNoResult() {
             public void execute(Connection conn) {
                 writer.remove(conn, key, version3);
             }

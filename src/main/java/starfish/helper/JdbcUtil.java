@@ -40,7 +40,7 @@ public class JdbcUtil {
         }
     }
 
-    public static void withConnectionWithoutResult(DataSource dataSource, ConnectionActivityWithoutResult activity) {
+    public static void withConnectionWithoutResult(DataSource dataSource, ConnectionActivityNoResult activity) {
         final Connection conn = getConnection(dataSource);
         try {
             activity.execute(conn);

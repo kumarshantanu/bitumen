@@ -2,7 +2,7 @@ package starfish.helper;
 
 import java.sql.Connection;
 
-public interface ConnectionActivityWithoutResult {
+public interface ConnectionActivityNoResult {
 
     public void execute(Connection conn);
 
