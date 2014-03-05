@@ -63,25 +63,25 @@ public class MysqlOpsWrite<K, V> implements IOpsWrite<K, V> {
 
     // ---- swap (requires old version) ----
 
-    public long swap(Connection conn, K key, V value, long version) {
+    public Long swap(Connection conn, K key, V value, long version) {
         return generic.swap(conn, key, value, version);
     }
 
-    public long batchSwap(Connection conn, Map<K, V> pairs, long version) {
+    public Long batchSwap(Connection conn, Map<K, V> pairs, long version) {
         return generic.batchSwap(conn, pairs, version);
     }
 
-    public long batchSwap(Connection conn, List<KeyValueVersion<K, V>> triplets) {
+    public Long batchSwap(Connection conn, List<KeyValueVersion<K, V>> triplets) {
         return generic.batchSwap(conn, triplets);
     }
 
     // ---- touch (update version) ----
 
-    public long touch(Connection conn, K key) {
+    public Long touch(Connection conn, K key) {
         return generic.touch(conn, key);
     }
 
-    public long batchTouch(Connection conn, List<K> keys) {
+    public Long batchTouch(Connection conn, List<K> keys) {
         return generic.batchTouch(conn, keys);
     }
 

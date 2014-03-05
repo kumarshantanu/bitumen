@@ -85,57 +85,77 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
 
     // ---- swap (requires old version) ----
 
-    public long swap(Connection conn, K key, V value, long version) {
+    public Long swap(Connection conn, K key, V value, long version) {
         final long tmpVersion = Util.newVersion();
         final long newVersion = version == tmpVersion? version + 1: tmpVersion;
-        JdbcUtil.update(conn, swapSql, new Object[] { value, newVersion, Util.now(), key, version });
-        return newVersion;
+        int rowCount = JdbcUtil.update(conn, swapSql, new Object[] { value, newVersion, Util.now(), key, version });
+        return rowCount > 0? newVersion: null;
     }
 
-    public long batchSwap(Connection conn, Map<K, V> pairs, long version) {
+    public Long batchSwap(Connection conn, Map<K, V> pairs, long version) {
         final Timestamp now = Util.now();
         final long tmpVersion = Util.newVersion();
         final long newVersion = version == tmpVersion? version + 1: tmpVersion;
         Object[][] argsArray = new Object[pairs.size()][];
-        int i = 0;
-        for (Entry<K, V> each: pairs.entrySet()) {
-            argsArray[i] = new Object[] { each.getValue(), newVersion, now, each.getKey(), version };
+        {
+            int i = 0;
+            for (Entry<K, V> each : pairs.entrySet()) {
+                argsArray[i] = new Object[] { each.getValue(), newVersion, now,
+                        each.getKey(), version };
+            }
         }
-        JdbcUtil.batchUpdate(conn, swapSql, argsArray);
-        return newVersion;
+        final int[] rowCount = JdbcUtil.batchUpdate(conn, swapSql, argsArray);
+        int totalRowCount = 0;
+        for (int j = 0; j < rowCount.length; j++) {
+            totalRowCount += rowCount[j];
+        }
+        return totalRowCount > 0? newVersion: null;
     }
 
-    public long batchSwap(Connection conn, List<KeyValueVersion<K, V>> triplets) {
+    public Long batchSwap(Connection conn, List<KeyValueVersion<K, V>> triplets) {
         final Timestamp now = Util.now();
         final long newVersion = Util.newVersion();
         Object[][] argsArray = new Object[triplets.size()][];
-        int i = 0;
-        for (KeyValueVersion<K, V> each: triplets) {
-            argsArray[i] = new Object[] { each.value, newVersion, now, each.key, each.version };
+        {
+            int i = 0;
+            for (KeyValueVersion<K, V> each : triplets) {
+                argsArray[i] = new Object[] { each.value, newVersion, now,
+                        each.key, each.version };
+            }
         }
-        JdbcUtil.batchUpdate(conn, swapSql, argsArray);
-        return newVersion;
+        final int[] rowCount = JdbcUtil.batchUpdate(conn, swapSql, argsArray);
+        int totalRowCount = 0;
+        for (int j = 0; j < rowCount.length; j++) {
+            totalRowCount += rowCount[j];
+        }
+        return totalRowCount > 0? newVersion: null;
     }
 
     // ---- touch (update version) ----
 
-    public long touch(Connection conn, K key) {
+    public Long touch(Connection conn, K key) {
         final Timestamp now = Util.now();
         final long version = Util.newVersion();
-        JdbcUtil.update(conn, touchSql, new Object[] { version, now, key });
-        return version;
+        final int rowCount = JdbcUtil.update(conn, touchSql, new Object[] { version, now, key });
+        return rowCount > 0? version: null;
     }
 
-    public long batchTouch(Connection conn, List<K> keys) {
+    public Long batchTouch(Connection conn, List<K> keys) {
         final Timestamp now = Util.now();
         final long version = Util.newVersion();
         Object[][] argsArray = new Object[keys.size()][];
-        int i = 0;
-        for (K each: keys) {
-            argsArray[i++] = new Object[] { version, now, each };
+        {
+            int i = 0;
+            for (K each : keys) {
+                argsArray[i++] = new Object[] { version, now, each };
+            }
         }
-        JdbcUtil.batchUpdate(conn, swapSql, argsArray);
-        return version;
+        final int[] rowCount = JdbcUtil.batchUpdate(conn, swapSql, argsArray);
+        int totalRowCount = 0;
+        for (int j = 0; j < rowCount.length; j++) {
+            totalRowCount += rowCount[j];
+        }
+        return totalRowCount > 0? version: null;
     }
 
     // ---- delete ----
