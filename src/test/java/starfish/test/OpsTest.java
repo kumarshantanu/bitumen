@@ -28,8 +28,6 @@ public class OpsTest {
     private static DataSourceTemplate dst = null;
 
     final TableMetadata meta = TableMetadata.create("session", "id", "value", "version", "updated");
-    final IOpsWrite<Integer, String> writer = new GenericOpsWrite<Integer, String>(meta);
-    final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
 
     private <K> long findRowCountForKey(final K key) {
         return JdbcUtil.withConnection(ds, new ConnectionActivity<List<Long>>() {
@@ -40,7 +38,7 @@ public class OpsTest {
         }).get(0).longValue();
     }
 
-    private String readValue(final Integer key) {
+    private String readValue(final IOpsRead<Integer, String> reader, final Integer key) {
         return dst.withConnection(new ConnectionActivity<String>() {
             public String execute(Connection conn) {
                 return reader.read(conn, key);
@@ -60,8 +58,7 @@ public class OpsTest {
         TestUtil.destroy(ds);
     }
 
-    @Test
-    public void crudTest() {
+    public void crudTest(final IOpsWrite<Integer, String> writer, final IOpsRead<Integer, String> reader) {
         // ----- INSERT (SAVE) -----
 
         // write (actually insert, because the value doesn't exist) key-value pair
@@ -75,7 +72,7 @@ public class OpsTest {
         Assert.assertNotNull(version1);
 
         // read value for given key
-        Assert.assertEquals(newValue1, readValue(key));
+        Assert.assertEquals(newValue1, readValue(reader, key));
 
         // make sure database table has the value
         Assert.assertEquals(1, findRowCountForKey(key));
@@ -93,7 +90,7 @@ public class OpsTest {
         Assert.assertNotEquals(version1, version2);
 
         // read value again for given key
-        Assert.assertEquals(newValue2, readValue(key));
+        Assert.assertEquals(newValue2, readValue(reader, key));
 
         // make sure database table has the value
         Assert.assertEquals(1, findRowCountForKey(key));
@@ -108,14 +105,13 @@ public class OpsTest {
         });
 
         // read value again
-        Assert.assertNull(readValue(key));
+        Assert.assertNull(readValue(reader, key));
 
         // make sure database table does not have the value
         Assert.assertEquals(0, findRowCountForKey(key));
     }
 
-    @Test
-    public void versionTest() {
+    public void versionTest(final IOpsWrite<Integer, String> writer, final IOpsRead<Integer, String> reader) {
         // save (insert)
         final int key = 2;
         final String newValue1 = "abc";
@@ -136,7 +132,7 @@ public class OpsTest {
             }
         });
         Assert.assertNull(version2);
-        Assert.assertEquals(newValue1, readValue(key));
+        Assert.assertEquals(newValue1, readValue(reader, key));
 
         // swap using valid version, which should succeed
         final String newValue3 = "pqr";
@@ -147,7 +143,7 @@ public class OpsTest {
         });
         Assert.assertNotNull(version3);
         Assert.assertNotEquals(version2, version3);
-        Assert.assertEquals(newValue3, readValue(key));
+        Assert.assertEquals(newValue3, readValue(reader, key));
 
         // ----- REMOVE -----
 
@@ -157,7 +153,7 @@ public class OpsTest {
                 writer.remove(conn, key, version1);
             }
         });
-        Assert.assertEquals(newValue3, readValue(key));
+        Assert.assertEquals(newValue3, readValue(reader, key));
 
         // remove with correct version, which should pass
         dst.withConnectionNoResult(new ConnectionActivityNoResult() {
@@ -165,11 +161,10 @@ public class OpsTest {
                 writer.remove(conn, key, version3);
             }
         });
-        Assert.assertNull(readValue(key));
+        Assert.assertNull(readValue(reader, key));
     }
 
-    @Test
-    public void readTest() {
+    public void readTest(final IOpsWrite<Integer, String> writer, final IOpsRead<Integer, String> reader) {
         final int key = 3;
 
         // save (insert)
@@ -210,10 +205,10 @@ public class OpsTest {
         }));
 
         // read (which returns null due to bad key)
-        Assert.assertNull(readValue(Integer.MAX_VALUE));
+        Assert.assertNull(readValue(reader, Integer.MAX_VALUE));
 
         // read (which returns valid value)
-        Assert.assertEquals(newValue1, readValue(key));
+        Assert.assertEquals(newValue1, readValue(reader, key));
 
         // readForVersion (which returns null due to bad version)
         Assert.assertNull(dst.withConnection(new ConnectionActivity<String>() {
@@ -239,4 +234,28 @@ public class OpsTest {
         Assert.assertEquals(version1, vv.version);
     }
 
+    // ===== Test suites =====
+
+    // ----- Generic -----
+
+    @Test
+    public void genericCrudTest() {
+        final IOpsWrite<Integer, String> writer = new GenericOpsWrite<Integer, String>(meta);
+        final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
+        crudTest(writer, reader);
+    }
+
+    @Test
+    public void genericVersionTest() {
+        final IOpsWrite<Integer, String> writer = new GenericOpsWrite<Integer, String>(meta);
+        final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
+        versionTest(writer, reader);
+    }
+
+    @Test
+    public void genericReadTest() {
+        final IOpsWrite<Integer, String> writer = new GenericOpsWrite<Integer, String>(meta);
+        final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
+        readTest(writer, reader);
+    }
 }
