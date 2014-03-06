@@ -150,7 +150,7 @@ public class GenericOpsRead<K, V> implements IOpsRead<K, V> {
 
     public ValueVersion<V> readAll(Connection conn, K key) {
         final List<ValueVersion<V>> rows = JdbcUtil.queryVals(
-                conn, condFetchSql, new Object[] { key }, valueVersionExtractor12);
+                conn, fetchAllSql, new Object[] { key }, valueVersionExtractor12);
         return rows.isEmpty()? null: rows.get(0);
     }
 
