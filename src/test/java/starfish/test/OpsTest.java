@@ -109,7 +109,7 @@ public class OpsTest {
         // read value again
         Assert.assertNull(readValue(key));
 
-        // make sure database table has the value
+        // make sure database table does not have the value
         Assert.assertEquals(0, findRowCountForKey(key));
     }
 
