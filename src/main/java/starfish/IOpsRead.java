@@ -28,9 +28,9 @@ public interface IOpsRead<K, V> {
 
     // ---- readVersion (requires old version) ----
 
-    public V readVersion(Connection conn, K key, long version);
+    public V readForVersion(Connection conn, K key, long version);
 
-    public Map<K, V> batchReadVersion(Connection conn, Map<K, Long> keyVersions);
+    public Map<K, V> batchReadForVersion(Connection conn, Map<K, Long> keyVersions);
 
     // ---- readAll ----
 

@@ -71,7 +71,7 @@ public class ReplicatedOpsRead<K, V> /*extends GenericOpsRead<K, V>*/ implements
         }
         V copy = JdbcUtil.withConnection(slave, new ConnectionActivity<V>() {
             public V execute(Connection conn) {
-                return generic.readVersion(conn, key, latest);
+                return generic.readForVersion(conn, key, latest);
             }
         });
         return copy == null? generic.read(conn, key): copy;
@@ -115,35 +115,35 @@ public class ReplicatedOpsRead<K, V> /*extends GenericOpsRead<K, V>*/ implements
     public V consistentReadVersion(Connection conn, DataSource slave, final K key, final long version) {
         V copy = JdbcUtil.withConnection(slave, new ConnectionActivity<V>() {
             public V execute(Connection conn) {
-                return generic.readVersion(conn, key, version);
+                return generic.readForVersion(conn, key, version);
             }
         });
-        return copy == null? generic.readVersion(conn, key, version): copy;
+        return copy == null? generic.readForVersion(conn, key, version): copy;
     }
 
-    public V readVersion(Connection conn, K key, long version) {
+    public V readForVersion(Connection conn, K key, long version) {
         final DataSource slave = nextSlaveDataSource();
-        return slave == null? generic.readVersion(conn, key, version): consistentReadVersion(conn, slave, key, version);
+        return slave == null? generic.readForVersion(conn, key, version): consistentReadVersion(conn, slave, key, version);
     }
 
     public Map<K, V> consistentBatchReadVersion(Connection conn, DataSource slave, final Map<K, Long> keyVersions) {
         final Map<K, V> copy = JdbcUtil.withConnection(slave, new ConnectionActivity<Map<K, V>>() {
             public Map<K, V> execute(Connection conn) {
-                return generic.batchReadVersion(conn, keyVersions);
+                return generic.batchReadForVersion(conn, keyVersions);
             }
         });
         final Map<K, Long> missing = new LinkedHashMap<K, Long>(keyVersions);
         for (K key: copy.keySet()) {
             missing.remove(key);
         }
-        final Map<K, V> master = generic.batchReadVersion(conn, missing);
+        final Map<K, V> master = generic.batchReadForVersion(conn, missing);
         copy.putAll(master);
         return copy;
     }
 
-    public Map<K, V> batchReadVersion(Connection conn, Map<K, Long> keyVersions) {
+    public Map<K, V> batchReadForVersion(Connection conn, Map<K, Long> keyVersions) {
         final DataSource slave = nextSlaveDataSource();
-        return slave == null? generic.batchReadVersion(conn, keyVersions):
+        return slave == null? generic.batchReadForVersion(conn, keyVersions):
             consistentBatchReadVersion(conn, slave, keyVersions);
     }
 
@@ -173,14 +173,14 @@ public class ReplicatedOpsRead<K, V> /*extends GenericOpsRead<K, V>*/ implements
         final Map<K, Long> keyVersions = Util.zipmap(keys, latest);
         final Map<K, V> slaveKeyVals = JdbcUtil.withConnection(slave, new ConnectionActivity<Map<K, V>>() {
             public Map<K, V> execute(Connection slaveConn) {
-                return generic.batchReadVersion(slaveConn, keyVersions);
+                return generic.batchReadForVersion(slaveConn, keyVersions);
             }
         });
         final Map<K, Long> missingKeyVersions = new HashMap<K, Long>(keyVersions);
         for (K key: slaveKeyVals.keySet()) {
             missingKeyVersions.remove(key);
         }
-        final Map<K, V> masterKeyVals = generic.batchReadVersion(conn, keyVersions);
+        final Map<K, V> masterKeyVals = generic.batchReadForVersion(conn, keyVersions);
         slaveKeyVals.putAll(masterKeyVals);
         final Map<K, ValueVersion<V>> result = new LinkedHashMap<K, ValueVersion<V>>();
         final int len = keys.size();

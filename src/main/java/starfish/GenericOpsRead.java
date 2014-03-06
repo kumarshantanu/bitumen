@@ -135,12 +135,12 @@ public class GenericOpsRead<K, V> implements IOpsRead<K, V> {
 
     // ---- readVersion ----
 
-    public V readVersion(Connection conn, K key, long version) {
+    public V readForVersion(Connection conn, K key, long version) {
         final List<V> rows = JdbcUtil.queryVals(conn, condFetchSql, new Object[] { key, version }, valExtractor1);
         return rows.isEmpty()? null: rows.get(0);
     }
 
-    public Map<K, V> batchReadVersion(Connection conn, Map<K, Long> keyVersions) {
+    public Map<K, V> batchReadForVersion(Connection conn, Map<K, Long> keyVersions) {
         final String sql = Util.groovyReplace(condMultiFetchSql, keyVersionExpression(keyVersions.size()), true);
         final Object[] args = Util.argsArray(keyVersions);
         return JdbcUtil.queryMap(conn, sql, args, keyExtractor1, valExtractor2);
