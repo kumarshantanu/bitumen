@@ -50,4 +50,10 @@ public class TestUtil {
         });
     }
 
+    public static boolean isMysqlTestEnabled() {
+        final Properties properties = loadProperties();
+        final String status = properties.getProperty("test.mysql.support");
+        return status != null && Boolean.parseBoolean(status);
+    }
+
 }

@@ -21,6 +21,7 @@ import starfish.helper.JdbcUtil;
 import starfish.helper.Util;
 import starfish.type.TableMetadata;
 import starfish.type.ValueVersion;
+import starfish.vendor.MysqlOpsWrite;
 
 public class OpsTest {
 
@@ -258,4 +259,67 @@ public class OpsTest {
         final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
         readTest(writer, reader);
     }
+
+    // ----- MySQL -----
+
+    @Test
+    public void mysqlCrudTest() {
+        if (TestUtil.isMysqlTestEnabled()) {
+            System.out.println("Running mysqlCrudTest()");
+            final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(meta, false);
+            final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
+            crudTest(writer, reader);
+        }
+    }
+
+    @Test
+    public void mysqlCrudTestWithMysqlTimestamp() {
+        if (TestUtil.isMysqlTestEnabled()) {
+            System.out.println("Running mysqlCrudTestWithMysqlTimestamp()");
+            final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(meta, true);
+            final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
+            crudTest(writer, reader);
+        }
+    }
+
+    @Test
+    public void mysqlVersionTest() {
+        if (TestUtil.isMysqlTestEnabled()) {
+            System.out.println("Running mysqlVersionTest()");
+            final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(meta, false);
+            final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
+            versionTest(writer, reader);
+        }
+    }
+
+    @Test
+    public void mysqlVersionTestWithMysqlTimestamp() {
+        if (TestUtil.isMysqlTestEnabled()) {
+            System.out.println("Running mysqlVersionTestWithMysqlTimestamp()");
+            final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(meta, true);
+            final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
+            versionTest(writer, reader);
+        }
+    }
+
+    @Test
+    public void mysqlReadTest() {
+        if (TestUtil.isMysqlTestEnabled()) {
+            System.out.println("Running mysqlReadTest()");
+            final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(meta, false);
+            final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
+            readTest(writer, reader);
+        }
+    }
+
+    @Test
+    public void mysqlReadTestWithMysqlTimestamp() {
+        if (TestUtil.isMysqlTestEnabled()) {
+            System.out.println("Running mysqlReadTestWithMysqlTimestamp()");
+            final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(meta, true);
+            final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
+            readTest(writer, reader);
+        }
+    }
+
 }
