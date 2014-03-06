@@ -243,8 +243,8 @@ public class JdbcUtil {
                         pstmt.setString(i, (String) param);
                     } else if (param instanceof Timestamp) {
                         pstmt.setTimestamp(i, (Timestamp) param);
-                    } else {throw new IllegalArgumentException("Bad parameter: " + param);
-                        //pstmt.setObject(i, param);
+                    } else {
+                        pstmt.setObject(i, param);
                     }
                 }
             } catch (SQLException e) {
