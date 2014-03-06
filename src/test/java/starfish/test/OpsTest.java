@@ -20,6 +20,7 @@ import starfish.helper.DataSourceTemplate;
 import starfish.helper.JdbcUtil;
 import starfish.helper.Util;
 import starfish.type.TableMetadata;
+import starfish.type.ValueVersion;
 
 public class OpsTest {
 
@@ -165,6 +166,77 @@ public class OpsTest {
             }
         });
         Assert.assertNull(readValue(key));
+    }
+
+    @Test
+    public void readTest() {
+        final int key = 3;
+
+        // save (insert)
+        final String newValue1 = "abc";
+        final Long version1 = dst.withConnection(new ConnectionActivity<Long>() {
+            public Long execute(Connection conn) {
+                return writer.save(conn, key, newValue1);
+            }
+        });
+        Assert.assertNotNull(version1);
+
+        // contains (which returns null due to bad key)
+        Assert.assertNull(dst.withConnection(new ConnectionActivity<Long>() {
+            public Long execute(Connection conn) {
+                return reader.contains(conn, Integer.MAX_VALUE);
+            }
+        }));
+
+        // contains (which returns valid version)
+        Assert.assertEquals(version1, dst.withConnection(new ConnectionActivity<Long>() {
+            public Long execute(Connection conn) {
+                return reader.contains(conn, key);
+            }
+        }));
+
+        // containsVersion (which returns null due to bad key)
+        Assert.assertFalse(dst.withConnection(new ConnectionActivity<Boolean>() {
+            public Boolean execute(Connection conn) {
+                return reader.containsVersion(conn, Integer.MAX_VALUE, Util.newVersion());
+            }
+        }));
+
+        // containsVersion (which passes valid version)
+        Assert.assertTrue(dst.withConnection(new ConnectionActivity<Boolean>() {
+            public Boolean execute(Connection conn) {
+                return reader.containsVersion(conn, key, version1);
+            }
+        }));
+
+        // read (which returns null due to bad key)
+        Assert.assertNull(readValue(Integer.MAX_VALUE));
+
+        // read (which returns valid value)
+        Assert.assertEquals(newValue1, readValue(key));
+
+        // readForVersion (which returns null due to bad version)
+        Assert.assertNull(dst.withConnection(new ConnectionActivity<String>() {
+            public String execute(Connection conn) {
+                return reader.readForVersion(conn, key, Util.newVersion());
+            }
+        }));
+
+        // readForVersion (which returns correct value due to correct version)
+        Assert.assertEquals(newValue1, dst.withConnection(new ConnectionActivity<String>() {
+            public String execute(Connection conn) {
+                return reader.readForVersion(conn, key, version1);
+            }
+        }));
+
+        // readAll
+        final ValueVersion<String> vv = dst.withConnection(new ConnectionActivity<ValueVersion<String>>() {
+            public ValueVersion<String> execute(Connection conn) {
+                return reader.readAll(conn, key);
+            }
+        });
+        Assert.assertEquals(newValue1, vv.value);
+        Assert.assertEquals(version1, vv.version);
     }
 
 }
