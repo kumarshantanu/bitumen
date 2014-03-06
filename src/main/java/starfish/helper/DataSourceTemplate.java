@@ -15,7 +15,7 @@ public class DataSourceTemplate {
     }
 
     public void withConnectionNoResult(ConnectionActivityNoResult activity) {
-        JdbcUtil.withConnectionWithoutResult(dataSource, activity);
+        JdbcUtil.withConnectionNoResult(dataSource, activity);
     }
 
 }

@@ -33,7 +33,7 @@ public class TestUtil {
         ds.setUsername(properties.getProperty("jdbc.username"));
         ds.setPassword(properties.getProperty("jdbc.password"));
         ds.setValidationQuery(properties.getProperty("validation.query"));
-        JdbcUtil.withConnectionWithoutResult(ds, new ConnectionActivityNoResult() {
+        JdbcUtil.withConnectionNoResult(ds, new ConnectionActivityNoResult() {
             public void execute(Connection conn) {
                 JdbcUtil.update(conn, properties.getProperty("create.table.ddl"), null);
             }
@@ -43,7 +43,7 @@ public class TestUtil {
 
     public static void destroy(DataSource ds) {
         final Properties properties = loadProperties();
-        JdbcUtil.withConnectionWithoutResult(ds, new ConnectionActivityNoResult() {
+        JdbcUtil.withConnectionNoResult(ds, new ConnectionActivityNoResult() {
             public void execute(Connection conn) {
                 JdbcUtil.update(conn, properties.getProperty("drop.table.ddl"), null);
             }
