@@ -33,27 +33,29 @@ public class TestUtil {
         ds.setUsername(properties.getProperty("jdbc.username"));
         ds.setPassword(properties.getProperty("jdbc.password"));
         ds.setValidationQuery(properties.getProperty("validation.query"));
-        JdbcUtil.withConnectionNoResult(ds, new ConnectionActivityNoResult() {
-            public void execute(Connection conn) {
-                JdbcUtil.update(conn, properties.getProperty("create.table.ddl"), null);
-            }
-        });
         return ds;
-    }
-
-    public static void destroy(DataSource ds) {
-        final Properties properties = loadProperties();
-        JdbcUtil.withConnectionNoResult(ds, new ConnectionActivityNoResult() {
-            public void execute(Connection conn) {
-                JdbcUtil.update(conn, properties.getProperty("drop.table.ddl"), null);
-            }
-        });
     }
 
     public static boolean isMysqlTestEnabled() {
         final Properties properties = loadProperties();
         final String status = properties.getProperty("test.mysql.support");
         return status != null && Boolean.parseBoolean(status);
+    }
+
+    public static void createTable(DataSource ds) {
+        JdbcUtil.withConnectionNoResult(ds, new ConnectionActivityNoResult() {
+            public void execute(Connection conn) {
+                JdbcUtil.update(conn, loadProperties().getProperty("create.table.ddl"), null);
+            }
+        });
+    }
+
+    public static void dropTable(DataSource ds) {
+        JdbcUtil.withConnectionNoResult(ds, new ConnectionActivityNoResult() {
+            public void execute(Connection conn) {
+                JdbcUtil.update(conn, loadProperties().getProperty("drop.table.ddl"), null);
+            }
+        });
     }
 
 }

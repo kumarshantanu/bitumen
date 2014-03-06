@@ -5,8 +5,10 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -28,12 +30,12 @@ public class OpsTest {
     private static DataSource ds = null;
     private static DataSourceTemplate dst = null;
 
-    final TableMetadata meta = TableMetadata.create("session", "id", "value", "version", "updated");
+    final TableMetadata meta = TableMetadata.create("session", "skey", "value", "version", "updated");
 
     private <K> long findRowCountForKey(final K key) {
         return JdbcUtil.withConnection(ds, new ConnectionActivity<List<Long>>() {
             public List<Long> execute(Connection conn) {
-                return JdbcUtil.queryVals(conn, "SELECT COUNT(*) FROM session WHERE ID = ?", new Object[] { key },
+                return JdbcUtil.queryVals(conn, "SELECT COUNT(*) FROM session WHERE skey = ?", new Object[] { key },
                         JdbcUtil.makeColumnExtractor(Long.class, 1));
             }
         }).get(0).longValue();
@@ -56,7 +58,17 @@ public class OpsTest {
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
         dst = null;
-        TestUtil.destroy(ds);
+        ds = null;
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        TestUtil.createTable(ds);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        TestUtil.dropTable(ds);
     }
 
     public void crudTest(final IOpsWrite<Integer, String> writer, final IOpsRead<Integer, String> reader) {

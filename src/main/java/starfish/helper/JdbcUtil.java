@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -69,7 +70,7 @@ public class JdbcUtil {
             return pstmt.executeUpdate();
         } catch (SQLException e) {
             throw new IllegalStateException(
-                    String.format("Unable to execute SQL statement: [%s], args: %s", sql, args), e);
+                    String.format("Unable to execute SQL statement: [%s], args: %s", sql, Arrays.toString(args)), e);
         } finally {
             close(pstmt);
         }
@@ -85,7 +86,8 @@ public class JdbcUtil {
             } catch (SQLException e) {
                 close(pstmt);
                 throw new IllegalStateException(
-                        String.format("Unable to add batch arguments for SQL: [%s], args: %s", sql, args), e);
+                        String.format("Unable to add batch arguments for SQL: [%s], args: %s", sql,
+                                Arrays.toString(args)), e);
             }
         }
         try {
@@ -232,7 +234,18 @@ public class JdbcUtil {
             int i = -1;
             try {
                 for (i = 1; i <= args.length; i++) {
-                    pstmt.setObject(i, args[i - 1]);
+                    final Object param = args[i - 1];
+                    if (param instanceof Integer) {
+                        pstmt.setInt(i, (Integer) param);
+                    } else if (param instanceof Long) {
+                        pstmt.setLong(i, (Long) param);
+                    } else if (param instanceof String) {
+                        pstmt.setString(i, (String) param);
+                    } else if (param instanceof Timestamp) {
+                        pstmt.setTimestamp(i, (Timestamp) param);
+                    } else {throw new IllegalArgumentException("Bad parameter: " + param);
+                        //pstmt.setObject(i, param);
+                    }
                 }
             } catch (SQLException e) {
                 close(pstmt);
