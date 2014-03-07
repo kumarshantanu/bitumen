@@ -5,15 +5,8 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
-import starfish.GenericOpsRead;
-import starfish.GenericOpsWrite;
 import starfish.IOpsRead;
 import starfish.IOpsWrite;
 import starfish.helper.ConnectionActivity;
@@ -21,16 +14,17 @@ import starfish.helper.ConnectionActivityNoResult;
 import starfish.helper.DataSourceTemplate;
 import starfish.helper.JdbcUtil;
 import starfish.helper.Util;
-import starfish.type.TableMetadata;
 import starfish.type.ValueVersion;
-import starfish.vendor.MysqlOpsWrite;
 
 public class OpsTest {
 
-    private static DataSource ds = null;
-    private static DataSourceTemplate dst = null;
+    public final DataSource ds;
+    public final DataSourceTemplate dst;
 
-    final TableMetadata meta = TableMetadata.create("session", "skey", "value", "version", "updated");
+    public OpsTest(DataSource ds) {
+        this.ds = ds;
+        this.dst = new DataSourceTemplate(ds);
+    }
 
     private <K> long findRowCountForKey(final K key) {
         return JdbcUtil.withConnection(ds, new ConnectionActivity<List<Long>>() {
@@ -47,28 +41,6 @@ public class OpsTest {
                 return reader.read(conn, key);
             }
         });
-    }
-
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-        ds = TestUtil.makeTestDataSource();
-        dst = new DataSourceTemplate(ds);
-    }
-
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-        dst = null;
-        ds = null;
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        TestUtil.createTable(ds);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        TestUtil.dropTable(ds);
     }
 
     public void crudTest(final IOpsWrite<Integer, String> writer, final IOpsRead<Integer, String> reader) {
@@ -245,93 +217,6 @@ public class OpsTest {
         });
         Assert.assertEquals(newValue1, vv.value);
         Assert.assertEquals(version1, vv.version);
-    }
-
-    // ===== Test suites =====
-
-    // ----- Generic -----
-
-    @Test
-    public void genericCrudTest() {
-        final IOpsWrite<Integer, String> writer = new GenericOpsWrite<Integer, String>(meta);
-        final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
-        crudTest(writer, reader);
-    }
-
-    @Test
-    public void genericVersionTest() {
-        final IOpsWrite<Integer, String> writer = new GenericOpsWrite<Integer, String>(meta);
-        final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
-        versionTest(writer, reader);
-    }
-
-    @Test
-    public void genericReadTest() {
-        final IOpsWrite<Integer, String> writer = new GenericOpsWrite<Integer, String>(meta);
-        final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
-        readTest(writer, reader);
-    }
-
-    // ----- MySQL -----
-
-    @Test
-    public void mysqlCrudTest() {
-        if (TestUtil.isMysqlTestEnabled()) {
-            System.out.println("Running mysqlCrudTest()");
-            final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(meta, false);
-            final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
-            crudTest(writer, reader);
-        }
-    }
-
-    @Test
-    public void mysqlCrudTestWithMysqlTimestamp() {
-        if (TestUtil.isMysqlTestEnabled()) {
-            System.out.println("Running mysqlCrudTestWithMysqlTimestamp()");
-            final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(meta, true);
-            final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
-            crudTest(writer, reader);
-        }
-    }
-
-    @Test
-    public void mysqlVersionTest() {
-        if (TestUtil.isMysqlTestEnabled()) {
-            System.out.println("Running mysqlVersionTest()");
-            final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(meta, false);
-            final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
-            versionTest(writer, reader);
-        }
-    }
-
-    @Test
-    public void mysqlVersionTestWithMysqlTimestamp() {
-        if (TestUtil.isMysqlTestEnabled()) {
-            System.out.println("Running mysqlVersionTestWithMysqlTimestamp()");
-            final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(meta, true);
-            final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
-            versionTest(writer, reader);
-        }
-    }
-
-    @Test
-    public void mysqlReadTest() {
-        if (TestUtil.isMysqlTestEnabled()) {
-            System.out.println("Running mysqlReadTest()");
-            final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(meta, false);
-            final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
-            readTest(writer, reader);
-        }
-    }
-
-    @Test
-    public void mysqlReadTestWithMysqlTimestamp() {
-        if (TestUtil.isMysqlTestEnabled()) {
-            System.out.println("Running mysqlReadTestWithMysqlTimestamp()");
-            final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(meta, true);
-            final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(meta, Integer.class, String.class);
-            readTest(writer, reader);
-        }
     }
 
 }

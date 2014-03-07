@@ -11,8 +11,11 @@ import org.apache.commons.dbcp.BasicDataSource;
 
 import starfish.helper.ConnectionActivityNoResult;
 import starfish.helper.JdbcUtil;
+import starfish.type.TableMetadata;
 
 public class TestUtil {
+
+    public static final TableMetadata meta = TableMetadata.create("session", "skey", "value", "version", "updated");
 
     public static Properties loadProperties() {
         InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("database.properties");
