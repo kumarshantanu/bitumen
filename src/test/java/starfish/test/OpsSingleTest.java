@@ -16,12 +16,12 @@ import starfish.helper.JdbcUtil;
 import starfish.helper.Util;
 import starfish.type.ValueVersion;
 
-public class OpsTest {
+public class OpsSingleTest implements OpsTestSuite {
 
     public final DataSource ds;
     public final DataSourceTemplate dst;
 
-    public OpsTest(DataSource ds) {
+    public OpsSingleTest(DataSource ds) {
         this.ds = ds;
         this.dst = new DataSourceTemplate(ds);
     }

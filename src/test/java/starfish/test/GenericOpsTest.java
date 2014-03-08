@@ -15,12 +15,12 @@ import starfish.IOpsWrite;
 
 public class GenericOpsTest {
 
-    private static OpsTest opsTest;
+    private static OpsSingleTest opsTest;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         DataSource ds = TestUtil.makeTestDataSource();
-        opsTest = new OpsTest(ds);
+        opsTest = new OpsSingleTest(ds);
     }
 
     @AfterClass
