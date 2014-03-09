@@ -71,42 +71,52 @@ import java.sql.Connection;
 
 import javax.sql.DataSource;
 
-import starfish.GenericOpsRead;
-import starfish.GenericOpsWrite;
-import starfish.IOpsRead;
-import starfish.IOpsWrite;
 import starfish.helper.ConnectionActivity;
 import starfish.helper.DataSourceTemplate;
-import starfish.helper.JdbcUtil;
 import starfish.type.TableMetadata;
 
-public class SomeClass {
+public class Example {
+
     final TableMetadata meta = TableMetadata.create("session", "id", "value", "version", "updated");
     final IOpsWrite<String, String> writer = new GenericOpsWrite<String, String>(meta);
     final IOpsRead<String, String> reader = new GenericOpsRead<String, String>(meta, String.class, String.class);
     final DataSourceTemplate dst;
 
-    public SomeClass(DataSource ds) {
-      this.dst = new DataSourceTemplate(ds);
+    public Example(DataSource ds) {
+        this.dst = new DataSourceTemplate(ds);
     }
 
     public void savePair() {
-      final Long version = dst.withConnection(new ConnectionActivity<Long>() {
-          public Long execute(Connection conn) {
-              return writer.save(conn, "ABCD", "{\"email\": \"foo@bar.com\", \"age\": 29}");
-          }
-      });
-      // do something with `version`...
+        final Long version = dst.withConnection(new ConnectionActivity<Long>() {
+            public Long execute(Connection conn) {
+                return writer.save(conn, "ABCD", "{\"email\": \"foo@bar.com\", \"age\": 29}");
+            }
+        });
+        // do something with `version`...
+      }
+
+      public void readValue() {
+        final String value = dst.withConnection(new ConnectionActivity<String>() {
+            public String execute(Connection conn) {
+                return reader.read(conn, "ABCD");
+            }
+        });
+        // do something with `value`...
+      }
+
+      // ----- Java 8 examples -----
+
+    public void savePairJava8() {
+        final Long version = dst.withConnection(conn -> writer.save(conn,
+                "ABCD", "{\"email\": \"foo@bar.com\", \"age\": 29}"));
+        // do something with `version`...
     }
 
-    public void readValue() {
-      final String value = dst.withConnection(new ConnectionActivity<String>() {
-          public String execute(Connection conn) {
-              return reader.read(conn, "ABCD");
-          }
-      });
-      // do something with `value`...
+    public void readValueJava8() {
+        final String value = dst.withConnection(conn -> reader.read(conn, "ABCD"));
+        // do something with `value`...
     }
+
 }
 ```
 
