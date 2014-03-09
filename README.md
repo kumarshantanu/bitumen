@@ -20,7 +20,6 @@ Use the following Maven coordinates to include in your project.
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
-
 ```
 
 ### Pre-requisite
