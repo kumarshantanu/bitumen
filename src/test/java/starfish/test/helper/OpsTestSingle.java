@@ -1,4 +1,4 @@
-package starfish.test;
+package starfish.test.helper;
 
 import java.sql.Connection;
 import java.util.Arrays;

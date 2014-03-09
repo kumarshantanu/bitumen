@@ -1,5 +1,7 @@
 package starfish.test;
 
+import java.util.List;
+
 import javax.sql.DataSource;
 
 import org.junit.After;
@@ -8,15 +10,16 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import starfish.GenericOpsRead;
 import starfish.GenericOpsWrite;
 import starfish.IOpsRead;
 import starfish.IOpsWrite;
+import starfish.ReplicatedOpsRead;
+import starfish.ReplicationSlavesPointer;
 import starfish.test.helper.OpsTestBatch;
 import starfish.test.helper.OpsTestSingle;
 import starfish.test.helper.TestUtil;
 
-public class GenericOpsTest {
+public class ReplicatedOpsTest {
 
     private static DataSource dataSource;
     private static OpsTestSingle opsTestSingle;
@@ -36,7 +39,12 @@ public class GenericOpsTest {
     }
 
     final IOpsWrite<Integer, String> writer = new GenericOpsWrite<Integer, String>(TestUtil.meta);
-    final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(TestUtil.meta, Integer.class, String.class);
+    final List<DataSource> slaveDataSources = TestUtil.makeSlaveTestDataSources();
+    final IOpsRead<Integer, String> reader = new ReplicatedOpsRead<Integer, String>(TestUtil.meta, Integer.class, String.class, new ReplicationSlavesPointer() {
+        public List<DataSource> getDataSources() {
+            return slaveDataSources;
+        }
+    });
 
     @Before
     public void setUp() throws Exception {
@@ -49,32 +57,32 @@ public class GenericOpsTest {
     }
 
     @Test
-    public void genericCrudTest() {
+    public void replicatedCrudTest() {
         opsTestSingle.crudTest(writer, reader);
     }
 
     @Test
-    public void genericBatchCrudTest() {
+    public void replicatedBatchCrudTest() {
         opsTestBatch.crudTest(writer, reader);
     }
 
     @Test
-    public void genericVersionTest() {
+    public void replicatedVersionTest() {
         opsTestSingle.versionTest(writer, reader);
     }
 
     @Test
-    public void genericBatchVersionTest() {
+    public void replicatedBatchVersionTest() {
         opsTestBatch.versionTest(writer, reader);
     }
 
     @Test
-    public void genericReadTest() {
+    public void replicatedReadTest() {
         opsTestSingle.readTest(writer, reader);
     }
 
     @Test
-    public void genericBatchReadTest() {
+    public void replicatedBatchReadTest() {
         opsTestBatch.readTest(writer, reader);
     }
 

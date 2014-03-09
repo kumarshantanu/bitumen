@@ -1,4 +1,4 @@
-package starfish.test;
+package starfish.test.helper;
 
 import starfish.IOpsRead;
 import starfish.IOpsWrite;

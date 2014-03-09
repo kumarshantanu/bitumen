@@ -1,8 +1,9 @@
-package starfish.test;
+package starfish.test.helper;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -31,15 +32,31 @@ public class TestUtil {
         return properties;
     }
 
+    private static DataSource makeDataSource(Properties properties, String prefix) {
+        BasicDataSource ds = new BasicDataSource();
+        ds.setDriverClassName(properties.getProperty(prefix + "driver.classname"));
+        ds.setUrl(properties.getProperty(prefix + "jdbc.url"));
+        ds.setUsername(properties.getProperty(prefix + "jdbc.username"));
+        ds.setPassword(properties.getProperty(prefix + "jdbc.password"));
+        ds.setValidationQuery(properties.getProperty(prefix + "validation.query"));
+        return ds;
+    }
+
     public static DataSource makeTestDataSource() {
         final Properties properties = loadProperties();
-        BasicDataSource ds = new BasicDataSource();
-        ds.setDriverClassName(properties.getProperty("driver.classname"));
-        ds.setUrl(properties.getProperty("jdbc.url"));
-        ds.setUsername(properties.getProperty("jdbc.username"));
-        ds.setPassword(properties.getProperty("jdbc.password"));
-        ds.setValidationQuery(properties.getProperty("validation.query"));
-        return ds;
+        return makeDataSource(properties, "");
+    }
+
+    public static List<DataSource> makeSlaveTestDataSources() {
+        final Properties properties = loadProperties();
+        final String slavePropertyPrefixesStr = properties.getProperty("slave.property.prefixes");
+        final String[] slavePropertyPrefixes = slavePropertyPrefixesStr != null? slavePropertyPrefixesStr.split(","): new String[0];
+        final List<DataSource> result = new ArrayList<DataSource>(slavePropertyPrefixes.length);
+        for (int i = 0; i < slavePropertyPrefixes.length; i++) {
+            final String prefix = slavePropertyPrefixes[i].trim();
+            result.add(makeDataSource(properties, prefix));
+        }
+        return result;
     }
 
     public static boolean isMysqlTestEnabled() {

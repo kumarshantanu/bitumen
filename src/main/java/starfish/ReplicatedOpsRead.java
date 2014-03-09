@@ -15,7 +15,7 @@ import starfish.helper.Util;
 import starfish.type.TableMetadata;
 import starfish.type.ValueVersion;
 
-public class ReplicatedOpsRead<K, V> /*extends GenericOpsRead<K, V>*/ implements IOpsRead<K, V> {
+public class ReplicatedOpsRead<K, V> implements IOpsRead<K, V> {
 
     public final ReplicationSlavesPointer slavesPointer;
     public final GenericOpsRead<K, V> generic;
@@ -100,8 +100,10 @@ public class ReplicatedOpsRead<K, V> /*extends GenericOpsRead<K, V>*/ implements
         for (K key: copy.keySet()) {
             missing.remove(key);
         }
-        final Map<K, V> master = generic.batchRead(conn, missing);
-        copy.putAll(master);
+        if (!missing.isEmpty()) {
+            final Map<K, V> master = generic.batchRead(conn, missing);
+            copy.putAll(master);
+        }
         return copy;
     }
 
@@ -136,8 +138,10 @@ public class ReplicatedOpsRead<K, V> /*extends GenericOpsRead<K, V>*/ implements
         for (K key: copy.keySet()) {
             missing.remove(key);
         }
-        final Map<K, V> master = generic.batchReadForVersion(conn, missing);
-        copy.putAll(master);
+        if (!missing.isEmpty()) {
+            final Map<K, V> master = generic.batchReadForVersion(conn, missing);
+            copy.putAll(master);
+        }
         return copy;
     }
 
@@ -180,8 +184,10 @@ public class ReplicatedOpsRead<K, V> /*extends GenericOpsRead<K, V>*/ implements
         for (K key: slaveKeyVals.keySet()) {
             missingKeyVersions.remove(key);
         }
-        final Map<K, V> masterKeyVals = generic.batchReadForVersion(conn, keyVersions);
-        slaveKeyVals.putAll(masterKeyVals);
+        if (!missingKeyVersions.isEmpty()) {
+            final Map<K, V> masterKeyVals = generic.batchReadForVersion(conn, missingKeyVersions);
+            slaveKeyVals.putAll(masterKeyVals);
+        }
         final Map<K, ValueVersion<V>> result = new LinkedHashMap<K, ValueVersion<V>>();
         final int len = keys.size();
         for (int i = 0; i < len; i++) {
