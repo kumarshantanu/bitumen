@@ -77,9 +77,11 @@ import starfish.type.TableMetadata;
 
 public class Example {
 
-    final TableMetadata meta = TableMetadata.create("session", "id", "value", "version", "updated");
+    final TableMetadata meta = TableMetadata.create("session", "id", "value", "version",
+            "updated");
     final IOpsWrite<String, String> writer = new GenericOpsWrite<String, String>(meta);
-    final IOpsRead<String, String> reader = new GenericOpsRead<String, String>(meta, String.class, String.class);
+    final IOpsRead<String, String> reader = new GenericOpsRead<String, String>(meta,
+            String.class, String.class);
     final DataSourceTemplate dst;
 
     public Example(DataSource ds) {
@@ -89,20 +91,21 @@ public class Example {
     public void savePair() {
         final Long version = dst.withConnection(new ConnectionActivity<Long>() {
             public Long execute(Connection conn) {
-                return writer.save(conn, "ABCD", "{\"email\": \"foo@bar.com\", \"age\": 29}");
+                return writer.save(conn, "ABCD",
+                        "{\"email\": \"foo@bar.com\", \"age\": 29}");
             }
         });
         // do something with `version`...
-      }
+    }
 
-      public void readValue() {
-        final String value = dst.withConnection(new ConnectionActivity<String>() {
-            public String execute(Connection conn) {
-                return reader.read(conn, "ABCD");
-            }
-        });
-        // do something with `value`...
-      }
+    public void readValue() {
+      final String value = dst.withConnection(new ConnectionActivity<String>() {
+          public String execute(Connection conn) {
+              return reader.read(conn, "ABCD");
+          }
+      });
+      // do something with `value`...
+    }
 
       // ----- Java 8 examples -----
 
