@@ -15,27 +15,32 @@ import starfish.vendor.MysqlOpsWrite;
 
 public class MysqlOpsTest {
 
-    private static OpsSingleTest opsTest;
+    private static DataSource dataSource;
+    private static OpsTestSingle opsSingleTest;
+    private static OpsTestBatch  opsBatchTest;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        DataSource ds = TestUtil.makeTestDataSource();
-        opsTest = new OpsSingleTest(ds);
+        dataSource = TestUtil.makeTestDataSource();
+        opsSingleTest = new OpsTestSingle(dataSource);
+        opsBatchTest  = new OpsTestBatch(dataSource);
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-        opsTest = null;
+        dataSource = null;
+        opsSingleTest = null;
+        opsBatchTest  = null;
     }
 
     @Before
     public void setUp() throws Exception {
-        TestUtil.createTable(opsTest.ds);
+        TestUtil.createTable(dataSource);
     }
 
     @After
     public void tearDown() throws Exception {
-        TestUtil.dropTable(opsTest.ds);
+        TestUtil.dropTable(dataSource);
     }
 
     @Test
@@ -44,7 +49,8 @@ public class MysqlOpsTest {
             System.out.println("Running mysqlCrudTest()");
             final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(TestUtil.meta, false);
             final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(TestUtil.meta, Integer.class, String.class);
-            opsTest.crudTest(writer, reader);
+            opsSingleTest.crudTest(writer, reader);
+            opsBatchTest.crudTest(writer, reader);
         }
     }
 
@@ -54,7 +60,8 @@ public class MysqlOpsTest {
             System.out.println("Running mysqlCrudTestWithMysqlTimestamp()");
             final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(TestUtil.meta, true);
             final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(TestUtil.meta, Integer.class, String.class);
-            opsTest.crudTest(writer, reader);
+            opsSingleTest.crudTest(writer, reader);
+            opsBatchTest.crudTest(writer, reader);
         }
     }
 
@@ -64,7 +71,8 @@ public class MysqlOpsTest {
             System.out.println("Running mysqlVersionTest()");
             final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(TestUtil.meta, false);
             final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(TestUtil.meta, Integer.class, String.class);
-            opsTest.versionTest(writer, reader);
+            opsSingleTest.versionTest(writer, reader);
+            opsBatchTest.versionTest(writer, reader);
         }
     }
 
@@ -74,7 +82,8 @@ public class MysqlOpsTest {
             System.out.println("Running mysqlVersionTestWithMysqlTimestamp()");
             final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(TestUtil.meta, true);
             final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(TestUtil.meta, Integer.class, String.class);
-            opsTest.versionTest(writer, reader);
+            opsSingleTest.versionTest(writer, reader);
+            opsBatchTest.versionTest(writer, reader);
         }
     }
 
@@ -84,7 +93,8 @@ public class MysqlOpsTest {
             System.out.println("Running mysqlReadTest()");
             final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(TestUtil.meta, false);
             final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(TestUtil.meta, Integer.class, String.class);
-            opsTest.readTest(writer, reader);
+            opsSingleTest.readTest(writer, reader);
+            opsBatchTest.readTest(writer, reader);
         }
     }
 
@@ -94,7 +104,8 @@ public class MysqlOpsTest {
             System.out.println("Running mysqlReadTestWithMysqlTimestamp()");
             final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(TestUtil.meta, true);
             final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(TestUtil.meta, Integer.class, String.class);
-            opsTest.readTest(writer, reader);
+            opsSingleTest.readTest(writer, reader);
+            opsBatchTest.readTest(writer, reader);
         }
     }
 

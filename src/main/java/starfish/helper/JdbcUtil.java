@@ -77,7 +77,7 @@ public class JdbcUtil {
     }
 
     public static int[] batchUpdate(Connection conn, String sql, Object[][] argsArray) {
-        Util.echo("Update SQL: [%s], batch-size: %d, args: %s\n", sql, argsArray.length, Arrays.toString(argsArray));
+        Util.echo("Update SQL: [%s], batch-size: %d, args: %s\n", sql, argsArray.length, Arrays.toString(eachStr(argsArray)));
         PreparedStatement pstmt = prepareStatement(conn, sql);
         for (Object[] args: argsArray) {
             prepareArgs(pstmt, args);
@@ -99,6 +99,14 @@ public class JdbcUtil {
         } finally {
             close(pstmt);
         }
+    }
+
+    public static String[] eachStr(Object[][] arrayOfArrays) {
+        final String[] result = new String[arrayOfArrays.length];
+        for (int i = 0; i < arrayOfArrays.length; i++) {
+            result[i] = Arrays.toString(arrayOfArrays[i]);
+        }
+        return result;
     }
 
     public static <T> RowExtractor<T> makeColumnExtractor(final Class<T> columnClass, final int columnIndex) {

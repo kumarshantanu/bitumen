@@ -57,25 +57,27 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
     public long batchSave(Connection conn, Map<K, V> pairs) {
         final Timestamp now = Util.now();
         final long version = Util.newVersion();
-        Object[][] updateArgsArray = new Object[pairs.size()][];
-        int i = 0;
-        for (Entry<K, V> each: pairs.entrySet()) { 
-            updateArgsArray[i++] = new Object[] { each.getValue(), version, now, each.getKey() };
+        int[] rows = null;
+        {
+            final Object[][] updateArgsArray = new Object[pairs.size()][];
+            int i = 0;
+            for (Entry<K, V> each : pairs.entrySet()) {
+                updateArgsArray[i++] = new Object[] { each.getValue(), version, now, each.getKey() };
+            }
+            rows = JdbcUtil.batchUpdate(conn, upsertSql[0], updateArgsArray);
         }
-        int[] rows = JdbcUtil.batchUpdate(conn, upsertSql[0], updateArgsArray);
-        updateArgsArray = null;
         int toInsert = 0;
-        for (int j = 0; j < rows.length; j++) {
-            if (rows[j] == 0) {
+        for (int i = 0; i < rows.length; i++) {
+            if (rows[i] == 0) {
                 toInsert++;
             }
         }
         if (toInsert > 0) {
             Object[][] insertArgsArray = new Object[toInsert][];
-            i = 0;
+            int i = 0, j = 0;
             for (Entry<K, V> each: pairs.entrySet()) {
-                if (rows[i] == 0) {
-                    insertArgsArray[i] = new Object[] { each.getKey(), each.getValue(), version, now };
+                if (rows[i++] == 0) {
+                    insertArgsArray[j++] = new Object[] { each.getKey(), each.getValue(), version, now };
                 }
             }
             JdbcUtil.batchUpdate(conn, upsertSql[1], insertArgsArray);
@@ -100,7 +102,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
         {
             int i = 0;
             for (Entry<K, V> each : pairs.entrySet()) {
-                argsArray[i] = new Object[] { each.getValue(), newVersion, now,
+                argsArray[i++] = new Object[] { each.getValue(), newVersion, now,
                         each.getKey(), version };
             }
         }
@@ -119,7 +121,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
         {
             int i = 0;
             for (KeyValueVersion<K, V> each : triplets) {
-                argsArray[i] = new Object[] { each.value, newVersion, now,
+                argsArray[i++] = new Object[] { each.value, newVersion, now,
                         each.key, each.version };
             }
         }

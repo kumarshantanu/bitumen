@@ -129,6 +129,14 @@ public class Util {
         return sb.toString();
     }
 
+    public static <K, V> List<V> getVals(Map<K, V> map, List<K> keys) {
+        final List<V> vals = new ArrayList<V>(keys.size());
+        for (K each: keys) {
+            vals.add(map.get(each));
+        }
+        return vals;
+    }
+
     public static <T> List<T> removeNull(List<T> withNull) {
         final List<T> result = new ArrayList<T>();
         for (T each: withNull) {

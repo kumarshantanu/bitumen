@@ -19,7 +19,7 @@ public class GenericOpsRead<K, V> implements IOpsRead<K, V> {
 
     public final String
     versionFormat          = "SELECT $versionColname FROM $tableName WHERE $keyColname = ?",    // key
-    multiVersionFormat     = "SELECT $keyColname, $versionColname FROM $tableName WHERE $keyVersionExpression", // keys-placeholder
+    multiVersionFormat     = "SELECT $keyColname, $versionColname FROM $tableName WHERE $keyColname IN ($keysPlaceholder)", // keys-placeholder
     condVersionFormat      = "SELECT COUNT(*) FROM $tableName WHERE $keyColname = ? AND $versionColname = ?", // key, old-version
     condMultiVersionFormat = "SELECT $keyColname, COUNT(*) FROM $tableName WHERE $keyVersionExpression GROUP BY $keyColname", // key, old-version
     fetchFormat            = "SELECT $valueColname FROM $tableName WHERE $keyColname = ?",  // key
@@ -77,8 +77,7 @@ public class GenericOpsRead<K, V> implements IOpsRead<K, V> {
 
     protected String putKeysPlaceholder(String format, int count) {
         final String keysPlaceholder = JdbcUtil.argPlaceholders(count);
-        return Util.groovyReplace(batchFetchAllFormat,
-                Collections.singletonMap("keysPlaceholder", keysPlaceholder), true);
+        return Util.groovyReplace(format, Collections.singletonMap("keysPlaceholder", keysPlaceholder), true);
     }
 
     protected Map<String, String> keyVersionExpression(int count) {

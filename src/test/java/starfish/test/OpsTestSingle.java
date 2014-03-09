@@ -1,7 +1,7 @@
 package starfish.test;
 
 import java.sql.Connection;
-import java.util.List;
+import java.util.Arrays;
 
 import javax.sql.DataSource;
 
@@ -12,27 +12,15 @@ import starfish.IOpsWrite;
 import starfish.helper.ConnectionActivity;
 import starfish.helper.ConnectionActivityNoResult;
 import starfish.helper.DataSourceTemplate;
-import starfish.helper.JdbcUtil;
 import starfish.helper.Util;
 import starfish.type.ValueVersion;
 
-public class OpsSingleTest implements OpsTestSuite {
+public class OpsTestSingle implements OpsTestSuite {
 
-    public final DataSource ds;
     public final DataSourceTemplate dst;
 
-    public OpsSingleTest(DataSource ds) {
-        this.ds = ds;
+    public OpsTestSingle(DataSource ds) {
         this.dst = new DataSourceTemplate(ds);
-    }
-
-    private <K> long findRowCountForKey(final K key) {
-        return JdbcUtil.withConnection(ds, new ConnectionActivity<List<Long>>() {
-            public List<Long> execute(Connection conn) {
-                return JdbcUtil.queryVals(conn, "SELECT COUNT(*) FROM session WHERE skey = ?", new Object[] { key },
-                        JdbcUtil.makeColumnExtractor(Long.class, 1));
-            }
-        }).get(0).longValue();
     }
 
     private String readValue(final IOpsRead<Integer, String> reader, final Integer key) {
@@ -60,7 +48,7 @@ public class OpsSingleTest implements OpsTestSuite {
         Assert.assertEquals(newValue1, readValue(reader, key));
 
         // make sure database table has the value
-        Assert.assertEquals(1, findRowCountForKey(key));
+        Assert.assertEquals(1, TestUtil.findRowCountForKeys(dst, Arrays.asList(key)));
 
         // ----- UPDATE (SAVE) -----
 
@@ -78,7 +66,7 @@ public class OpsSingleTest implements OpsTestSuite {
         Assert.assertEquals(newValue2, readValue(reader, key));
 
         // make sure database table has the value
-        Assert.assertEquals(1, findRowCountForKey(key));
+        Assert.assertEquals(1, TestUtil.findRowCountForKeys(dst, Arrays.asList(key)));
 
         // ----- DELETE -----
 
@@ -93,7 +81,7 @@ public class OpsSingleTest implements OpsTestSuite {
         Assert.assertNull(readValue(reader, key));
 
         // make sure database table does not have the value
-        Assert.assertEquals(0, findRowCountForKey(key));
+        Assert.assertEquals(0, TestUtil.findRowCountForKeys(dst, Arrays.asList(key)));
     }
 
     public void versionTest(final IOpsWrite<Integer, String> writer, final IOpsRead<Integer, String> reader) {
