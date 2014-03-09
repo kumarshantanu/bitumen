@@ -76,8 +76,8 @@ import starfish.type.TableMetadata;
 
 public class Example {
 
-    final TableMetadata meta = TableMetadata.create("session", "id", "value", "version",
-            "updated");
+    final TableMetadata meta = TableMetadata.create("session", "id", "value",
+            "version", "updated");
     final IOpsWrite<String, String> writer = new GenericOpsWrite<String, String>(meta);
     final IOpsRead<String, String> reader = new GenericOpsRead<String, String>(meta,
             String.class, String.class);
