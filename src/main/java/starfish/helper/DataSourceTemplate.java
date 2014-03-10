@@ -18,4 +18,20 @@ public class DataSourceTemplate {
         JdbcUtil.withConnectionNoResult(dataSource, activity);
     }
 
+    public <V> V withTransaction(ConnectionActivity<V> activity, int txnIsolation) {
+        return JdbcUtil.withTransaction(dataSource, txnIsolation, activity);
+    }
+
+    public <V> V withTransaction(ConnectionActivity<V> activity) {
+        return JdbcUtil.withTransaction(dataSource, activity);
+    }
+
+    public void withTransactionNoResult(ConnectionActivityNoResult activity, int txnIsolation) {
+        JdbcUtil.withTransactionNoResult(dataSource, txnIsolation, activity);
+    }
+
+    public void withTransactionNoResult(ConnectionActivityNoResult activity) {
+        JdbcUtil.withTransactionNoResult(dataSource, activity);
+    }
+
 }

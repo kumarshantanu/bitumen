@@ -41,6 +41,25 @@ public class JdbcUtil {
         }
     }
 
+    public static <V> V withTransaction(DataSource dataSource,
+            final int txnIsolation, final ConnectionActivity<V> activity) {
+        return withConnection(dataSource, new ConnectionActivity<V>() {
+            public V execute(Connection conn) {
+                requireTransaction(conn, txnIsolation);
+                return activity.execute(conn);
+            }
+        });
+    }
+
+    public static <V> V withTransaction(DataSource dataSource, final ConnectionActivity<V> activity) {
+        return withConnection(dataSource, new ConnectionActivity<V>() {
+            public V execute(Connection conn) {
+                requireTransaction(conn);
+                return activity.execute(conn);
+            }
+        });
+    }
+
     public static void withConnectionNoResult(DataSource dataSource, ConnectionActivityNoResult activity) {
         final Connection conn = getConnection(dataSource);
         try {
@@ -61,6 +80,25 @@ public class JdbcUtil {
         } finally {
             close(conn);
         }
+    }
+
+    public static void withTransactionNoResult(DataSource dataSource,
+            final int txnIsolation, final ConnectionActivityNoResult activity) {
+        withConnectionNoResult(dataSource, new ConnectionActivityNoResult() {
+            public void execute(Connection conn) {
+                requireTransaction(conn, txnIsolation);
+                activity.execute(conn);
+            }
+        });
+    }
+
+    public static void withTransactionNoResult(DataSource dataSource, final ConnectionActivityNoResult activity) {
+        withConnectionNoResult(dataSource, new ConnectionActivityNoResult() {
+            public void execute(Connection conn) {
+                requireTransaction(conn);
+                activity.execute(conn);
+            }
+        });
     }
 
     public static int update(Connection conn, String sql, Object[] args) {
