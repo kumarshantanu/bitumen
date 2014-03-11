@@ -10,14 +10,18 @@ public class TableMetadata implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public final String tableName, keyColname, valueColname, versionColname, timestampColname;
+    public final String tableName, keyColname, valueColname, versionColname,
+    createTimestampColname, updateTimestampColname;
 
     public TableMetadata(Map<String, String> names) {
         this.tableName = Util.notNull(names.get("tableName"), "tableName must not be null");
         this.keyColname = Util.notNull(names.get("keyColname"), "keyColname must not be null");
         this.valueColname = Util.notNull(names.get("valueColname"), "valueColname must not be null");
         this.versionColname = Util.notNull(names.get("versionColname"), "versionColname must not be null");
-        this.timestampColname = Util.notNull(names.get("timestampColname"), "timestampColname must not be null");
+        this.createTimestampColname = Util.notNull(names.get("createTimestampColname"),
+                "createTimestampColname must not be null");
+        this.updateTimestampColname = Util.notNull(names.get("updateTimestampColname"),
+                "updateTimestampColname must not be null");
     }
 
     public static TableMetadata create(String tableName) {
@@ -26,18 +30,20 @@ public class TableMetadata implements Serializable {
         names.put("keyColname", "key");
         names.put("valueColname", "value");
         names.put("versionColname", "version");
-        names.put("timestampColname", "updated");
+        names.put("createTimestampColname", "created");
+        names.put("updateTimestampColname", "updated");
         return new TableMetadata(names);
     }
 
     public static TableMetadata create(String tableName, String keyColname, String valueColname, String versionColname,
-            String timestampColname) {
+            String createTimestampColname, String updateTimestampColname) {
         Map<String, String> names = new HashMap<String, String>();
         names.put("tableName", tableName);
         names.put("keyColname", keyColname);
         names.put("valueColname", valueColname);
         names.put("versionColname", versionColname);
-        names.put("timestampColname", timestampColname);
+        names.put("createTimestampColname", createTimestampColname);
+        names.put("updateTimestampColname", updateTimestampColname);
         return new TableMetadata(names);
     }
 
@@ -55,20 +61,23 @@ public class TableMetadata implements Serializable {
         result.put("keyColname", keyColname);
         result.put("valueColname", valueColname);
         result.put("versionColname", versionColname);
-        result.put("timestampColname", timestampColname);
+        result.put("updateTimestampColname", updateTimestampColname);
+        result.put("createTimestampColname", createTimestampColname);
         return result;
     }
 
     @Override
     public String toString() {
-        return String.format("tableName=%s, keyColname=%s, valueColname=%s, versionColname=%s, timestampColname=%s",
-                tableName, keyColname, valueColname, versionColname, timestampColname);
+        return String.format(
+                "tableName=%s, keyColname=%s, valueColname=%s, versionColname=%s,"
+                + " createTimestampColname=%s, updateTimestampColname=%s",
+                tableName, keyColname, valueColname, versionColname, createTimestampColname, updateTimestampColname);
     }
 
     @Override
     public int hashCode() {
-        return (tableName + '|' + keyColname + '|' + valueColname + '|' + versionColname + '|' + timestampColname)
-                .toLowerCase().hashCode();
+        return (tableName + '|' + keyColname + '|' + valueColname + '|' + versionColname + '|' + createTimestampColname
+                + '|' + updateTimestampColname).toLowerCase().hashCode();
     }
 
     @Override
@@ -81,7 +90,8 @@ public class TableMetadata implements Serializable {
                 keyColname.equalsIgnoreCase(that.keyColname) &&
                 valueColname.equalsIgnoreCase(that.valueColname) &&
                 versionColname.equalsIgnoreCase(that.versionColname) &&
-                timestampColname.equalsIgnoreCase(that.timestampColname);
+                createTimestampColname.equalsIgnoreCase(that.createTimestampColname) &&
+                updateTimestampColname.equalsIgnoreCase(that.updateTimestampColname);
     }
 
 }

@@ -17,9 +17,9 @@ import starfish.type.TableMetadata;
 public class MysqlOpsWrite<K, V> implements IOpsWrite<K, V> {
 
     public static final String
-    upsertFormat = "INSERT INTO $tableName ($keyColname, $valueColname, $versionColname, $timestampColname)"
-            + " VALUES (?, ?, ?, $timestampValuePlaceholder)"
-            + " ON DUPLICATE KEY UPDATE $valueColname = ?, $versionColname = ?, $timestampColname = $timestampValuePlaceholder";
+    upsertFormat = "INSERT INTO $tableName ($keyColname, $valueColname, $versionColname, $createTimestampColname, $updateTimestampColname)"
+            + " VALUES (?, ?, ?, $timestampValuePlaceholder, $timestampValuePlaceholder)"
+            + " ON DUPLICATE KEY UPDATE $valueColname = ?, $versionColname = ?, $updateTimestampColname = $timestampValuePlaceholder";
 
     public final String upsertSql;
 
@@ -40,7 +40,7 @@ public class MysqlOpsWrite<K, V> implements IOpsWrite<K, V> {
         final long version = Util.newVersion();
         final Timestamp now = Util.now();
         JdbcUtil.update(conn, upsertSql, populateTimestamp?
-                new Object[] { key, value, version, now, value, version, now }:
+                new Object[] { key, value, version, now, now, value, version, now }:
                     new Object[] { key, value, version, value, version });
         return version;
     }
@@ -54,7 +54,7 @@ public class MysqlOpsWrite<K, V> implements IOpsWrite<K, V> {
             final K key = entry.getKey();
             final V value = entry.getValue();
             argsArray[i++] = populateTimestamp?
-                    new Object[] { key, value, version, now, value, version, now }:
+                    new Object[] { key, value, version, now, now, value, version, now }:
                         new Object[] { key, value, version, value, version };
         }
         JdbcUtil.batchUpdate(conn, upsertSql, argsArray);

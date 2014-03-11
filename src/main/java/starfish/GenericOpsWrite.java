@@ -14,14 +14,14 @@ import starfish.type.TableMetadata;
 public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
 
     public static final String[] upsertFormat = {
-            "UPDATE $tableName SET $valueColname = ?, $versionColname = ?, $timestampColname = ? WHERE $keyColname = ?", // val, version, timestamp, key
-            "INSERT INTO $tableName ($keyColname, $valueColname, $versionColname, $timestampColname) VALUES (?, ?, ?, ?)" // key, val, version, timestamp
+            "UPDATE $tableName SET $valueColname = ?, $versionColname = ?, $updateTimestampColname = ? WHERE $keyColname = ?", // val, version, timestamp, key
+            "INSERT INTO $tableName ($keyColname, $valueColname, $versionColname, $createTimestampColname, $updateTimestampColname) VALUES (?, ?, ?, ?, ?)" // key, val, version, timestamp[1,2]
     };
 
     public static final String
-    swapFormat       = "UPDATE $tableName SET $valueColname = ?, $versionColname = ?, $timestampColname = ?"
+    swapFormat       = "UPDATE $tableName SET $valueColname = ?, $versionColname = ?, $updateTimestampColname = ?"
             + " WHERE $keyColname = ? AND $versionColname = ?", // val, ver, timestamp, key, old-ver
-    touchFormat      = "UPDATE $tableName SET $versionColname = ?, $timestampColname = ? WHERE $keyColname = ?", // version, timestamp, key
+    touchFormat      = "UPDATE $tableName SET $versionColname = ?, $updateTimestampColname = ? WHERE $keyColname = ?", // version, timestamp, key
     versionFormat    = "SELECT $versionColname FROM $tableName WHERE $keyColname = ?",    // key
     deleteFormat     = "DELETE FROM $tableName WHERE $keyColname = ?",  // key
     condDeleteFormat = "DELETE FROM $tableName WHERE $keyColname = ? AND $versionColname = ?"; // key, old-version
@@ -45,7 +45,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
         final Timestamp now = Util.now();
         int rows = JdbcUtil.update(conn, upsertSql[0], new Object[] { value, version, now, key });
         if (rows == 0) {
-            JdbcUtil.update(conn, upsertSql[1], new Object[] { key, value, version, now });
+            JdbcUtil.update(conn, upsertSql[1], new Object[] { key, value, version, now, now });
         }
         return version;
     }
@@ -73,7 +73,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
             int i = 0, j = 0;
             for (Entry<K, V> each: pairs.entrySet()) {
                 if (rows[i++] == 0) {
-                    insertArgsArray[j++] = new Object[] { each.getKey(), each.getValue(), version, now };
+                    insertArgsArray[j++] = new Object[] { each.getKey(), each.getValue(), version, now, now };
                 }
             }
             JdbcUtil.batchUpdate(conn, upsertSql[1], insertArgsArray);

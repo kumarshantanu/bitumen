@@ -19,7 +19,8 @@ import starfish.type.TableMetadata;
 
 public class TestUtil {
 
-    public static final TableMetadata meta = TableMetadata.create("session", "skey", "value", "version", "updated");
+    public static final TableMetadata meta = TableMetadata.create("session", "skey", "value", "version",
+            "created", "updated");
 
     public static Properties loadProperties() {
         InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("database.properties");
@@ -50,7 +51,8 @@ public class TestUtil {
     public static List<DataSource> makeSlaveTestDataSources() {
         final Properties properties = loadProperties();
         final String slavePropertyPrefixesStr = properties.getProperty("slave.property.prefixes");
-        final String[] slavePropertyPrefixes = slavePropertyPrefixesStr != null? slavePropertyPrefixesStr.split(","): new String[0];
+        final String[] slavePropertyPrefixes =
+                slavePropertyPrefixesStr != null? slavePropertyPrefixesStr.split(","): new String[0];
         final List<DataSource> result = new ArrayList<DataSource>(slavePropertyPrefixes.length);
         for (int i = 0; i < slavePropertyPrefixes.length; i++) {
             final String prefix = slavePropertyPrefixes[i].trim();
