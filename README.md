@@ -32,6 +32,7 @@ value columns. The columns are:
 | Key     |    Any    | PRIMARY KEY |
 | Value   |    Any    | NOT NULL    |
 | Version |    Long   | NOT NULL    |
+| Created | Timestamp | NOT NULL    |
 | Updated | Timestamp | NOT NULL    |
 
 ##### Minimal MySQL example:
@@ -41,6 +42,7 @@ CREATE TABLE session (
   id      VARCHAR(50) NOT NULL PRIMARY KEY,
   value   TEXT        NOT NULL,
   version BIGINT      NOT NULL,
+  created DATETIME    NOT NULL,
   updated DATETIME    NOT NULL
 ) ENGINE=InnoDB;
 ```
@@ -52,6 +54,7 @@ CREATE TABLE session (
   id      VARCHAR(50) NOT NULL PRIMARY KEY,
   value   TEXT        NOT NULL,
   version BIGINT      NOT NULL,
+  created DATETIME    NOT NULL,
   updated DATETIME    NOT NULL,
   INDEX updated_index (updated) -- for faster manual search
 ) ENGINE=InnoDB
@@ -77,7 +80,7 @@ import starfish.type.TableMetadata;
 public class Example {
 
     final TableMetadata meta = TableMetadata.create("session", "id", "value",
-            "version", "updated");
+            "version", "created", "updated");
     final IOpsWrite<String, String> writer = new GenericOpsWrite<String, String>(meta);
     final IOpsRead<String, String> reader = new GenericOpsRead<String, String>(meta,
             String.class, String.class);
