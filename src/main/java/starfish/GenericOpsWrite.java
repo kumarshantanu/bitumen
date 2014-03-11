@@ -23,21 +23,17 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
             + " WHERE $keyColname = ? AND $versionColname = ?", // val, ver, timestamp, key, old-ver
     touchFormat      = "UPDATE $tableName SET $versionColname = ?, $timestampColname = ? WHERE $keyColname = ?", // version, timestamp, key
     versionFormat    = "SELECT $versionColname FROM $tableName WHERE $keyColname = ?",    // key
-    condFetchFormat  = "SELECT $valueColname FROM $tableName WHERE $keyColname = ? AND $versionColname = ?", // key, old-version
-    fetchFormat      = "SELECT $valueColname FROM $tableName WHERE $keyColname = ?", // key
     deleteFormat     = "DELETE FROM $tableName WHERE $keyColname = ?",  // key
     condDeleteFormat = "DELETE FROM $tableName WHERE $keyColname = ? AND $versionColname = ?"; // key, old-version
 
     public final String[] upsertSql;
-    public final String swapSql, touchSql, versionSql, condFetchSql, fetchSql, deleteSql, condDeleteSql;
+    public final String swapSql, touchSql, versionSql, deleteSql, condDeleteSql;
 
     public GenericOpsWrite(final TableMetadata meta) {
         this.upsertSql = new String[] { meta.groovyReplace(upsertFormat[0]), meta.groovyReplace(upsertFormat[1]) };
         this.swapSql       = meta.groovyReplace(swapFormat);
         this.touchSql      = meta.groovyReplace(touchFormat);
         this.versionSql    = meta.groovyReplace(versionFormat);
-        this.condFetchSql  = meta.groovyReplace(condFetchFormat);
-        this.fetchSql      = meta.groovyReplace(fetchFormat);
         this.deleteSql     = meta.groovyReplace(deleteFormat);
         this.condDeleteSql = meta.groovyReplace(condDeleteFormat);
     }
