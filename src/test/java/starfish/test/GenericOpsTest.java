@@ -49,6 +49,16 @@ public class GenericOpsTest {
     }
 
     @Test
+    public void genericInsertTest() {
+        opsTestSingle.insertTest(writer, reader);
+    }
+
+    @Test
+    public void genericBatchInsertTest() {
+        opsTestBatch.insertTest(writer, reader);
+    }
+
+    @Test
     public void genericCrudTest() {
         opsTestSingle.crudTest(writer, reader);
     }

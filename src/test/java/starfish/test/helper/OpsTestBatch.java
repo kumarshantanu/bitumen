@@ -40,6 +40,37 @@ public class OpsTestBatch implements OpsTestSuite {
         return result;
     }
 
+    public void insertTest(final IOpsWrite<Integer, String> writer, final IOpsRead<Integer, String> reader) {
+        // write (actually insert, because the value doesn't exist) key-value pairs
+        final List<Integer> keys = Arrays.asList(1, 2, 3);
+        final List<String> vals1 = Arrays.asList("abc", "bcd", "cde");
+        final Long version1 = dst.withConnection(new ConnectionActivity<Long>() {
+            public Long execute(Connection conn) {
+                return writer.batchInsert(conn, Util.zipmap(keys, vals1));
+            }
+        });
+        Assert.assertNotNull(version1);
+
+        // read value for given key
+        Assert.assertEquals(vals1, readValues(reader, keys));
+
+        // make sure database table has the value
+        Assert.assertEquals(3, TestUtil.findRowCountForKeys(dst, keys));
+
+        // attempt duplicate insert, which should fail
+        boolean exception = false;
+        try {
+            dst.withConnection(new ConnectionActivity<Long>() {
+                public Long execute(Connection conn) {
+                    return writer.batchInsert(conn, Util.zipmap(keys, vals1));
+                }
+            });
+        } catch(IllegalStateException e) {
+            exception = true;
+        }
+        Assert.assertTrue(exception);
+    }
+
     public void crudTest(final IOpsWrite<Integer, String> writer, IOpsRead<Integer, String> reader) {
         // ----- INSERT (SAVE) -----
 

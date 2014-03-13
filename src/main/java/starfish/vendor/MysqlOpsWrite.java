@@ -34,6 +34,14 @@ public class MysqlOpsWrite<K, V> implements IOpsWrite<K, V> {
         this.populateTimestamp = !useMySQLTimestamp;
     }
 
+    public long insert(Connection conn, K key, V value) {
+        return generic.insert(conn, key, value);
+    }
+
+    public long batchInsert(Connection conn, Map<K, V> pairs) {
+        return generic.batchInsert(conn, pairs);
+    }
+
     // ---- save, regardless of whether they already exist ----
 
     public long save(Connection conn, K key, V value) {

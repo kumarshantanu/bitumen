@@ -13,12 +13,11 @@ import starfish.type.TableMetadata;
 
 public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
 
-    public static final String[] upsertFormat = {
-            "UPDATE $tableName SET $valueColname = ?, $versionColname = ?, $updateTimestampColname = ? WHERE $keyColname = ?", // val, version, timestamp, key
-            "INSERT INTO $tableName ($keyColname, $valueColname, $versionColname, $createTimestampColname, $updateTimestampColname) VALUES (?, ?, ?, ?, ?)" // key, val, version, timestamp[1,2]
-    };
-
     public static final String
+    insertFormat     = "INSERT INTO $tableName ($keyColname, $valueColname, $versionColname, $createTimestampColname,"
+            + " $updateTimestampColname) VALUES (?, ?, ?, ?, ?)", // key, val, version, timestamp[1,2]
+    updateFormat     = "UPDATE $tableName SET $valueColname = ?, $versionColname = ?, $updateTimestampColname = ?"
+            + " WHERE $keyColname = ?", // val, version, timestamp, key
     swapFormat       = "UPDATE $tableName SET $valueColname = ?, $versionColname = ?, $updateTimestampColname = ?"
             + " WHERE $keyColname = ? AND $versionColname = ?", // val, ver, timestamp, key, old-ver
     touchFormat      = "UPDATE $tableName SET $versionColname = ?, $updateTimestampColname = ? WHERE $keyColname = ?", // version, timestamp, key
@@ -26,11 +25,11 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
     deleteFormat     = "DELETE FROM $tableName WHERE $keyColname = ?",  // key
     condDeleteFormat = "DELETE FROM $tableName WHERE $keyColname = ? AND $versionColname = ?"; // key, old-version
 
-    public final String[] upsertSql;
-    public final String swapSql, touchSql, versionSql, deleteSql, condDeleteSql;
+    public final String insertSql, updateSql, swapSql, touchSql, versionSql, deleteSql, condDeleteSql;
 
     public GenericOpsWrite(final TableMetadata meta) {
-        this.upsertSql = new String[] { meta.groovyReplace(upsertFormat[0]), meta.groovyReplace(upsertFormat[1]) };
+        this.insertSql     = meta.groovyReplace(insertFormat);
+        this.updateSql     = meta.groovyReplace(updateFormat);
         this.swapSql       = meta.groovyReplace(swapFormat);
         this.touchSql      = meta.groovyReplace(touchFormat);
         this.versionSql    = meta.groovyReplace(versionFormat);
@@ -38,14 +37,33 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
         this.condDeleteSql = meta.groovyReplace(condDeleteFormat);
     }
 
+    public long insert(Connection conn, K key, V value) {
+        final long version = Util.newVersion();
+        final Timestamp now = Util.now();
+        JdbcUtil.update(conn, insertSql, new Object[] { key, value, version, now, now });
+        return version;
+    }
+
+    public long batchInsert(Connection conn, Map<K, V> pairs) {
+        final Timestamp now = Util.now();
+        final long version = Util.newVersion();
+        final Object[][] insertArgsArray = new Object[pairs.size()][];
+        int i = 0;
+        for (Entry<K, V> each: pairs.entrySet()) {
+            insertArgsArray[i++] = new Object[] { each.getKey(), each.getValue(), version, now, now };
+        }
+        JdbcUtil.batchUpdate(conn, insertSql, insertArgsArray);
+        return version;
+    }
+
     // ---- save, regardless of whether they already exist ----
 
     public long save(Connection conn, K key, V value) {
         final long version = Util.newVersion();
         final Timestamp now = Util.now();
-        int rows = JdbcUtil.update(conn, upsertSql[0], new Object[] { value, version, now, key });
+        int rows = JdbcUtil.update(conn, updateSql, new Object[] { value, version, now, key });
         if (rows == 0) {
-            JdbcUtil.update(conn, upsertSql[1], new Object[] { key, value, version, now, now });
+            JdbcUtil.update(conn, insertSql, new Object[] { key, value, version, now, now });
         }
         return version;
     }
@@ -60,7 +78,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
             for (Entry<K, V> each : pairs.entrySet()) {
                 updateArgsArray[i++] = new Object[] { each.getValue(), version, now, each.getKey() };
             }
-            rows = JdbcUtil.batchUpdate(conn, upsertSql[0], updateArgsArray);
+            rows = JdbcUtil.batchUpdate(conn, updateSql, updateArgsArray);
         }
         int toInsert = 0;
         for (int i = 0; i < rows.length; i++) {
@@ -76,7 +94,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
                     insertArgsArray[j++] = new Object[] { each.getKey(), each.getValue(), version, now, now };
                 }
             }
-            JdbcUtil.batchUpdate(conn, upsertSql[1], insertArgsArray);
+            JdbcUtil.batchUpdate(conn, insertSql, insertArgsArray);
         }
         return version;
     }

@@ -8,6 +8,12 @@ import starfish.type.KeyValueVersion;
 
 public interface IOpsWrite<K, V> {
 
+    // ---- insert (fails if key already exists) ----
+
+    public long insert(Connection conn, K key, V value);
+
+    public long batchInsert(Connection conn, Map<K, V> pairs);
+
     // ---- save, regardless of whether they already exist ----
 
     public long save(Connection conn, K key, V value);

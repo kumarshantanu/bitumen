@@ -50,6 +50,22 @@ public class MysqlOpsTest {
     }
 
     @Test
+    public void mysqlInsertTest() {
+        if (TestUtil.isMysqlTestEnabled()) {
+            System.out.println("Running mysqlInsertTest()");
+            opsTestSingle.insertTest(writer, reader);
+        }
+    }
+
+    @Test
+    public void mysqlBatchInsertTest() {
+        if (TestUtil.isMysqlTestEnabled()) {
+            System.out.println("Running mysqlBatchInsertTest()");
+            opsTestBatch.insertTest(writer, reader);
+        }
+    }
+
+    @Test
     public void mysqlCrudTest() {
         if (TestUtil.isMysqlTestEnabled()) {
             System.out.println("Running mysqlCrudTest()");

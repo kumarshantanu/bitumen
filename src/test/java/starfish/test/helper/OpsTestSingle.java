@@ -31,6 +31,36 @@ public class OpsTestSingle implements OpsTestSuite {
         });
     }
 
+    public void insertTest(final IOpsWrite<Integer, String> writer, final IOpsRead<Integer, String> reader) {
+        final int key1 = 1;
+        final String val1 = "abc";
+        final Long version1 = dst.withConnection(new ConnectionActivity<Long>() {
+            public Long execute(Connection conn) {
+                return writer.insert(conn, key1, val1);
+            }
+        });
+        Assert.assertNotNull(version1);
+
+        // read value for given key
+        Assert.assertEquals(val1, readValue(reader, key1));
+
+        // make sure database table has the value
+        Assert.assertEquals(1, TestUtil.findRowCountForKeys(dst, Arrays.asList(key1)));
+
+        // attempt a duplicate insert which should fail
+        boolean exception = false;
+        try {
+            dst.withConnection(new ConnectionActivity<Long>() {
+                public Long execute(Connection conn) {
+                    return writer.insert(conn, key1, val1);
+                }
+            });
+        } catch(IllegalStateException e) {
+            exception = true;
+        }
+        Assert.assertTrue(exception);
+    }
+
     public void crudTest(final IOpsWrite<Integer, String> writer, final IOpsRead<Integer, String> reader) {
         // ----- INSERT (SAVE) -----
 
