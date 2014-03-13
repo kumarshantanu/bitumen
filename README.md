@@ -17,7 +17,7 @@ Use the following Maven coordinates to include in your project.
     <dependency>
       <groupId>kumarshantanu</groupId>
       <artifactId>starfish</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.1.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```
@@ -91,7 +91,7 @@ public class Example {
     }
 
     public void savePair() {
-        final Long version = dst.withConnection(new ConnectionActivity<Long>() {
+        final Long version = dst.withTransaction(new ConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.save(conn, "ABCD",
                         "{\"email\": \"foo@bar.com\", \"age\": 29}");
