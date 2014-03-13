@@ -18,12 +18,17 @@ import starfish.type.ValueVersion;
 public class ReplicatedOpsRead<K, V> implements IOpsRead<K, V> {
 
     public final ReplicationSlavesPointer slavesPointer;
-    public final GenericOpsRead<K, V> generic;
+    public final IOpsRead<K, V> reader;
 
     public ReplicatedOpsRead(final TableMetadata meta, Class<K> keyClass, Class<V> valClass,
             ReplicationSlavesPointer slavesPointer) {
-        this.generic = new GenericOpsRead<K, V>(meta, keyClass, valClass);
+        this(meta, keyClass, valClass, slavesPointer, new GenericOpsRead<K, V>(meta, keyClass, valClass));
+    }
+
+    public ReplicatedOpsRead(final TableMetadata meta, Class<K> keyClass, Class<V> valClass,
+            ReplicationSlavesPointer slavesPointer, IOpsRead<K, V> orig) {
         this.slavesPointer = slavesPointer;
+        this.reader = orig;
     }
 
     private volatile int index = 0;
@@ -45,21 +50,21 @@ public class ReplicatedOpsRead<K, V> implements IOpsRead<K, V> {
     // ---- contains ----
 
     public Long contains(Connection conn, K key) {
-        return generic.contains(conn, key);
+        return reader.contains(conn, key);
     }
 
     public List<Long> batchContains(Connection conn, List<K> keys) {
-        return generic.batchContains(conn, keys);
+        return reader.batchContains(conn, keys);
     }
 
     // ---- containsVersion (requires old version) ----
 
     public boolean containsVersion(Connection conn, K key, long version) {
-        return generic.containsVersion(conn, key, version);
+        return reader.containsVersion(conn, key, version);
     }
 
     public Map<K, Boolean> batchContainsVersion(Connection conn, Map<K, Long> keyVersions) {
-        return generic.batchContainsVersion(conn, keyVersions);
+        return reader.batchContainsVersion(conn, keyVersions);
     }
 
     // ---- read ----
@@ -71,15 +76,15 @@ public class ReplicatedOpsRead<K, V> implements IOpsRead<K, V> {
         }
         V copy = JdbcUtil.withConnection(slave, new ConnectionActivity<V>() {
             public V execute(Connection conn) {
-                return generic.readForVersion(conn, key, latest);
+                return reader.readForVersion(conn, key, latest);
             }
         });
-        return copy == null? generic.read(conn, key): copy;
+        return copy == null? reader.read(conn, key): copy;
     }
 
     public V read(Connection conn, K key) {
         final DataSource slave = nextSlaveDataSource();
-        return slave == null? generic.read(conn, key): consistentRead(conn, slave, key);
+        return slave == null? reader.read(conn, key): consistentRead(conn, slave, key);
     }
 
     public Map<K, V> consistentBatchRead(Connection conn, DataSource slave, final List<K> keys) {
@@ -93,7 +98,7 @@ public class ReplicatedOpsRead<K, V> implements IOpsRead<K, V> {
         }
         final Map<K, V> copy = JdbcUtil.withConnection(slave, new ConnectionActivity<Map<K, V>>() {
             public Map<K, V> execute(Connection conn) {
-                return generic.batchRead(conn, keys);
+                return reader.batchRead(conn, keys);
             }
         });
         final List<K> missing = new ArrayList<K>(keys);
@@ -101,7 +106,7 @@ public class ReplicatedOpsRead<K, V> implements IOpsRead<K, V> {
             missing.remove(key);
         }
         if (!missing.isEmpty()) {
-            final Map<K, V> master = generic.batchRead(conn, missing);
+            final Map<K, V> master = reader.batchRead(conn, missing);
             copy.putAll(master);
         }
         return copy;
@@ -109,7 +114,7 @@ public class ReplicatedOpsRead<K, V> implements IOpsRead<K, V> {
 
     public Map<K, V> batchRead(Connection conn, List<K> keys) {
         final DataSource slave = nextSlaveDataSource();
-        return slave == null? generic.batchRead(conn, keys): consistentBatchRead(conn, slave, keys);
+        return slave == null? reader.batchRead(conn, keys): consistentBatchRead(conn, slave, keys);
     }
 
     // ---- readVersion (requires old version) ----
@@ -117,21 +122,21 @@ public class ReplicatedOpsRead<K, V> implements IOpsRead<K, V> {
     public V consistentReadVersion(Connection conn, DataSource slave, final K key, final long version) {
         V copy = JdbcUtil.withConnection(slave, new ConnectionActivity<V>() {
             public V execute(Connection conn) {
-                return generic.readForVersion(conn, key, version);
+                return reader.readForVersion(conn, key, version);
             }
         });
-        return copy == null? generic.readForVersion(conn, key, version): copy;
+        return copy == null? reader.readForVersion(conn, key, version): copy;
     }
 
     public V readForVersion(Connection conn, K key, long version) {
         final DataSource slave = nextSlaveDataSource();
-        return slave == null? generic.readForVersion(conn, key, version): consistentReadVersion(conn, slave, key, version);
+        return slave == null? reader.readForVersion(conn, key, version): consistentReadVersion(conn, slave, key, version);
     }
 
     public Map<K, V> consistentBatchReadVersion(Connection conn, DataSource slave, final Map<K, Long> keyVersions) {
         final Map<K, V> copy = JdbcUtil.withConnection(slave, new ConnectionActivity<Map<K, V>>() {
             public Map<K, V> execute(Connection conn) {
-                return generic.batchReadForVersion(conn, keyVersions);
+                return reader.batchReadForVersion(conn, keyVersions);
             }
         });
         final Map<K, Long> missing = new LinkedHashMap<K, Long>(keyVersions);
@@ -139,7 +144,7 @@ public class ReplicatedOpsRead<K, V> implements IOpsRead<K, V> {
             missing.remove(key);
         }
         if (!missing.isEmpty()) {
-            final Map<K, V> master = generic.batchReadForVersion(conn, missing);
+            final Map<K, V> master = reader.batchReadForVersion(conn, missing);
             copy.putAll(master);
         }
         return copy;
@@ -147,7 +152,7 @@ public class ReplicatedOpsRead<K, V> implements IOpsRead<K, V> {
 
     public Map<K, V> batchReadForVersion(Connection conn, Map<K, Long> keyVersions) {
         final DataSource slave = nextSlaveDataSource();
-        return slave == null? generic.batchReadForVersion(conn, keyVersions):
+        return slave == null? reader.batchReadForVersion(conn, keyVersions):
             consistentBatchReadVersion(conn, slave, keyVersions);
     }
 
@@ -161,15 +166,15 @@ public class ReplicatedOpsRead<K, V> implements IOpsRead<K, V> {
         ValueVersion<V> copy = JdbcUtil.withConnection(slave,
                 new ConnectionActivity<ValueVersion<V>>() {
                     public ValueVersion<V> execute(Connection conn) {
-                        return generic.readAll(conn, key);
+                        return reader.readAll(conn, key);
                     }
                 });
-        return (copy == null || !copy.version.equals(latest)) ? generic.readAll(conn, key) : copy;
+        return (copy == null || !copy.version.equals(latest)) ? reader.readAll(conn, key) : copy;
     }
 
     public ValueVersion<V> readAll(Connection conn, K key) {
         final DataSource slave = nextSlaveDataSource();
-        return slave == null? generic.readAll(conn, key): consistentReadAll(conn, slave, key);
+        return slave == null? reader.readAll(conn, key): consistentReadAll(conn, slave, key);
     }
 
     public Map<K, ValueVersion<V>> consistentBatchReadAll(Connection conn, DataSource slave, List<K> keys) {
@@ -177,7 +182,7 @@ public class ReplicatedOpsRead<K, V> implements IOpsRead<K, V> {
         final Map<K, Long> keyVersions = Util.zipmap(keys, latest);
         final Map<K, V> slaveKeyVals = JdbcUtil.withConnection(slave, new ConnectionActivity<Map<K, V>>() {
             public Map<K, V> execute(Connection slaveConn) {
-                return generic.batchReadForVersion(slaveConn, keyVersions);
+                return reader.batchReadForVersion(slaveConn, keyVersions);
             }
         });
         final Map<K, Long> missingKeyVersions = new HashMap<K, Long>(keyVersions);
@@ -185,7 +190,7 @@ public class ReplicatedOpsRead<K, V> implements IOpsRead<K, V> {
             missingKeyVersions.remove(key);
         }
         if (!missingKeyVersions.isEmpty()) {
-            final Map<K, V> masterKeyVals = generic.batchReadForVersion(conn, missingKeyVersions);
+            final Map<K, V> masterKeyVals = reader.batchReadForVersion(conn, missingKeyVersions);
             slaveKeyVals.putAll(masterKeyVals);
         }
         final Map<K, ValueVersion<V>> result = new LinkedHashMap<K, ValueVersion<V>>();
@@ -200,7 +205,7 @@ public class ReplicatedOpsRead<K, V> implements IOpsRead<K, V> {
 
     public Map<K, ValueVersion<V>> batchReadAll(Connection conn, List<K> keys) {
         final DataSource slave = nextSlaveDataSource();
-        return slave == null? generic.batchReadAll(conn, keys): consistentBatchReadAll(conn, slave, keys);
+        return slave == null? reader.batchReadAll(conn, keys): consistentBatchReadAll(conn, slave, keys);
     }
 
 }
