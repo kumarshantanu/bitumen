@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import starfish.type.StrVals;
+
 public class Util {
 
     public static <T> T singleResult(List<T> result) {
@@ -49,13 +51,22 @@ public class Util {
     }
 
     public static String groovyReplace(String format, Map<String, String> values, boolean throwOnMissing) {
+        return embedReplace('$', format, values, throwOnMissing, false, null).str;
+    }
+
+    public static StrVals namedParamReplace(String format, Map<String, String> values) {
+        return embedReplace(':', format, values, true, true, "?");
+    }
+
+    public static StrVals embedReplace(char marker, String format, Map<String, String> values, boolean throwOnMissing,
+            boolean addToVals, String valSubstitute) {
         final int len = format.length();
         final StringBuilder sb = new StringBuilder(len);
+        final List<Object> vals = new ArrayList<Object>();
         boolean escaped = false;
         for (int i = 0; i < len; i++) {
             final char c = format.charAt(i);
-            switch (c) {
-            case '\\':
+            if (c == '\\') {
                 if (escaped) {
                     escaped = false;
                     sb.append(c);
@@ -65,16 +76,15 @@ public class Util {
                     throw new IllegalStateException("Dangling escape character found at the end of string: " + format);
                 }
                 escaped = true;
-                break;
-
-            case '$':
+            } else if (c == marker) {
                 if (escaped) {
                     escaped = false;
                     sb.append(c);
                     break;
                 }
                 if (len - i == 1) {
-                    throw new IllegalStateException("Dangling variable marker $ found at the end of string: " + format);
+                    throw new IllegalStateException(
+                            "Dangling marker " + marker + " found at the end of string: " + format);
                 }
                 final char first = format.charAt(++i);
                 if (!Character.isJavaIdentifierStart(first)) {
@@ -94,23 +104,25 @@ public class Util {
                     if (throwOnMissing) {
                         throw new IllegalArgumentException("No such key '" + nameStr + "' in: " + values.toString());
                     } else {
-                        sb.append('$').append(nameStr);
+                        sb.append(marker).append(nameStr);
                     }
                 } else {
-                    sb.append(values.get(nameStr));
+                    if (addToVals) {
+                        sb.append(valSubstitute);
+                        vals.add(values.get(nameStr));
+                    } else {
+                        sb.append(values.get(nameStr));
+                    }
                 }
                 if (i < len) {
-                    i--;  // push back index if not end-of-string, so current char is picked in next pass
+                    i--;  // push back index if not end-of-string, so that current char is picked in next pass
                 }
-                break;
-
-            default:
+            } else {
                 escaped = false;
                 sb.append(c);
-                break;
             }
         }
-        return sb.toString();
+        return new StrVals(sb.toString(), vals.toArray());
     }
 
     public static <T> boolean equals(T one, T two) {
