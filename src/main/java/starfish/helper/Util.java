@@ -137,36 +137,6 @@ public class Util {
         return vals;
     }
 
-    public static <T> List<T> removeNull(List<T> withNull) {
-        final List<T> result = new ArrayList<T>();
-        for (T each: withNull) {
-            if (each != null) {
-                result.add(each);
-            }
-        }
-        return result;
-    }
-
-    public static <T, U> List<U> removeNull(List<T> withNull, List<U> another) {
-        final List<U> result = new ArrayList<U>();
-        final int len = Math.min(withNull.size(), another.size());
-        for (int i = 0; i < len; i++) {
-            if (withNull.get(i) != null) {
-                result.add(another.get(i));
-            }
-        }
-        return result;
-    }
-
-    public static <T, U> List<U> mergeNull(List<T> withNull, List<U> newList) {
-        final List<U> result = new ArrayList<U>(withNull.size());
-        int i = 0;
-        for (T each: withNull) {
-            result.add(each == null? null: newList.get(i++));
-        }
-        return result;
-    }
-
     public static <K, V> Object[] argsArray(Map<K, V> map) {
         final Object[] result = new Object[map.size() * 2];
         int i = 0;
@@ -196,6 +166,37 @@ public class Util {
             result.put(keys.get(i), vals.get(i));
         }
         return result;
+    }
+
+    public static <K, V> Map<K, V> zipmap(K[] keys, V[] vals) {
+        final Map<K, V> result = new LinkedHashMap<K, V>();
+        final int len = Math.min(keys.length, vals.length);
+        for (int i = 0; i < len; i++) {
+            result.put(keys[i], vals[i]);
+        }
+        return result;
+    }
+
+    public static <T> T ensureSingleItem(Collection<T> coll) {
+        if (coll == null || coll.isEmpty()) {
+            throw new IllegalStateException("Expected collection of single item but found empty collection");
+        }
+        final int count = coll.size();
+        if (count > 1) {
+            throw new IllegalStateException("Expected collection of single item but found collection of size " + count);
+        }
+        return coll.iterator().next();
+    }
+
+    public static Object ensureSingleItem(Map<String, Object> map) {
+        if (map == null || map.isEmpty()) {
+            throw new IllegalStateException("Expected map of single pair but found empty map");
+        }
+        final int count = map.size();
+        if (count > 1) {
+            throw new IllegalStateException("Expected collection of single pair but found map of size " + count);
+        }
+        return map.entrySet().iterator().next().getValue();
     }
 
     public static <T> boolean areAllNull(Collection<T> coll) {
