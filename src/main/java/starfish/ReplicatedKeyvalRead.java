@@ -15,18 +15,18 @@ import starfish.helper.Util;
 import starfish.type.TableMetadata;
 import starfish.type.ValueVersion;
 
-public class ReplicatedOpsRead<K, V> implements IOpsRead<K, V> {
+public class ReplicatedKeyvalRead<K, V> implements KeyvalRead<K, V> {
 
     public final ReplicationSlavesPointer slavesPointer;
-    public final IOpsRead<K, V> reader;
+    public final KeyvalRead<K, V> reader;
 
-    public ReplicatedOpsRead(final TableMetadata meta, Class<K> keyClass, Class<V> valClass,
+    public ReplicatedKeyvalRead(final TableMetadata meta, Class<K> keyClass, Class<V> valClass,
             ReplicationSlavesPointer slavesPointer) {
-        this(meta, keyClass, valClass, slavesPointer, new GenericOpsRead<K, V>(meta, keyClass, valClass));
+        this(meta, keyClass, valClass, slavesPointer, new DefaultKeyvalRead<K, V>(meta, keyClass, valClass));
     }
 
-    public ReplicatedOpsRead(final TableMetadata meta, Class<K> keyClass, Class<V> valClass,
-            ReplicationSlavesPointer slavesPointer, IOpsRead<K, V> orig) {
+    public ReplicatedKeyvalRead(final TableMetadata meta, Class<K> keyClass, Class<V> valClass,
+            ReplicationSlavesPointer slavesPointer, KeyvalRead<K, V> orig) {
         this.slavesPointer = slavesPointer;
         this.reader = orig;
     }

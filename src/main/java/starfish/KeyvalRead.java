@@ -6,7 +6,7 @@ import java.util.Map;
 
 import starfish.type.ValueVersion;
 
-public interface IOpsRead<K, V> {
+public interface KeyvalRead<K, V> {
 
     // ---- contains ----
 

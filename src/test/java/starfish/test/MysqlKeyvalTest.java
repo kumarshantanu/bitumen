@@ -8,25 +8,25 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import starfish.GenericOpsRead;
-import starfish.IOpsRead;
-import starfish.IOpsWrite;
-import starfish.test.helper.OpsTestBatch;
-import starfish.test.helper.OpsTestSingle;
+import starfish.DefaultKeyvalRead;
+import starfish.KeyvalRead;
+import starfish.KeyvalWrite;
+import starfish.test.helper.KeyvalTestBatch;
+import starfish.test.helper.KeyvalTestSingle;
 import starfish.test.helper.TestUtil;
-import starfish.vendor.MysqlOpsWrite;
+import starfish.vendor.MysqlKeyvalWrite;
 
-public class MysqlOpsTest {
+public class MysqlKeyvalTest {
 
     private static DataSource dataSource;
-    private static OpsTestSingle opsTestSingle;
-    private static OpsTestBatch  opsTestBatch;
+    private static KeyvalTestSingle opsTestSingle;
+    private static KeyvalTestBatch  opsTestBatch;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         dataSource = TestUtil.makeTestDataSource();
-        opsTestSingle = new OpsTestSingle(dataSource);
-        opsTestBatch  = new OpsTestBatch(dataSource);
+        opsTestSingle = new KeyvalTestSingle(dataSource);
+        opsTestBatch  = new KeyvalTestBatch(dataSource);
     }
 
     @AfterClass
@@ -36,8 +36,8 @@ public class MysqlOpsTest {
         opsTestBatch  = null;
     }
 
-    final IOpsWrite<Integer, String> writer = new MysqlOpsWrite<Integer, String>(TestUtil.meta, false);
-    final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(TestUtil.meta, Integer.class, String.class);
+    final KeyvalWrite<Integer, String> writer = new MysqlKeyvalWrite<Integer, String>(TestUtil.meta, false);
+    final KeyvalRead<Integer, String> reader = new DefaultKeyvalRead<Integer, String>(TestUtil.meta, Integer.class, String.class);
 
     @Before
     public void setUp() throws Exception {

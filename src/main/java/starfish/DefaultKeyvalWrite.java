@@ -10,7 +10,7 @@ import starfish.helper.Util;
 import starfish.type.KeyValueVersion;
 import starfish.type.TableMetadata;
 
-public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
+public class DefaultKeyvalWrite<K, V> implements KeyvalWrite<K, V> {
 
     public static final String
     insertFormat     = "INSERT INTO $tableName ($keyColname, $valueColname, $versionColname, $createTimestampColname,"
@@ -28,11 +28,11 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
 
     public final JdbcWrite writer;
 
-    public GenericOpsWrite(final TableMetadata meta) {
+    public DefaultKeyvalWrite(final TableMetadata meta) {
         this(meta, new DefaultJdbcWrite());
     }
 
-    public GenericOpsWrite(final TableMetadata meta, JdbcWrite writer) {
+    public DefaultKeyvalWrite(final TableMetadata meta, JdbcWrite writer) {
         this.insertSql     = meta.groovyReplace(insertFormat);
         this.updateSql     = meta.groovyReplace(updateFormat);
         this.swapSql       = meta.groovyReplace(swapFormat);

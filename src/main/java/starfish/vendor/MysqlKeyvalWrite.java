@@ -8,14 +8,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import starfish.DefaultJdbcWrite;
-import starfish.GenericOpsWrite;
-import starfish.IOpsWrite;
+import starfish.DefaultKeyvalWrite;
+import starfish.KeyvalWrite;
 import starfish.JdbcWrite;
 import starfish.helper.Util;
 import starfish.type.KeyValueVersion;
 import starfish.type.TableMetadata;
 
-public class MysqlOpsWrite<K, V> implements IOpsWrite<K, V> {
+public class MysqlKeyvalWrite<K, V> implements KeyvalWrite<K, V> {
 
     public static final String
     upsertFormat = "INSERT INTO $tableName ($keyColname, $valueColname, $versionColname, $createTimestampColname, $updateTimestampColname)"
@@ -26,16 +26,16 @@ public class MysqlOpsWrite<K, V> implements IOpsWrite<K, V> {
 
     public final JdbcWrite writer;
 
-    public final GenericOpsWrite<K, V> generic;
+    public final DefaultKeyvalWrite<K, V> generic;
     public final boolean populateTimestamp;
 
-    public MysqlOpsWrite(TableMetadata meta, boolean useMySQLTimestamp) {
+    public MysqlKeyvalWrite(TableMetadata meta, boolean useMySQLTimestamp) {
         this(meta, useMySQLTimestamp, new DefaultJdbcWrite());
     }
 
-    public MysqlOpsWrite(TableMetadata meta, boolean useMySQLTimestamp, JdbcWrite writer) {
+    public MysqlKeyvalWrite(TableMetadata meta, boolean useMySQLTimestamp, JdbcWrite writer) {
         this.writer = writer;
-        this.generic = new GenericOpsWrite<K, V>(meta);
+        this.generic = new DefaultKeyvalWrite<K, V>(meta);
         final String template = meta.groovyReplaceKeep(upsertFormat);
         this.upsertSql = Util.groovyReplace(template,
                 Collections.singletonMap("timestampValuePlaceholder", useMySQLTimestamp? "NOW()": "?"), true);

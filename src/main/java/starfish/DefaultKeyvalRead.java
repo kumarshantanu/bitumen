@@ -15,7 +15,7 @@ import starfish.helper.Util;
 import starfish.type.TableMetadata;
 import starfish.type.ValueVersion;
 
-public class GenericOpsRead<K, V> implements IOpsRead<K, V> {
+public class DefaultKeyvalRead<K, V> implements KeyvalRead<K, V> {
 
     public static final String
     versionFormat          = "SELECT $versionColname FROM $tableName WHERE $keyColname = ?",    // key
@@ -57,11 +57,11 @@ public class GenericOpsRead<K, V> implements IOpsRead<K, V> {
     public final RowExtractor<Long> versionExtractor2 = JdbcUtil.makeColumnExtractor(Long.class, 2);
     public final RowExtractor<Long> countExtractor2 = JdbcUtil.makeColumnExtractor(Long.class, 2);
 
-    public GenericOpsRead(TableMetadata meta, Class<K> keyClass, Class<V> valClass) {
+    public DefaultKeyvalRead(TableMetadata meta, Class<K> keyClass, Class<V> valClass) {
         this(meta, keyClass, valClass, new DefaultJdbcRead());
     }
 
-    public GenericOpsRead(TableMetadata meta, Class<K> keyClass, Class<V> valClass, JdbcRead reader) {
+    public DefaultKeyvalRead(TableMetadata meta, Class<K> keyClass, Class<V> valClass, JdbcRead reader) {
         this.meta = meta;
         this.versionSql          = meta.groovyReplace(versionFormat);
         this.multiVersionSql     = meta.groovyReplaceKeep(multiVersionFormat);

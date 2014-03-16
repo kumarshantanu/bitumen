@@ -11,8 +11,8 @@ import javax.sql.DataSource;
 
 import org.junit.Assert;
 
-import starfish.IOpsRead;
-import starfish.IOpsWrite;
+import starfish.KeyvalRead;
+import starfish.KeyvalWrite;
 import starfish.JdbcException;
 import starfish.helper.ConnectionActivity;
 import starfish.helper.ConnectionActivityNoResult;
@@ -20,15 +20,15 @@ import starfish.helper.DataSourceTemplate;
 import starfish.helper.Util;
 import starfish.type.ValueVersion;
 
-public class OpsTestBatch implements OpsTestSuite {
+public class KeyvalTestBatch implements KeyvalTestSuite {
 
     public final DataSourceTemplate dst;
 
-    public OpsTestBatch(DataSource ds) {
+    public KeyvalTestBatch(DataSource ds) {
         this.dst = new DataSourceTemplate(ds);
     }
 
-    private List<String> readValues(final IOpsRead<Integer, String> reader, final List<Integer> keys) {
+    private List<String> readValues(final KeyvalRead<Integer, String> reader, final List<Integer> keys) {
         final Map<Integer, String> kvPairs = dst.withConnection(new ConnectionActivity<Map<Integer, String>>() {
             public Map<Integer, String> execute(Connection conn) {
                 return reader.batchRead(conn, keys);
@@ -41,7 +41,7 @@ public class OpsTestBatch implements OpsTestSuite {
         return result;
     }
 
-    public void insertTest(final IOpsWrite<Integer, String> writer, final IOpsRead<Integer, String> reader) {
+    public void insertTest(final KeyvalWrite<Integer, String> writer, final KeyvalRead<Integer, String> reader) {
         // write (actually insert, because the value doesn't exist) key-value pairs
         final List<Integer> keys = Arrays.asList(1, 2, 3);
         final List<String> vals1 = Arrays.asList("abc", "bcd", "cde");
@@ -72,7 +72,7 @@ public class OpsTestBatch implements OpsTestSuite {
         Assert.assertTrue(exception);
     }
 
-    public void crudTest(final IOpsWrite<Integer, String> writer, IOpsRead<Integer, String> reader) {
+    public void crudTest(final KeyvalWrite<Integer, String> writer, KeyvalRead<Integer, String> reader) {
         // ----- INSERT (SAVE) -----
 
         // write (actually insert, because the value doesn't exist) key-value pairs
@@ -147,7 +147,7 @@ public class OpsTestBatch implements OpsTestSuite {
         }
     }
 
-    public void versionTest(final IOpsWrite<Integer, String> writer, IOpsRead<Integer, String> reader) {
+    public void versionTest(final KeyvalWrite<Integer, String> writer, KeyvalRead<Integer, String> reader) {
         // save (insert)
         final List<Integer> keys = Arrays.asList(2, 3, 4);
         final List<String> vals1 = Arrays.asList("abc", "bcd", "cde");
@@ -202,7 +202,7 @@ public class OpsTestBatch implements OpsTestSuite {
         }
     }
 
-    public void readTest(final IOpsWrite<Integer, String> writer, final IOpsRead<Integer, String> reader) {
+    public void readTest(final KeyvalWrite<Integer, String> writer, final KeyvalRead<Integer, String> reader) {
         final List<Integer> keys = Arrays.asList(1, 2, 3);
 
         // save (insert)

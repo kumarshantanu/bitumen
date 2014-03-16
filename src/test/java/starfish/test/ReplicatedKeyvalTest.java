@@ -10,26 +10,26 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import starfish.GenericOpsWrite;
-import starfish.IOpsRead;
-import starfish.IOpsWrite;
-import starfish.ReplicatedOpsRead;
+import starfish.DefaultKeyvalWrite;
+import starfish.KeyvalRead;
+import starfish.KeyvalWrite;
+import starfish.ReplicatedKeyvalRead;
 import starfish.ReplicationSlavesPointer;
-import starfish.test.helper.OpsTestBatch;
-import starfish.test.helper.OpsTestSingle;
+import starfish.test.helper.KeyvalTestBatch;
+import starfish.test.helper.KeyvalTestSingle;
 import starfish.test.helper.TestUtil;
 
-public class ReplicatedOpsTest {
+public class ReplicatedKeyvalTest {
 
     private static DataSource dataSource;
-    private static OpsTestSingle opsTestSingle;
-    private static OpsTestBatch  opsTestBatch;
+    private static KeyvalTestSingle opsTestSingle;
+    private static KeyvalTestBatch  opsTestBatch;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         dataSource = TestUtil.makeTestDataSource();
-        opsTestSingle = new OpsTestSingle(dataSource);
-        opsTestBatch = new OpsTestBatch(dataSource);
+        opsTestSingle = new KeyvalTestSingle(dataSource);
+        opsTestBatch = new KeyvalTestBatch(dataSource);
     }
 
     @AfterClass
@@ -38,9 +38,9 @@ public class ReplicatedOpsTest {
         opsTestBatch = null;
     }
 
-    final IOpsWrite<Integer, String> writer = new GenericOpsWrite<Integer, String>(TestUtil.meta);
+    final KeyvalWrite<Integer, String> writer = new DefaultKeyvalWrite<Integer, String>(TestUtil.meta);
     final List<DataSource> slaveDataSources = TestUtil.makeSlaveTestDataSources();
-    final IOpsRead<Integer, String> reader = new ReplicatedOpsRead<Integer, String>(TestUtil.meta, Integer.class, String.class, new ReplicationSlavesPointer() {
+    final KeyvalRead<Integer, String> reader = new ReplicatedKeyvalRead<Integer, String>(TestUtil.meta, Integer.class, String.class, new ReplicationSlavesPointer() {
         public List<DataSource> getDataSources() {
             return slaveDataSources;
         }

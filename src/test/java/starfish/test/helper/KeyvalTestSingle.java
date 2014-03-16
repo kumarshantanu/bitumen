@@ -7,8 +7,8 @@ import javax.sql.DataSource;
 
 import org.junit.Assert;
 
-import starfish.IOpsRead;
-import starfish.IOpsWrite;
+import starfish.KeyvalRead;
+import starfish.KeyvalWrite;
 import starfish.JdbcException;
 import starfish.helper.ConnectionActivity;
 import starfish.helper.ConnectionActivityNoResult;
@@ -16,15 +16,15 @@ import starfish.helper.DataSourceTemplate;
 import starfish.helper.Util;
 import starfish.type.ValueVersion;
 
-public class OpsTestSingle implements OpsTestSuite {
+public class KeyvalTestSingle implements KeyvalTestSuite {
 
     public final DataSourceTemplate dst;
 
-    public OpsTestSingle(DataSource ds) {
+    public KeyvalTestSingle(DataSource ds) {
         this.dst = new DataSourceTemplate(ds);
     }
 
-    private String readValue(final IOpsRead<Integer, String> reader, final Integer key) {
+    private String readValue(final KeyvalRead<Integer, String> reader, final Integer key) {
         return dst.withConnection(new ConnectionActivity<String>() {
             public String execute(Connection conn) {
                 return reader.read(conn, key);
@@ -32,7 +32,7 @@ public class OpsTestSingle implements OpsTestSuite {
         });
     }
 
-    public void insertTest(final IOpsWrite<Integer, String> writer, final IOpsRead<Integer, String> reader) {
+    public void insertTest(final KeyvalWrite<Integer, String> writer, final KeyvalRead<Integer, String> reader) {
         final int key1 = 1;
         final String val1 = "abc";
         final Long version1 = dst.withConnection(new ConnectionActivity<Long>() {
@@ -62,7 +62,7 @@ public class OpsTestSingle implements OpsTestSuite {
         Assert.assertTrue(exception);
     }
 
-    public void crudTest(final IOpsWrite<Integer, String> writer, final IOpsRead<Integer, String> reader) {
+    public void crudTest(final KeyvalWrite<Integer, String> writer, final KeyvalRead<Integer, String> reader) {
         // ----- INSERT (SAVE) -----
 
         // write (actually insert, because the value doesn't exist) key-value pair
@@ -115,7 +115,7 @@ public class OpsTestSingle implements OpsTestSuite {
         Assert.assertEquals(0, TestUtil.findRowCountForKeys(dst, Arrays.asList(key)));
     }
 
-    public void versionTest(final IOpsWrite<Integer, String> writer, final IOpsRead<Integer, String> reader) {
+    public void versionTest(final KeyvalWrite<Integer, String> writer, final KeyvalRead<Integer, String> reader) {
         // save (insert)
         final int key = 2;
         final String newValue1 = "abc";
@@ -168,7 +168,7 @@ public class OpsTestSingle implements OpsTestSuite {
         Assert.assertNull(readValue(reader, key));
     }
 
-    public void readTest(final IOpsWrite<Integer, String> writer, final IOpsRead<Integer, String> reader) {
+    public void readTest(final KeyvalWrite<Integer, String> writer, final KeyvalRead<Integer, String> reader) {
         final int key = 3;
 
         // save (insert)

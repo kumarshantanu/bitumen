@@ -8,25 +8,25 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import starfish.GenericOpsRead;
-import starfish.GenericOpsWrite;
-import starfish.IOpsRead;
-import starfish.IOpsWrite;
-import starfish.test.helper.OpsTestBatch;
-import starfish.test.helper.OpsTestSingle;
+import starfish.DefaultKeyvalRead;
+import starfish.DefaultKeyvalWrite;
+import starfish.KeyvalRead;
+import starfish.KeyvalWrite;
+import starfish.test.helper.KeyvalTestBatch;
+import starfish.test.helper.KeyvalTestSingle;
 import starfish.test.helper.TestUtil;
 
-public class GenericOpsTest {
+public class DefaultKeyvalTest {
 
     private static DataSource dataSource;
-    private static OpsTestSingle opsTestSingle;
-    private static OpsTestBatch  opsTestBatch;
+    private static KeyvalTestSingle opsTestSingle;
+    private static KeyvalTestBatch  opsTestBatch;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         dataSource = TestUtil.makeTestDataSource();
-        opsTestSingle = new OpsTestSingle(dataSource);
-        opsTestBatch = new OpsTestBatch(dataSource);
+        opsTestSingle = new KeyvalTestSingle(dataSource);
+        opsTestBatch = new KeyvalTestBatch(dataSource);
     }
 
     @AfterClass
@@ -35,8 +35,8 @@ public class GenericOpsTest {
         opsTestBatch = null;
     }
 
-    final IOpsWrite<Integer, String> writer = new GenericOpsWrite<Integer, String>(TestUtil.meta);
-    final IOpsRead<Integer, String> reader = new GenericOpsRead<Integer, String>(TestUtil.meta, Integer.class, String.class);
+    final KeyvalWrite<Integer, String> writer = new DefaultKeyvalWrite<Integer, String>(TestUtil.meta);
+    final KeyvalRead<Integer, String> reader = new DefaultKeyvalRead<Integer, String>(TestUtil.meta, Integer.class, String.class);
 
     @Before
     public void setUp() throws Exception {

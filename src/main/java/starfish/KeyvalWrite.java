@@ -6,7 +6,7 @@ import java.util.Map;
 
 import starfish.type.KeyValueVersion;
 
-public interface IOpsWrite<K, V> {
+public interface KeyvalWrite<K, V> {
 
     // ---- insert (fails if key already exists) ----
 
