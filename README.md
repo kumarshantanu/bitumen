@@ -1,6 +1,8 @@
 # starfish
 
-Java client library to emulate key-value store over JDBC backed database.
+Java JDBC library to emulate key-value store over JDBC backed database.
+
+Designed for Java 8 and beyond, compatible with Java 5 and upward.
 
 ## Usage
 
