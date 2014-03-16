@@ -73,12 +73,12 @@ import java.sql.Connection;
 
 import javax.sql.DataSource;
 
-import starfish.DefaultKeyvalRead;
-import starfish.DefaultKeyvalWrite;
 import starfish.KeyvalRead;
 import starfish.KeyvalWrite;
 import starfish.helper.ConnectionActivity;
 import starfish.helper.DataSourceTemplate;
+import starfish.impl.DefaultKeyvalRead;
+import starfish.impl.DefaultKeyvalWrite;
 import starfish.type.TableMetadata;
 
 public class Example {
