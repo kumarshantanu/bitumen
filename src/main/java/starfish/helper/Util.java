@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import starfish.type.StrVals;
+import starfish.type.SqlArgs;
 
 public class Util {
 
@@ -51,14 +51,14 @@ public class Util {
     }
 
     public static String groovyReplace(String format, Map<String, String> values, boolean throwOnMissing) {
-        return embedReplace('$', format, values, throwOnMissing, false, null).str;
+        return embedReplace('$', format, values, throwOnMissing, false, null).sql;
     }
 
-    public static StrVals namedParamReplace(String format, Map<String, String> values) {
+    public static SqlArgs namedParamReplace(String format, Map<String, String> values) {
         return embedReplace(':', format, values, true, true, "?");
     }
 
-    public static StrVals embedReplace(char marker, String format, Map<String, String> values, boolean throwOnMissing,
+    public static SqlArgs embedReplace(char marker, String format, Map<String, String> values, boolean throwOnMissing,
             boolean addToVals, String valSubstitute) {
         final int len = format.length();
         final StringBuilder sb = new StringBuilder(len);
@@ -122,7 +122,7 @@ public class Util {
                 sb.append(c);
             }
         }
-        return new StrVals(sb.toString(), vals.toArray());
+        return new SqlArgs(sb.toString(), vals.toArray());
     }
 
     public static <T> boolean equals(T one, T two) {
