@@ -85,9 +85,10 @@ public class Example {
 
     final TableMetadata meta = TableMetadata.create("session", "id", "value",
             "version", "created", "updated");
-    final KeyvalWrite<String, String> writer = new DefaultKeyvalWrite<String, String>(meta);
-    final KeyvalRead<String, String> reader = new DefaultKeyvalRead<String, String>(meta,
-            String.class, String.class);
+    final KeyvalWrite<String, String> writer = new DefaultKeyvalWrite<String, String>(
+            meta);
+    final KeyvalRead<String, String> reader = new DefaultKeyvalRead<String, String>(
+            meta, String.class, String.class);
     final DataSourceTemplate dst;
 
     public Example(DataSource ds) {
