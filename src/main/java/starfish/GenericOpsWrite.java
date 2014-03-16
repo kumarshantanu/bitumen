@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import starfish.helper.JdbcUtil;
 import starfish.helper.Util;
 import starfish.type.KeyValueVersion;
 import starfish.type.TableMetadata;
@@ -27,7 +26,13 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
 
     public final String insertSql, updateSql, swapSql, touchSql, versionSql, deleteSql, condDeleteSql;
 
+    public final JdbcWrite writer;
+
     public GenericOpsWrite(final TableMetadata meta) {
+        this(meta, new DefaultJdbcWrite());
+    }
+
+    public GenericOpsWrite(final TableMetadata meta, JdbcWrite writer) {
         this.insertSql     = meta.groovyReplace(insertFormat);
         this.updateSql     = meta.groovyReplace(updateFormat);
         this.swapSql       = meta.groovyReplace(swapFormat);
@@ -35,12 +40,15 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
         this.versionSql    = meta.groovyReplace(versionFormat);
         this.deleteSql     = meta.groovyReplace(deleteFormat);
         this.condDeleteSql = meta.groovyReplace(condDeleteFormat);
+        this.writer = writer;
     }
+
+    // ----- insert -----
 
     public long insert(Connection conn, K key, V value) {
         final long version = Util.newVersion();
         final Timestamp now = Util.now();
-        JdbcUtil.update(conn, insertSql, new Object[] { key, value, version, now, now });
+        writer.update(conn, insertSql, new Object[] { key, value, version, now, now });
         return version;
     }
 
@@ -52,7 +60,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
         for (Entry<K, V> each: pairs.entrySet()) {
             insertArgsArray[i++] = new Object[] { each.getKey(), each.getValue(), version, now, now };
         }
-        JdbcUtil.batchUpdate(conn, insertSql, insertArgsArray);
+        writer.batchUpdate(conn, insertSql, insertArgsArray);
         return version;
     }
 
@@ -61,9 +69,9 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
     public long save(Connection conn, K key, V value) {
         final long version = Util.newVersion();
         final Timestamp now = Util.now();
-        int rows = JdbcUtil.update(conn, updateSql, new Object[] { value, version, now, key });
+        int rows = writer.update(conn, updateSql, new Object[] { value, version, now, key });
         if (rows == 0) {
-            JdbcUtil.update(conn, insertSql, new Object[] { key, value, version, now, now });
+            writer.update(conn, insertSql, new Object[] { key, value, version, now, now });
         }
         return version;
     }
@@ -78,7 +86,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
             for (Entry<K, V> each : pairs.entrySet()) {
                 updateArgsArray[i++] = new Object[] { each.getValue(), version, now, each.getKey() };
             }
-            rows = JdbcUtil.batchUpdate(conn, updateSql, updateArgsArray);
+            rows = writer.batchUpdate(conn, updateSql, updateArgsArray);
         }
         int toInsert = 0;
         for (int i = 0; i < rows.length; i++) {
@@ -94,7 +102,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
                     insertArgsArray[j++] = new Object[] { each.getKey(), each.getValue(), version, now, now };
                 }
             }
-            JdbcUtil.batchUpdate(conn, insertSql, insertArgsArray);
+            writer.batchUpdate(conn, insertSql, insertArgsArray);
         }
         return version;
     }
@@ -104,7 +112,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
     public Long swap(Connection conn, K key, V value, long version) {
         final long tmpVersion = Util.newVersion();
         final long newVersion = version == tmpVersion? version + 1: tmpVersion;
-        int rowCount = JdbcUtil.update(conn, swapSql, new Object[] { value, newVersion, Util.now(), key, version });
+        int rowCount = writer.update(conn, swapSql, new Object[] { value, newVersion, Util.now(), key, version });
         return rowCount > 0? newVersion: null;
     }
 
@@ -120,7 +128,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
                         each.getKey(), version };
             }
         }
-        final int[] rowCount = JdbcUtil.batchUpdate(conn, swapSql, argsArray);
+        final int[] rowCount = writer.batchUpdate(conn, swapSql, argsArray);
         int totalRowCount = 0;
         for (int j = 0; j < rowCount.length; j++) {
             totalRowCount += rowCount[j];
@@ -139,7 +147,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
                         each.key, each.version };
             }
         }
-        final int[] rowCount = JdbcUtil.batchUpdate(conn, swapSql, argsArray);
+        final int[] rowCount = writer.batchUpdate(conn, swapSql, argsArray);
         int totalRowCount = 0;
         for (int j = 0; j < rowCount.length; j++) {
             totalRowCount += rowCount[j];
@@ -152,7 +160,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
     public Long touch(Connection conn, K key) {
         final Timestamp now = Util.now();
         final long version = Util.newVersion();
-        final int rowCount = JdbcUtil.update(conn, touchSql, new Object[] { version, now, key });
+        final int rowCount = writer.update(conn, touchSql, new Object[] { version, now, key });
         return rowCount > 0? version: null;
     }
 
@@ -166,7 +174,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
                 argsArray[i++] = new Object[] { version, now, each };
             }
         }
-        final int[] rowCount = JdbcUtil.batchUpdate(conn, swapSql, argsArray);
+        final int[] rowCount = writer.batchUpdate(conn, swapSql, argsArray);
         int totalRowCount = 0;
         for (int j = 0; j < rowCount.length; j++) {
             totalRowCount += rowCount[j];
@@ -177,7 +185,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
     // ---- delete ----
 
     public void delete(Connection conn, K key) {
-        JdbcUtil.update(conn, deleteSql, new Object[] { key });
+        writer.update(conn, deleteSql, new Object[] { key });
     }
 
     public void batchDelete(Connection conn, List<K> keys) {
@@ -186,13 +194,13 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
         for (K each: keys) {
             argsArray[i++] = new Object[] { each };
         }
-        JdbcUtil.batchUpdate(conn, deleteSql, argsArray);
+        writer.batchUpdate(conn, deleteSql, argsArray);
     }
 
     // ---- remove (requires old version) ----
 
     public void remove(Connection conn, K key, long version) {
-        JdbcUtil.update(conn, condDeleteSql, new Object[] { key, version });
+        writer.update(conn, condDeleteSql, new Object[] { key, version });
     }
 
     public void batchRemove(Connection conn, List<K> keys, long version) {
@@ -201,7 +209,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
         for (K each: keys) {
             argsArray[i++] = new Object[] { each, version };
         }
-        JdbcUtil.batchUpdate(conn, condDeleteSql, argsArray);
+        writer.batchUpdate(conn, condDeleteSql, argsArray);
     }
 
     public void batchRemove(Connection conn, Map<K, Long> keys) {
@@ -210,7 +218,7 @@ public class GenericOpsWrite<K, V> implements IOpsWrite<K, V> {
         for (Entry<K, Long> each: keys.entrySet()) {
             argsArray[i++] = new Object[] { each.getKey(), each.getValue() };
         }
-        JdbcUtil.batchUpdate(conn, condDeleteSql, argsArray);
+        writer.batchUpdate(conn, condDeleteSql, argsArray);
     }
 
 }

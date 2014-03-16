@@ -7,9 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import starfish.DefaultJdbcWrite;
 import starfish.GenericOpsWrite;
 import starfish.IOpsWrite;
-import starfish.helper.JdbcUtil;
+import starfish.JdbcWrite;
 import starfish.helper.Util;
 import starfish.type.KeyValueVersion;
 import starfish.type.TableMetadata;
@@ -23,10 +24,17 @@ public class MysqlOpsWrite<K, V> implements IOpsWrite<K, V> {
 
     public final String upsertSql;
 
+    public final JdbcWrite writer;
+
     public final GenericOpsWrite<K, V> generic;
     public final boolean populateTimestamp;
 
     public MysqlOpsWrite(TableMetadata meta, boolean useMySQLTimestamp) {
+        this(meta, useMySQLTimestamp, new DefaultJdbcWrite());
+    }
+
+    public MysqlOpsWrite(TableMetadata meta, boolean useMySQLTimestamp, JdbcWrite writer) {
+        this.writer = writer;
         this.generic = new GenericOpsWrite<K, V>(meta);
         final String template = meta.groovyReplaceKeep(upsertFormat);
         this.upsertSql = Util.groovyReplace(template,
@@ -47,7 +55,7 @@ public class MysqlOpsWrite<K, V> implements IOpsWrite<K, V> {
     public long save(Connection conn, K key, V value) {
         final long version = Util.newVersion();
         final Timestamp now = Util.now();
-        JdbcUtil.update(conn, upsertSql, populateTimestamp?
+        writer.update(conn, upsertSql, populateTimestamp?
                 new Object[] { key, value, version, now, now, value, version, now }:
                     new Object[] { key, value, version, value, version });
         return version;
@@ -65,7 +73,7 @@ public class MysqlOpsWrite<K, V> implements IOpsWrite<K, V> {
                     new Object[] { key, value, version, now, now, value, version, now }:
                         new Object[] { key, value, version, value, version };
         }
-        JdbcUtil.batchUpdate(conn, upsertSql, argsArray);
+        writer.batchUpdate(conn, upsertSql, argsArray);
         return version;
     }
 

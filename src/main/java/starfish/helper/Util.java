@@ -190,7 +190,7 @@ public class Util {
     }
 
     public static <T> T ensureSingleItem(Collection<T> coll) {
-        if (coll == null || coll.isEmpty()) {
+        if (coll.isEmpty()) {
             throw new IllegalStateException("Expected collection of single item but found empty collection");
         }
         final int count = coll.size();
@@ -200,8 +200,8 @@ public class Util {
         return coll.iterator().next();
     }
 
-    public static Object ensureSingleItem(Map<String, Object> map) {
-        if (map == null || map.isEmpty()) {
+    public static Object ensureSingleVal(Map<String, Object> map) {
+        if (map.isEmpty()) {
             throw new IllegalStateException("Expected map of single pair but found empty map");
         }
         final int count = map.size();
@@ -209,6 +209,14 @@ public class Util {
             throw new IllegalStateException("Expected collection of single pair but found map of size " + count);
         }
         return map.entrySet().iterator().next().getValue();
+    }
+
+    public static <T> T firstItem(Collection<T> coll) {
+        return coll.isEmpty()? null: coll.iterator().next();
+    }
+
+    public static Object firstVal(Map<String, Object> map) {
+        return (map == null || map.isEmpty())? null: map.entrySet().iterator().next();
     }
 
     public static <T> boolean areAllNull(Collection<T> coll) {

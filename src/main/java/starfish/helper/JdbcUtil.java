@@ -8,11 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -101,44 +97,6 @@ public class JdbcUtil {
         });
     }
 
-    public static int update(Connection conn, String sql, Object[] args) {
-        Util.echo("Update SQL: [%s], args: %s\n", sql, Arrays.toString(args));
-        final PreparedStatement pstmt = prepareStatementWithArgs(conn, sql, args);
-        try {
-            return pstmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new IllegalStateException(
-                    String.format("Unable to execute SQL statement: [%s], args: %s", sql, Arrays.toString(args)), e);
-        } finally {
-            close(pstmt);
-        }
-    }
-
-    public static int[] batchUpdate(Connection conn, String sql, Object[][] argsArray) {
-        Util.echo("Update SQL: [%s], batch-size: %d, args: %s\n", sql, argsArray.length, Arrays.toString(eachStr(argsArray)));
-        PreparedStatement pstmt = prepareStatement(conn, sql);
-        for (Object[] args: argsArray) {
-            prepareArgs(pstmt, args);
-            try {
-                pstmt.addBatch();
-            } catch (SQLException e) {
-                close(pstmt);
-                throw new IllegalStateException(
-                        String.format("Unable to add batch arguments for SQL: [%s], args: %s", sql,
-                                Arrays.toString(args)), e);
-            }
-        }
-        try {
-            return pstmt.executeBatch();
-        } catch (SQLException e) {
-            close(pstmt);
-            throw new IllegalStateException(
-                    String.format("Unable to execute batch for SQL: [%s] (batch size = %d)", sql, argsArray.length), e);
-        } finally {
-            close(pstmt);
-        }
-    }
-
     public static String[] eachStr(Object[][] arrayOfArrays) {
         final String[] result = new String[arrayOfArrays.length];
         for (int i = 0; i < arrayOfArrays.length; i++) {
@@ -157,45 +115,6 @@ public class JdbcUtil {
                 }
             }
         };
-    }
-
-    public static <T> List<T> queryVals(Connection conn, String sql, Object[] args, RowExtractor<T> extractor) {
-        Util.echo("Query SQL: [%s], args: %s\n", sql, Arrays.toString(args));
-        final PreparedStatement pstmt = prepareStatementWithArgs(conn, sql, args);
-        ResultSet rs = null;
-        try {
-            rs = pstmt.executeQuery();
-            List<T> result = new ArrayList<T>(1);
-            while (rs.next()) {
-                result.add(extractor.extract(rs));
-            }
-            return result;
-        } catch (SQLException e) {
-            throw new IllegalStateException(String.format("Unable to execute SQL statement: [%s]", sql), e);
-        } finally {
-            close(rs);
-            close(pstmt);
-        }
-    }
-
-    public static <K, V> Map<K, V> queryMap(Connection conn, String sql, Object[] args, RowExtractor<K> keyExtractor,
-            RowExtractor<V> valueExtractor) {
-        Util.echo("Query SQL: [%s], args: %s\n", sql, Arrays.toString(args));
-        final PreparedStatement pstmt = prepareStatementWithArgs(conn, sql, args);
-        ResultSet rs = null;
-        try {
-            rs = pstmt.executeQuery();
-            Map<K, V> result = new LinkedHashMap<K, V>();
-            while (rs.next()) {
-                result.put(keyExtractor.extract(rs), valueExtractor.extract(rs));
-            }
-            return result;
-        } catch (SQLException e) {
-            throw new IllegalStateException(String.format("Unable to execute SQL statement: [%s]", sql), e);
-        } finally {
-            close(rs);
-            close(pstmt);
-        }
     }
 
     public static Object getValue(ResultSet rs, int columnIndex) throws SQLException {

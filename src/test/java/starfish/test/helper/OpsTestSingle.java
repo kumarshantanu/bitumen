@@ -9,6 +9,7 @@ import org.junit.Assert;
 
 import starfish.IOpsRead;
 import starfish.IOpsWrite;
+import starfish.JdbcException;
 import starfish.helper.ConnectionActivity;
 import starfish.helper.ConnectionActivityNoResult;
 import starfish.helper.DataSourceTemplate;
@@ -55,7 +56,7 @@ public class OpsTestSingle implements OpsTestSuite {
                     return writer.insert(conn, key1, val1);
                 }
             });
-        } catch(IllegalStateException e) {
+        } catch(JdbcException e) {
             exception = true;
         }
         Assert.assertTrue(exception);

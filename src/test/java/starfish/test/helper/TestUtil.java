@@ -11,6 +11,8 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
+import starfish.DefaultJdbcRead;
+import starfish.DefaultJdbcWrite;
 import starfish.helper.ConnectionActivity;
 import starfish.helper.ConnectionActivityNoResult;
 import starfish.helper.DataSourceTemplate;
@@ -70,7 +72,7 @@ public class TestUtil {
     public static void createTable(DataSource ds) {
         JdbcUtil.withConnectionNoResult(ds, new ConnectionActivityNoResult() {
             public void execute(Connection conn) {
-                JdbcUtil.update(conn, loadProperties().getProperty("create.table.ddl"), null);
+                new DefaultJdbcWrite().update(conn, loadProperties().getProperty("create.table.ddl"), null);
             }
         });
     }
@@ -78,7 +80,7 @@ public class TestUtil {
     public static void dropTable(DataSource ds) {
         JdbcUtil.withConnectionNoResult(ds, new ConnectionActivityNoResult() {
             public void execute(Connection conn) {
-                JdbcUtil.update(conn, loadProperties().getProperty("drop.table.ddl"), null);
+                new DefaultJdbcWrite().update(conn, loadProperties().getProperty("drop.table.ddl"), null);
             }
         });
     }
@@ -86,7 +88,7 @@ public class TestUtil {
     public static void deleteAll(DataSourceTemplate dst) {
         dst.withConnectionNoResult(new ConnectionActivityNoResult() {
             public void execute(Connection conn) {
-                JdbcUtil.update(conn, "DELETE FROM session", null);
+                new DefaultJdbcWrite().update(conn, "DELETE FROM session", null);
             }
         });
     }
@@ -94,7 +96,8 @@ public class TestUtil {
     public static <K> long findRowCountForKeys(DataSourceTemplate dst, final List<K> keys) {
         return dst.withConnection(new ConnectionActivity<List<Long>>() {
             public List<Long> execute(Connection conn) {
-                return JdbcUtil.queryVals(conn, String.format("SELECT COUNT(*) FROM session WHERE skey IN (%s)",
+                return new DefaultJdbcRead().queryForList(
+                        conn, String.format("SELECT COUNT(*) FROM session WHERE skey IN (%s)",
                         JdbcUtil.argPlaceholders(keys.size())), keys.toArray(),
                         JdbcUtil.makeColumnExtractor(Long.class, 1));
             }
