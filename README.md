@@ -73,6 +73,10 @@ import java.sql.Connection;
 
 import javax.sql.DataSource;
 
+import starfish.DefaultKeyvalRead;
+import starfish.DefaultKeyvalWrite;
+import starfish.KeyvalRead;
+import starfish.KeyvalWrite;
 import starfish.helper.ConnectionActivity;
 import starfish.helper.DataSourceTemplate;
 import starfish.type.TableMetadata;
@@ -81,8 +85,8 @@ public class Example {
 
     final TableMetadata meta = TableMetadata.create("session", "id", "value",
             "version", "created", "updated");
-    final IOpsWrite<String, String> writer = new GenericOpsWrite<String, String>(meta);
-    final IOpsRead<String, String> reader = new GenericOpsRead<String, String>(meta,
+    final KeyvalWrite<String, String> writer = new DefaultKeyvalWrite<String, String>(meta);
+    final KeyvalRead<String, String> reader = new DefaultKeyvalRead<String, String>(meta,
             String.class, String.class);
     final DataSourceTemplate dst;
 
@@ -112,7 +116,7 @@ public class Example {
       // ----- Java 8 examples -----
 
     public void savePairJava8() {
-        final Long version = dst.withConnection(conn -> writer.save(conn,
+        final Long version = dst.withTransaction(conn -> writer.save(conn,
                 "ABCD", "{\"email\": \"foo@bar.com\", \"age\": 29}"));
         // do something with `version`...
     }
