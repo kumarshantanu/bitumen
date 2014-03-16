@@ -1,4 +1,4 @@
-package starfish;
+package starfish.impl;
 
 import java.util.List;
 

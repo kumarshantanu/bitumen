@@ -1,4 +1,4 @@
-package starfish;
+package starfish.impl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,6 +8,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import starfish.JdbcException;
+import starfish.JdbcRead;
+import starfish.JdbcWrite;
 import starfish.helper.JdbcUtil;
 import starfish.helper.Util;
 

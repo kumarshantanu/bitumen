@@ -10,11 +10,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import starfish.DefaultKeyvalWrite;
 import starfish.KeyvalRead;
 import starfish.KeyvalWrite;
-import starfish.ReplicatedKeyvalRead;
-import starfish.ReplicationSlavesPointer;
+import starfish.impl.DefaultKeyvalWrite;
+import starfish.impl.ReplicatedKeyvalRead;
+import starfish.impl.ReplicationSlavesPointer;
 import starfish.test.helper.KeyvalTestBatch;
 import starfish.test.helper.KeyvalTestSingle;
 import starfish.test.helper.TestUtil;

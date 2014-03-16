@@ -1,4 +1,4 @@
-package starfish;
+package starfish.impl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,9 +11,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import starfish.JdbcException;
+import starfish.JdbcRead;
+import starfish.ResultSetExtractor;
+import starfish.RowExtractor;
 import starfish.helper.JdbcUtil;
-import starfish.helper.ResultSetExtractor;
-import starfish.helper.RowExtractor;
 import starfish.helper.Util;
 
 public class DefaultJdbcRead implements JdbcRead {

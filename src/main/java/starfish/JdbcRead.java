@@ -4,9 +4,6 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
-import starfish.helper.ResultSetExtractor;
-import starfish.helper.RowExtractor;
-
 public interface JdbcRead {
 
     public long NO_LIMIT = -1;

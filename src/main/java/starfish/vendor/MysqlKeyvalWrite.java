@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import starfish.DefaultJdbcWrite;
-import starfish.DefaultKeyvalWrite;
 import starfish.KeyvalWrite;
 import starfish.JdbcWrite;
 import starfish.helper.Util;
+import starfish.impl.DefaultJdbcWrite;
+import starfish.impl.DefaultKeyvalWrite;
 import starfish.type.KeyValueVersion;
 import starfish.type.TableMetadata;
 

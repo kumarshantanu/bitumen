@@ -1,4 +1,4 @@
-package starfish.helper;
+package starfish;
 
 import java.sql.ResultSet;
 

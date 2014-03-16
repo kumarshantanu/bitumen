@@ -1,4 +1,4 @@
-package starfish;
+package starfish.impl;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -9,8 +9,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import starfish.JdbcRead;
+import starfish.KeyvalRead;
+import starfish.RowExtractor;
 import starfish.helper.JdbcUtil;
-import starfish.helper.RowExtractor;
 import starfish.helper.Util;
 import starfish.type.TableMetadata;
 import starfish.type.ValueVersion;

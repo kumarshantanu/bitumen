@@ -13,6 +13,7 @@ import java.util.Arrays;
 import javax.sql.DataSource;
 
 import starfish.JdbcException;
+import starfish.RowExtractor;
 
 public class JdbcUtil {
 

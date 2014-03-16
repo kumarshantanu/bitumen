@@ -1,4 +1,4 @@
-package starfish;
+package starfish.impl;
 
 import java.sql.Connection;
 import java.sql.Timestamp;
@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import starfish.JdbcWrite;
+import starfish.KeyvalWrite;
 import starfish.helper.Util;
 import starfish.type.KeyValueVersion;
 import starfish.type.TableMetadata;

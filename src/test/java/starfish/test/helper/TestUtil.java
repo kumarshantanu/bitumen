@@ -11,12 +11,12 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
-import starfish.DefaultJdbcRead;
-import starfish.DefaultJdbcWrite;
 import starfish.helper.ConnectionActivity;
 import starfish.helper.ConnectionActivityNoResult;
 import starfish.helper.DataSourceTemplate;
 import starfish.helper.JdbcUtil;
+import starfish.impl.DefaultJdbcRead;
+import starfish.impl.DefaultJdbcWrite;
 import starfish.type.TableMetadata;
 
 public class TestUtil {

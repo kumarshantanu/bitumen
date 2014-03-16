@@ -8,9 +8,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import starfish.DefaultKeyvalRead;
 import starfish.KeyvalRead;
 import starfish.KeyvalWrite;
+import starfish.impl.DefaultKeyvalRead;
 import starfish.test.helper.KeyvalTestBatch;
 import starfish.test.helper.KeyvalTestSingle;
 import starfish.test.helper.TestUtil;

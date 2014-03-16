@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import starfish.RowExtractor;
 import starfish.helper.JdbcUtil;
-import starfish.helper.RowExtractor;
 import starfish.helper.Util;
 
 public class ValueVersion<V> implements Serializable {
