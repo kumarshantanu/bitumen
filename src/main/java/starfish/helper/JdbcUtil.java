@@ -12,17 +12,19 @@ import java.util.Arrays;
 
 import javax.sql.DataSource;
 
+import starfish.JdbcException;
+
 public class JdbcUtil {
 
     public static <V> V withConnection(DataSource dataSource, ConnectionActivity<V> activity) {
         final Connection conn = getConnection(dataSource);
         try {
-            V result = activity.execute(conn);
+            final V result = activity.execute(conn);
             if (!conn.getAutoCommit()) {
                 conn.commit();
             }
             return result;
-        } catch (Exception e) {
+        } catch (SQLException e) {
             try {
                 if (!conn.getAutoCommit()) {
                     conn.rollback();
@@ -30,8 +32,16 @@ public class JdbcUtil {
             } catch (Exception e2) {
                 // swallow exception
             }
-            if (e instanceof RuntimeException) throw (RuntimeException) e;
-            throw new IllegalStateException(e);
+            throw new JdbcException("Error committing transaction", e);
+        } catch (RuntimeException e) {
+            try {
+                if (!conn.getAutoCommit()) {
+                    conn.rollback();
+                }
+            } catch (Exception e2) {
+                // swallow exception
+            }
+            throw e;
         } finally {
             close(conn);
         }
@@ -63,7 +73,7 @@ public class JdbcUtil {
             if (!conn.getAutoCommit()) {
                 conn.commit();
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             try {
                 if (!conn.getAutoCommit()) {
                     conn.rollback();
@@ -71,8 +81,16 @@ public class JdbcUtil {
             } catch (Exception e2) {
                 // swallow exception
             }
-            if (e instanceof RuntimeException) throw (RuntimeException) e;
-            throw new IllegalStateException(e);
+            throw new JdbcException("Error committing transaction", e);
+        } catch (RuntimeException e) {
+            try {
+                if (!conn.getAutoCommit()) {
+                    conn.rollback();
+                }
+            } catch (Exception e2) {
+                // swallow exception
+            }
+            throw e;
         } finally {
             close(conn);
         }
@@ -111,7 +129,7 @@ public class JdbcUtil {
                 try {
                     return columnClass.cast(getValue(rs, columnIndex));
                 } catch (SQLException e) {
-                    throw new IllegalStateException("Unable to extract column number " + columnIndex, e);
+                    throw new JdbcException("Unable to extract column number " + columnIndex, e);
                 }
             }
         };
@@ -153,7 +171,7 @@ public class JdbcUtil {
         try {
             conn = dataSource.getConnection();
         } catch (SQLException e) {
-            throw new IllegalStateException("Unable to obtain connection from DataSource", e);
+            throw new JdbcException("Unable to obtain connection from DataSource", e);
         }
         return conn;
     }
@@ -164,7 +182,7 @@ public class JdbcUtil {
                 conn.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw new IllegalStateException("Unable to configure transaction", e);
+            throw new JdbcException("Unable to configure transaction", e);
         }
     }
 
@@ -173,7 +191,7 @@ public class JdbcUtil {
         try {
             conn.setTransactionIsolation(isolationLevel);
         } catch (SQLException e) {
-            throw new IllegalStateException("Unable to configure transaction isolation level", e);
+            throw new JdbcException("Unable to configure transaction isolation level", e);
         }
     }
 
@@ -187,10 +205,7 @@ public class JdbcUtil {
         try {
             return conn.prepareStatement(sql);
         } catch (SQLException e) {
-            throw new IllegalStateException(
-                    String.format("Unable to prepare statement for SQL: [%s]", sql), e);
-        } catch (RuntimeException e) {
-            throw e;
+            throw new JdbcException(String.format("Unable to prepare statement for SQL: [%s]", sql), e);
         }
     }
 
@@ -214,8 +229,8 @@ public class JdbcUtil {
                 }
             } catch (SQLException e) {
                 close(pstmt);
-                throw new IllegalStateException(
-                        String.format("Unable to set parameter for prepared statement: %d %s", i, args[i]), e);
+                throw new JdbcException(String.format("Unable to set parameter for prepared statement: %d %s",
+                        i, args[i]), e);
             } catch (RuntimeException e) {
                 close(pstmt);
                 throw e;
