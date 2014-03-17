@@ -3,6 +3,7 @@ package springer.helper;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -215,8 +216,8 @@ public class Util {
         return coll.isEmpty()? null: coll.iterator().next();
     }
 
-    public static Object firstVal(Map<String, Object> map) {
-        return (map == null || map.isEmpty())? null: map.entrySet().iterator().next();
+    public static <T> T firstItem(Collection<T> coll, T notFound) {
+        return coll.isEmpty()? notFound: coll.iterator().next();
     }
 
     public static <T> boolean areAllNull(Collection<T> coll) {

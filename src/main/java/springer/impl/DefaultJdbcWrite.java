@@ -5,8 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 import springer.JdbcException;
 import springer.JdbcRead;
@@ -16,7 +14,7 @@ import springer.helper.Util;
 
 public class DefaultJdbcWrite implements JdbcWrite {
 
-    public List<Map<String, Object>> genkey(Connection conn, String sql, Object[] args) {
+    public GeneratedKeyHolder genkey(Connection conn, String sql, Object[] args) {
         final PreparedStatement pstmt = JdbcUtil.prepareStatementWithArgs(conn, sql, args);
         try {
             pstmt.executeUpdate();
@@ -26,7 +24,8 @@ public class DefaultJdbcWrite implements JdbcWrite {
         }
         try {
             final ResultSet rs = pstmt.getGeneratedKeys();
-            return DefaultJdbcRead.extractMaps(rs, JdbcRead.NO_LIMIT, JdbcRead.NO_LIMIT_EXCEED_EXCEPTION);
+            return new GeneratedKeyHolder(DefaultJdbcRead.extractMaps(rs, JdbcRead.NO_LIMIT,
+                    JdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
         } catch (SQLException e) {
             throw new JdbcException(String.format("Unable to extract gnerated keys for SQL statement: [%s], args: %s",
                     sql, Arrays.toString(args)), e);

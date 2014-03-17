@@ -8,6 +8,7 @@ import java.util.Map;
 
 import springer.JdbcRead;
 import springer.JdbcWrite;
+import springer.KeyHolder;
 import springer.ResultSetExtractor;
 import springer.RowExtractor;
 import springer.helper.Util;
@@ -83,7 +84,7 @@ public class SqlArgs implements Serializable {
 
     // ----- Writer methods -----
 
-    public List<Map<String, Object>> genkey(Connection conn) {
+    public KeyHolder genkey(Connection conn) {
         return writer.genkey(conn, sql, args);
     }
 
