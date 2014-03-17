@@ -1,8 +1,6 @@
-# starfish
+# springer
 
-Java JDBC library to emulate key-value store over JDBC backed database.
-
-Designed for Java 8 and beyond, compatible with Java 5 and upward.
+Java JDBC library to emulate key-value store over JDBC backed database. Designed for Java 8 and beyond, compatible with Java 5 and upward.
 
 ## Usage
 
@@ -10,7 +8,7 @@ _This library is in Alpha. Expect breaking changes._
 
 ### Maven Coordinates
 
-Starfish is not on any public Maven repo yet, so you should run `mvn clean install` to install in the local repo.
+Springer is not on any public Maven repo yet, so you should run `mvn clean install` to install in the local repo.
 
 Use the following Maven coordinates to include in your project.
 
@@ -18,7 +16,7 @@ Use the following Maven coordinates to include in your project.
   <dependencies>
     <dependency>
       <groupId>kumarshantanu</groupId>
-      <artifactId>starfish</artifactId>
+      <artifactId>springer</artifactId>
       <version>0.1.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
@@ -26,7 +24,7 @@ Use the following Maven coordinates to include in your project.
 
 ### Pre-requisite
 
-Starfish works with tables of an expected structure. You are free to choose the column names and type of the key and
+Springer works with tables of an expected structure. You are free to choose the column names and type of the key and
 value columns. The columns are:
 
 | Column  | Java Type | Constraints |
@@ -75,13 +73,13 @@ import java.sql.Connection;
 
 import javax.sql.DataSource;
 
-import starfish.KeyvalRead;
-import starfish.KeyvalWrite;
-import starfish.helper.ConnectionActivity;
-import starfish.helper.DataSourceTemplate;
-import starfish.impl.DefaultKeyvalRead;
-import starfish.impl.DefaultKeyvalWrite;
-import starfish.type.TableMetadata;
+import springer.KeyvalRead;
+import springer.KeyvalWrite;
+import springer.helper.ConnectionActivity;
+import springer.helper.DataSourceTemplate;
+import springer.impl.DefaultKeyvalRead;
+import springer.impl.DefaultKeyvalWrite;
+import springer.type.TableMetadata;
 
 public class Example {
 
