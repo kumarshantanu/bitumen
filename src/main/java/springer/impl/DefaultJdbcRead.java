@@ -115,7 +115,7 @@ public class DefaultJdbcRead implements JdbcRead {
     public <K, V> Map<K, V> queryForMap(Connection conn, String sql, Object[] params, RowExtractor<K> keyExtractor,
             RowExtractor<V> valueExtractor, long limit, boolean throwLimitExceedException) {
         Util.echo("Query SQL: [%s], args: %s\n", sql, Arrays.toString(params));
-        final PreparedStatement pstmt = JdbcUtil.prepareStatementWithArgs(conn, sql, params);
+        final PreparedStatement pstmt = JdbcUtil.prepareStatementWithParams(conn, sql, params);
         ResultSet rs = null;
         try {
             rs = pstmt.executeQuery();
@@ -147,7 +147,7 @@ public class DefaultJdbcRead implements JdbcRead {
 
     public <T> T queryCustom(Connection conn, String sql, Object[] params, ResultSetExtractor<T> extractor) {
         Util.echo("Query SQL: [%s], args: %s\n", sql, Arrays.toString(params));
-        final PreparedStatement pstmt = JdbcUtil.prepareStatementWithArgs(conn, sql, params);
+        final PreparedStatement pstmt = JdbcUtil.prepareStatementWithParams(conn, sql, params);
         ResultSet rs = null;
         try {
             rs = pstmt.executeQuery();

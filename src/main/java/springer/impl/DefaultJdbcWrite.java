@@ -15,7 +15,7 @@ import springer.helper.Util;
 public class DefaultJdbcWrite implements JdbcWrite {
 
     public GeneratedKeyHolder genkey(Connection conn, String sql, Object[] params) {
-        final PreparedStatement pstmt = JdbcUtil.prepareStatementWithArgs(conn, sql, params);
+        final PreparedStatement pstmt = JdbcUtil.prepareStatementWithParams(conn, sql, params, true);
         try {
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -34,7 +34,7 @@ public class DefaultJdbcWrite implements JdbcWrite {
 
     public int update(Connection conn, String sql, Object[] params) {
         Util.echo("Update SQL: [%s], args: %s\n", sql, Arrays.toString(params));
-        final PreparedStatement pstmt = JdbcUtil.prepareStatementWithArgs(conn, sql, params);
+        final PreparedStatement pstmt = JdbcUtil.prepareStatementWithParams(conn, sql, params);
         try {
             return pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -50,7 +50,7 @@ public class DefaultJdbcWrite implements JdbcWrite {
                 sql, paramsArray.length, Arrays.toString(JdbcUtil.eachStr(paramsArray)));
         final PreparedStatement pstmt = JdbcUtil.prepareStatement(conn, sql);
         for (Object[] args: paramsArray) {
-            JdbcUtil.prepareArgs(pstmt, args);
+            JdbcUtil.prepareParams(pstmt, args);
             try {
                 pstmt.addBatch();
             } catch (SQLException e) {

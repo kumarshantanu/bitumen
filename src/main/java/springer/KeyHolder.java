@@ -7,6 +7,8 @@ public interface KeyHolder {
 
     public Number get();
 
+    public Number get(String ColumnName);
+
     public Map<String, Object> getKeys();
 
     public List<Map<String, Object>> getKeyList();

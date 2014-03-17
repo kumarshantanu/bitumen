@@ -111,7 +111,7 @@ public class DefaultJdbcTest {
         }
     };
 
-    private Session readSession(Connection conn, int id) {
+    private Session readSession(Connection conn, long id) {
         final List<Session> slist = reader.queryForList(conn,
                 "SELECT skey, value, version, created, updated FROM session WHERE id = ?", new Object[] { id },
                 sessionExtractor);
@@ -120,7 +120,8 @@ public class DefaultJdbcTest {
 
     private final Session s1 = new Session() {
         public Session init() {
-            Timestamp now = Util.now();
+            Timestamp preNow = Util.now();
+            Timestamp now = new Timestamp(1000 * (preNow.getTime() / 1000));
             skey = 1001;
             value = "abc";
             version = Util.newVersion();
@@ -138,9 +139,9 @@ public class DefaultJdbcTest {
             @Override
             public void execute(Connection conn) {
                 // insert
-                Integer id = (Integer) writer.genkey(conn,
+                int id = writer.genkey(conn,
                         "INSERT INTO session (skey, value, version, created, updated) VALUES (?, ?, ?, ?, ?)",
-                        new Object[] {s1.skey, s1.value, s1.version, s1.created, s1.updated}).get();
+                        new Object[] {s1.skey, s1.value, s1.version, s1.created, s1.updated}).get().intValue();
                 Assert.assertNotNull(id);
                 Assert.assertEquals(s1, readSession(conn, id));  // read
                 // update
@@ -162,7 +163,7 @@ public class DefaultJdbcTest {
                 SqlParams insert = Util.namedParamReplace(
                         "INSERT INTO session (skey, value, version, created, updated) VALUES (:skey, :value, :version, :created, :updated)",
                         Util.makeParamMap("skey", s1.skey, "value", s1.value, "version", s1.version, "created", s1.created, "updated", s1.updated));
-                Integer id = (Integer) insert.genkey(conn).get();
+                int id = (Integer) insert.genkey(conn).get().intValue();
                 Assert.assertNotNull(id);
                 Assert.assertEquals(s1, readSession(conn, id));  // read
                 // update
@@ -187,9 +188,9 @@ public class DefaultJdbcTest {
         final int id = dst.withTransaction(new ConnectionActivity<Integer>() {
             @Override
             public Integer execute(Connection conn) {
-                final Integer id = (Integer) writer.genkey(conn,
+                final int id = writer.genkey(conn,
                         "INSERT INTO session (skey, value, version, created, updated) VALUES (?, ?, ?, ?, ?)",
-                        new Object[] {s1.skey, s1.value, s1.version, s1.created, s1.updated}).get();
+                        new Object[] {s1.skey, s1.value, s1.version, s1.created, s1.updated}).get().intValue();
                 Assert.assertNotNull(id);
                 return id;
             }

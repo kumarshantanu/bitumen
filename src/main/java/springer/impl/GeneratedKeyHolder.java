@@ -29,12 +29,22 @@ public class GeneratedKeyHolder implements KeyHolder {
     public Number get() {
         ensureGeneratedKeys();
         final int keyListSize = keyList.size();
-        final int keyMapSize = (keyListSize == 1? keyList.get(0).size(): 0);
-        if (keyListSize > 1 || keyMapSize > 1) {
-            throw new IllegalStateException("Expected exactly one, but found " + Math.max(keyListSize, keyMapSize)
-                    + " generated keys");
+        if (keyListSize > 1) {
+            throw new IllegalStateException("Expected exactly one, but found " + keyListSize
+                    + " rows of generated keys: " + keyList.toString());
         }
         return (Number) keyList.get(0).entrySet().iterator().next().getValue();
+    }
+
+    @Override
+    public Number get(String columnName) {
+        ensureGeneratedKeys();
+        final int keyListSize = keyList.size();
+        if (keyListSize > 1) {
+            throw new IllegalStateException("Expected exactly one, but found " + keyListSize
+                    + " rows of generated keys: " + keyList.toString());
+        }
+        return (Number) keyList.get(0).get(columnName);
     }
 
     @Override

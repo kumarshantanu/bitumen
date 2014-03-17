@@ -192,26 +192,36 @@ public class JdbcUtil {
         }
     }
 
-    public static PreparedStatement prepareStatementWithArgs(Connection conn, String sql, Object[] args) {
-        PreparedStatement pstmt = prepareStatement(conn, sql);
-        prepareArgs(pstmt, args);
+    public static PreparedStatement prepareStatementWithParams(Connection conn, String sql, Object[] args) {
+        return prepareStatementWithParams(conn, sql, args, false);
+    }
+
+    public static PreparedStatement prepareStatementWithParams(Connection conn, String sql, Object[] args,
+            boolean returnGeneratedkeys) {
+        PreparedStatement pstmt = prepareStatement(conn, sql, returnGeneratedkeys);
+        prepareParams(pstmt, args);
         return pstmt;
     }
 
     public static PreparedStatement prepareStatement(Connection conn, String sql) {
+        return prepareStatement(conn, sql, false);
+    }
+
+    public static PreparedStatement prepareStatement(Connection conn, String sql, boolean returnGeneratedkeys) {
         try {
-            return conn.prepareStatement(sql);
+            return returnGeneratedkeys?
+                    conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS): conn.prepareStatement(sql);
         } catch (SQLException e) {
             throw new JdbcException(String.format("Unable to prepare statement for SQL: [%s]", sql), e);
         }
     }
 
-    public static void prepareArgs(PreparedStatement pstmt, Object[] args) {
-        if (args != null) {
+    public static void prepareParams(PreparedStatement pstmt, Object[] params) {
+        if (params != null) {
             int i = -1;
             try {
-                for (i = 1; i <= args.length; i++) {
-                    final Object param = args[i - 1];
+                for (i = 1; i <= params.length; i++) {
+                    final Object param = params[i - 1];
                     if (param instanceof Integer) {
                         pstmt.setInt(i, (Integer) param);
                     } else if (param instanceof Long) {
@@ -227,7 +237,7 @@ public class JdbcUtil {
             } catch (SQLException e) {
                 close(pstmt);
                 throw new JdbcException(String.format("Unable to set parameter for prepared statement: %d %s",
-                        i, args[i]), e);
+                        i, params[i]), e);
             } catch (RuntimeException e) {
                 close(pstmt);
                 throw e;
