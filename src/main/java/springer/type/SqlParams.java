@@ -26,8 +26,8 @@ public class SqlParams implements Serializable {
         this(sql, new Object[0]);
     }
 
-    public SqlParams(String sql, Object[] args) {
-        this(sql, args, new DefaultJdbcRead(), new DefaultJdbcWrite());
+    public SqlParams(String sql, Object[] params) {
+        this(sql, params, new DefaultJdbcRead(), new DefaultJdbcWrite());
     }
 
     public SqlParams(String sql, Object[] args, JdbcRead reader, JdbcWrite writer) {
@@ -41,6 +41,10 @@ public class SqlParams implements Serializable {
     public transient final JdbcWrite writer;
 
     // ===== fluent interface methods =====
+
+    public SqlParams usingParams(Object[] params) {
+        return new SqlParams(sql, params, reader, writer);
+    }
 
     public SqlParams usingReader(JdbcRead reader) {
         return new SqlParams(sql, params, reader, writer);

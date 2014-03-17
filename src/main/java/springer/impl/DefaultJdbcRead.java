@@ -20,13 +20,13 @@ import springer.helper.Util;
 
 public class DefaultJdbcRead implements JdbcRead {
 
-    public List<Map<String, Object>> queryForList(Connection conn, final String sql, Object[] args) {
-        return queryForList(conn, sql, args, -1, true);
+    public List<Map<String, Object>> queryForList(Connection conn, final String sql, Object[] params) {
+        return queryForList(conn, sql, params, -1, true);
     }
 
-    public List<Map<String, Object>> queryForList(Connection conn, final String sql, Object[] args,
+    public List<Map<String, Object>> queryForList(Connection conn, final String sql, Object[] params,
             final long limit, final boolean throwLimitExceedException) {
-        return queryCustom(conn, sql, args, new ResultSetExtractor<List<Map<String, Object>>>() {
+        return queryCustom(conn, sql, params, new ResultSetExtractor<List<Map<String, Object>>>() {
             public List<Map<String, Object>> extract(ResultSet rs) {
                 try {
                     return extractMaps(rs, limit, throwLimitExceedException);
@@ -73,13 +73,13 @@ public class DefaultJdbcRead implements JdbcRead {
         return result;
     }
 
-    public <T> List<T> queryForList(Connection conn, final String sql, Object[] args, final RowExtractor<T> extractor) {
-        return queryForList(conn, sql, args, extractor, -1, true);
+    public <T> List<T> queryForList(Connection conn, final String sql, Object[] params, final RowExtractor<T> extractor) {
+        return queryForList(conn, sql, params, extractor, -1, true);
     }
 
-    public <T> List<T> queryForList(Connection conn, final String sql, Object[] args, final RowExtractor<T> extractor,
+    public <T> List<T> queryForList(Connection conn, final String sql, Object[] params, final RowExtractor<T> extractor,
             final long limit, final boolean throwLimitExceedException) {
-        return queryCustom(conn, sql, args, new ResultSetExtractor<List<T>>() {
+        return queryCustom(conn, sql, params, new ResultSetExtractor<List<T>>() {
             public List<T> extract(ResultSet rs) {
                 final List<T> result = new ArrayList<T>(1);
                 try {
@@ -107,15 +107,15 @@ public class DefaultJdbcRead implements JdbcRead {
         });
     }
 
-    public <K, V> Map<K, V> queryForMap(Connection conn, String sql, Object[] args, RowExtractor<K> keyExtractor,
+    public <K, V> Map<K, V> queryForMap(Connection conn, String sql, Object[] params, RowExtractor<K> keyExtractor,
             RowExtractor<V> valueExtractor) {
-        return queryForMap(conn, sql, args, keyExtractor, valueExtractor, -1, true);
+        return queryForMap(conn, sql, params, keyExtractor, valueExtractor, -1, true);
     }
 
-    public <K, V> Map<K, V> queryForMap(Connection conn, String sql, Object[] args, RowExtractor<K> keyExtractor,
+    public <K, V> Map<K, V> queryForMap(Connection conn, String sql, Object[] params, RowExtractor<K> keyExtractor,
             RowExtractor<V> valueExtractor, long limit, boolean throwLimitExceedException) {
-        Util.echo("Query SQL: [%s], args: %s\n", sql, Arrays.toString(args));
-        final PreparedStatement pstmt = JdbcUtil.prepareStatementWithArgs(conn, sql, args);
+        Util.echo("Query SQL: [%s], args: %s\n", sql, Arrays.toString(params));
+        final PreparedStatement pstmt = JdbcUtil.prepareStatementWithArgs(conn, sql, params);
         ResultSet rs = null;
         try {
             rs = pstmt.executeQuery();
@@ -145,9 +145,9 @@ public class DefaultJdbcRead implements JdbcRead {
         }
     }
 
-    public <T> T queryCustom(Connection conn, String sql, Object[] args, ResultSetExtractor<T> extractor) {
-        Util.echo("Query SQL: [%s], args: %s\n", sql, Arrays.toString(args));
-        final PreparedStatement pstmt = JdbcUtil.prepareStatementWithArgs(conn, sql, args);
+    public <T> T queryCustom(Connection conn, String sql, Object[] params, ResultSetExtractor<T> extractor) {
+        Util.echo("Query SQL: [%s], args: %s\n", sql, Arrays.toString(params));
+        final PreparedStatement pstmt = JdbcUtil.prepareStatementWithArgs(conn, sql, params);
         ResultSet rs = null;
         try {
             rs = pstmt.executeQuery();

@@ -14,13 +14,13 @@ import springer.helper.Util;
 
 public class DefaultJdbcWrite implements JdbcWrite {
 
-    public GeneratedKeyHolder genkey(Connection conn, String sql, Object[] args) {
-        final PreparedStatement pstmt = JdbcUtil.prepareStatementWithArgs(conn, sql, args);
+    public GeneratedKeyHolder genkey(Connection conn, String sql, Object[] params) {
+        final PreparedStatement pstmt = JdbcUtil.prepareStatementWithArgs(conn, sql, params);
         try {
             pstmt.executeUpdate();
         } catch (SQLException e) {
             throw new JdbcException(String.format("Unable to execute SQL statement: [%s], args: %s",
-                    sql, Arrays.toString(args)), e);
+                    sql, Arrays.toString(params)), e);
         }
         try {
             final ResultSet rs = pstmt.getGeneratedKeys();
@@ -28,28 +28,28 @@ public class DefaultJdbcWrite implements JdbcWrite {
                     JdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
         } catch (SQLException e) {
             throw new JdbcException(String.format("Unable to extract gnerated keys for SQL statement: [%s], args: %s",
-                    sql, Arrays.toString(args)), e);
+                    sql, Arrays.toString(params)), e);
         }
     }
 
-    public int update(Connection conn, String sql, Object[] args) {
-        Util.echo("Update SQL: [%s], args: %s\n", sql, Arrays.toString(args));
-        final PreparedStatement pstmt = JdbcUtil.prepareStatementWithArgs(conn, sql, args);
+    public int update(Connection conn, String sql, Object[] params) {
+        Util.echo("Update SQL: [%s], args: %s\n", sql, Arrays.toString(params));
+        final PreparedStatement pstmt = JdbcUtil.prepareStatementWithArgs(conn, sql, params);
         try {
             return pstmt.executeUpdate();
         } catch (SQLException e) {
             throw new JdbcException(String.format("Unable to execute SQL statement: [%s], args: %s",
-                    sql, Arrays.toString(args)), e);
+                    sql, Arrays.toString(params)), e);
         } finally {
             JdbcUtil.close(pstmt);
         }
     }
 
-    public int[] batchUpdate(Connection conn, String sql, Object[][] argsArray) {
+    public int[] batchUpdate(Connection conn, String sql, Object[][] paramsArray) {
         Util.echo("Update SQL: [%s], batch-size: %d, args: %s\n",
-                sql, argsArray.length, Arrays.toString(JdbcUtil.eachStr(argsArray)));
+                sql, paramsArray.length, Arrays.toString(JdbcUtil.eachStr(paramsArray)));
         final PreparedStatement pstmt = JdbcUtil.prepareStatement(conn, sql);
-        for (Object[] args: argsArray) {
+        for (Object[] args: paramsArray) {
             JdbcUtil.prepareArgs(pstmt, args);
             try {
                 pstmt.addBatch();
@@ -64,7 +64,7 @@ public class DefaultJdbcWrite implements JdbcWrite {
         } catch (SQLException e) {
             JdbcUtil.close(pstmt);
             throw new JdbcException(String.format("Unable to execute batch for SQL: [%s] (batch size = %d)",
-                    sql, argsArray.length), e);
+                    sql, paramsArray.length), e);
         } finally {
             JdbcUtil.close(pstmt);
         }
