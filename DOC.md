@@ -131,7 +131,7 @@ public class FluentExample {
                 // update using named parameters
                 int updates = Util.namedParamReplace(
                         "UPDATE emp SET emp_name = :emp_name WHERE emp_id = :emp_id",
-                        Util.makeArgMap("Joe Nixon", "E-1196"))
+                        Util.makeArgMap("emp_name", "Joe Nixon", "emp_id", "E-1196"))
                         .update(conn);
                 // delete using named parameters
                 int deletes = Util.namedParamReplace(
@@ -154,7 +154,7 @@ public class FluentExample {
             // update using named parameters
             int updates = Util.namedParamReplace(
                     "UPDATE emp SET emp_name = :emp_name WHERE emp_id = :emp_id",
-                    Util.makeArgMap("Joe Nixon", "E-1196"))
+                    Util.makeArgMap("emp_name", "Joe Nixon", "emp_id", "E-1196"))
                     .update(conn);
             // delete using named parameters
             int deletes = Util.namedParamReplace(
