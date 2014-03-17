@@ -161,8 +161,6 @@ public class DefaultJdbcTest {
                 SqlParams insert = Util.namedParamReplace(
                         "INSERT INTO session (skey, value, version, created, updated) VALUES (:skey, :value, :version, :created, :updated)",
                         Util.makeParamMap("skey", s1.skey, "value", s1.value, "version", s1.version, "created", s1.created, "updated", s1.updated));
-                System.out.println("******** " + insert.sql);
-                System.out.println(Arrays.toString(insert.params));
                 Integer id = (Integer) insert.genkey(conn).get();
                 Assert.assertNotNull(id);
                 Assert.assertEquals(s1, readSession(conn, id));  // read
@@ -180,6 +178,11 @@ public class DefaultJdbcTest {
                 Assert.assertNull(readSession(conn, id));
             }
         });
+    }
+
+    @Test
+    public void transactionTest() {
+        Assert.fail("Not yet implemented");
     }
 
 }
