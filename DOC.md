@@ -49,9 +49,9 @@ public class JdbcExample {
             @Override
             public void execute(Connection conn) {
                 // insert
-                final long key = (Long) writer.genkey(conn,
+                final long key = writer.genkey(conn,
                         "INSERT INTO emp (emp_id, emp_name) VALUES (?, ?)",
-                        new Object[] { "E-1196", "Joe Walker" }).get();
+                        new Object[] { "E-1196", "Joe Walker" }).get().longValue();
                 // read
                 Map<String, Object> row = reader.queryForList(conn,
                         "SELECT * FROM emp WHERE emp_id = ?",
@@ -70,9 +70,9 @@ public class JdbcExample {
         // Java 8 and beyond
         dst.withTransactionNoResult(conn -> {
             // insert
-            final long key = (Long) writer.genkey(conn,
+            final long key = writer.genkey(conn,
                     "INSERT INTO emp (emp_id, emp_name) VALUES (?, ?)",
-                    new Object[] { "E-1196", "Joe Walker" }).get();
+                    new Object[] { "E-1196", "Joe Walker" }).get().longValue();
             // read
             Map<String, Object> row = reader.queryForList(conn,
                     "SELECT * FROM emp WHERE emp_id = ?",
@@ -121,9 +121,9 @@ public class FluentExample {
             @Override
             public void execute(Connection conn) {
                 // insert using positional parameters
-                final long key = (Long) new SqlParams(
+                final long key = new SqlParams(
                         "INSERT INTO emp (emp_id, emp_name) VALUES (?, ?)",
-                        new Object[] { "E-1196", "Joe Walker" }).genkey(conn).get();
+                        new Object[] { "E-1196", "Joe Walker" }).genkey(conn).get().longValue();
                 // read using positional parameters
                 Map<String, Object> row = new SqlParams(
                         "SELECT * FROM emp WHERE emp_id = ?",
@@ -144,9 +144,9 @@ public class FluentExample {
         // Java 8 and beyond
         dst.withTransactionNoResult(conn -> {
             // insert using positional parameters
-            final long key = (Long) new SqlParams(
+            final long key = new SqlParams(
                     "INSERT INTO emp (emp_id, emp_name) VALUES (?, ?)",
-                    new Object[] { "E-1196", "Joe Walker" }).genkey(conn).get();
+                    new Object[] { "E-1196", "Joe Walker" }).genkey(conn).get().longValue();
             // read using positional parameters
             Map<String, Object> row = new SqlParams(
                     "SELECT * FROM emp WHERE emp_id = ?",
