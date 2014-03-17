@@ -126,12 +126,8 @@ public class JdbcUtil {
 
     public static <T> RowExtractor<T> makeColumnExtractor(final Class<T> columnClass, final int columnIndex) {
         return new RowExtractor<T>() {
-            public T extract(ResultSet rs) {
-                try {
-                    return columnClass.cast(getValue(rs, columnIndex));
-                } catch (SQLException e) {
-                    throw new JdbcException("Unable to extract column number " + columnIndex, e);
-                }
+            public T extract(ResultSet rs) throws SQLException {
+                return columnClass.cast(getValue(rs, columnIndex));
             }
         };
     }
