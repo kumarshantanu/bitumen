@@ -31,9 +31,9 @@ public class MysqlKeyvalTest {
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-        dataSource = null;
         opsTestSingle = null;
         opsTestBatch  = null;
+        dataSource = null;
     }
 
     final KeyvalWrite<Integer, String> writer = new MysqlKeyvalWrite<Integer, String>(TestUtil.meta, false);

@@ -33,6 +33,7 @@ public class DefaultKeyvalTest {
     public static void tearDownAfterClass() throws Exception {
         opsTestSingle = null;
         opsTestBatch = null;
+        dataSource = null;
     }
 
     final KeyvalWrite<Integer, String> writer = new DefaultKeyvalWrite<Integer, String>(TestUtil.meta);
