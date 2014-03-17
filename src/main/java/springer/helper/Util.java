@@ -55,12 +55,14 @@ public class Util {
         return embedReplace('$', format, values, throwOnMissing, false, null).sql;
     }
 
-    public static SqlArgs namedParamReplace(String format, Map<String, String> values) {
-        return embedReplace(':', format, values, true, true, "?");
+    public static SqlArgs namedParamReplace(String format, Map<String, Object> values) {
+        final Map<String, String> subsVals = Util.zipmap(new ArrayList<String>(values.keySet()),
+                Util.repeat("?", values.size()));
+        return embedReplace(':', format, subsVals, true, true, values);
     }
 
     public static SqlArgs embedReplace(char marker, String format, Map<String, String> values, boolean throwOnMissing,
-            boolean addToVals, String valSubstitute) {
+            boolean addToVals, Map<String, Object> addVals) {
         final int len = format.length();
         final StringBuilder sb = new StringBuilder(len);
         final List<Object> vals = new ArrayList<Object>();
@@ -108,11 +110,9 @@ public class Util {
                         sb.append(marker).append(nameStr);
                     }
                 } else {
+                    sb.append(values.get(nameStr));
                     if (addToVals) {
-                        sb.append(valSubstitute);
-                        vals.add(values.get(nameStr));
-                    } else {
-                        sb.append(values.get(nameStr));
+                        vals.add(addVals.get(nameStr));
                     }
                 }
                 if (i < len) {
@@ -140,6 +140,14 @@ public class Util {
             sb.append(token);
         }
         return sb.toString();
+    }
+
+    public static <T> List<T> repeat(T token, int count) {
+        final List<T> result = new ArrayList<T>(count);
+        for (int i = 0; i < count; i++) {
+            result.add(token);
+        }
+        return result;
     }
 
     public static <K, V> List<V> getVals(Map<K, V> map, List<K> keys) {
@@ -170,6 +178,10 @@ public class Util {
             result.put(kt.cast(args[i]), vt.cast(args[i + 1]));
         }
         return result;
+    }
+
+    public static Map<String, Object> makeArgMap(Object...args) {
+        return makeMap(String.class, Object.class, args);
     }
 
     public static <K, V> Map<K, V> zipmap(List<K> keys, List<V> vals) {
