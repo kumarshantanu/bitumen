@@ -91,7 +91,7 @@ public class JdbcExample {
 }
 ```
 
-### Fluent example
+### Fluent-interface example
 
 The following example shows the usage of fluent API and named parameter support.
 
@@ -105,7 +105,7 @@ import javax.sql.DataSource;
 import springer.helper.ConnectionActivityNoResult;
 import springer.helper.DataSourceTemplate;
 import springer.helper.Util;
-import springer.type.SqlArgs;
+import springer.type.SqlParams;
 
 public class FluentExample {
 
@@ -121,17 +121,17 @@ public class FluentExample {
             @Override
             public void execute(Connection conn) {
                 // insert using positional parameters
-                final long key = (Long) new SqlArgs(
+                final long key = (Long) new SqlParams(
                         "INSERT INTO emp (emp_id, emp_name) VALUES (?, ?)",
                         new Object[] { "E-1196", "Joe Walker" }).genkey(conn).get();
                 // read using positional parameters
-                Map<String, Object> row = new SqlArgs(
+                Map<String, Object> row = new SqlParams(
                         "SELECT * FROM emp WHERE emp_id = ?",
                         new Object[] { "E-1196" }).queryForList(conn).get(0);
                 // update using named parameters
                 int updates = Util.namedParamReplace(
                         "UPDATE emp SET emp_name = :emp_name WHERE emp_id = :emp_id",
-                        Util.makeArgMap("emp_name", "Joe Nixon", "emp_id", "E-1196"))
+                        Util.makeParamMap("emp_name", "Joe Nixon", "emp_id", "E-1196"))
                         .update(conn);
                 // delete using named parameters
                 int deletes = Util.namedParamReplace(
@@ -144,17 +144,17 @@ public class FluentExample {
         // Java 8 and beyond
         dst.withTransactionNoResult(conn -> {
             // insert using positional parameters
-            final long key = (Long) new SqlArgs(
+            final long key = (Long) new SqlParams(
                     "INSERT INTO emp (emp_id, emp_name) VALUES (?, ?)",
                     new Object[] { "E-1196", "Joe Walker" }).genkey(conn).get();
             // read using positional parameters
-            Map<String, Object> row = new SqlArgs(
+            Map<String, Object> row = new SqlParams(
                     "SELECT * FROM emp WHERE emp_id = ?",
                     new Object[] { "E-1196" }).queryForList(conn).get(0);
             // update using named parameters
             int updates = Util.namedParamReplace(
                     "UPDATE emp SET emp_name = :emp_name WHERE emp_id = :emp_id",
-                    Util.makeArgMap("emp_name", "Joe Nixon", "emp_id", "E-1196"))
+                    Util.makeParamMap("emp_name", "Joe Nixon", "emp_id", "E-1196"))
                     .update(conn);
             // delete using named parameters
             int deletes = Util.namedParamReplace(
@@ -163,8 +163,6 @@ public class FluentExample {
                     .update(conn);
         });
     }
-
-}
 ```
 
 ## Emulate key-value store
