@@ -175,8 +175,8 @@ public class JdbcUtil {
 
     public static void requireTransaction(Connection conn) {
         try {
-            if (!conn.getAutoCommit()) {
-                conn.setAutoCommit(true);
+            if (conn.getAutoCommit()) {
+                conn.setAutoCommit(false);
             }
         } catch (SQLException e) {
             throw new JdbcException("Unable to configure transaction", e);

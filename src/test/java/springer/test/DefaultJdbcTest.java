@@ -20,6 +20,7 @@ import org.junit.Test;
 import springer.JdbcRead;
 import springer.JdbcWrite;
 import springer.RowExtractor;
+import springer.helper.ConnectionActivity;
 import springer.helper.ConnectionActivityNoResult;
 import springer.helper.DataSourceTemplate;
 import springer.helper.Util;
@@ -182,7 +183,51 @@ public class DefaultJdbcTest {
 
     @Test
     public void transactionTest() {
-        Assert.fail("Not yet implemented");
+        // commit with one update
+        final int id = dst.withTransaction(new ConnectionActivity<Integer>() {
+            @Override
+            public Integer execute(Connection conn) {
+                final Integer id = (Integer) writer.genkey(conn,
+                        "INSERT INTO session (skey, value, version, created, updated) VALUES (?, ?, ?, ?, ?)",
+                        new Object[] {s1.skey, s1.value, s1.version, s1.created, s1.updated}).get();
+                Assert.assertNotNull(id);
+                return id;
+            }
+        });
+        dst.withConnectionNoResult(new ConnectionActivityNoResult() {
+            @Override
+            public void execute(Connection conn) {
+                Assert.assertEquals(s1, readSession(conn, id));  // read
+                TestUtil.deleteAll(dst);
+            }
+        });
+        // rollback with two updates
+        final boolean go = true;
+        try {
+            dst.withTransactionNoResult(new ConnectionActivityNoResult() {
+                @Override
+                public void execute(Connection conn) {
+                    // TODO Auto-generated method stub
+                    writer.update(conn,
+                            "INSERT INTO session (skey, value, version, created, updated) VALUES (?, ?, ?, ?, ?)",
+                            new Object[] {1001, s1.value, s1.version, s1.created, s1.updated});
+                    if (go) throw new RuntimeException();
+                    writer.update(conn,
+                            "INSERT INTO session (skey, value, version, created, updated) VALUES (?, ?, ?, ?, ?)",
+                            new Object[] {1002, s1.value, s1.version, s1.created, s1.updated});
+                }
+            });
+        } catch (RuntimeException e) {
+            // swallow exception
+        }
+        long rows = dst.withConnection(new ConnectionActivity<Long>() {
+            @Override
+            public Long execute(Connection conn) {
+                return (Long) reader.queryForList(conn, "SELECT COUNT(*) FROM session", null).get(0)
+                        .entrySet().iterator().next().getValue();
+            }
+        });
+        Assert.assertEquals(0, rows);
     }
 
 }
