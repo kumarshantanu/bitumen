@@ -3,14 +3,13 @@ package springer.helper;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import springer.type.SqlArgs;
+import springer.type.SqlParams;
 
 public class Util {
 
@@ -55,13 +54,13 @@ public class Util {
         return embedReplace('$', format, values, throwOnMissing, false, null).sql;
     }
 
-    public static SqlArgs namedParamReplace(String format, Map<String, Object> values) {
+    public static SqlParams namedParamReplace(String format, Map<String, Object> values) {
         final Map<String, String> subsVals = Util.zipmap(new ArrayList<String>(values.keySet()),
                 Util.repeat("?", values.size()));
         return embedReplace(':', format, subsVals, true, true, values);
     }
 
-    public static SqlArgs embedReplace(char marker, String format, Map<String, String> values, boolean throwOnMissing,
+    public static SqlParams embedReplace(char marker, String format, Map<String, String> values, boolean throwOnMissing,
             boolean addToVals, Map<String, Object> addVals) {
         final int len = format.length();
         final StringBuilder sb = new StringBuilder(len);
@@ -123,7 +122,7 @@ public class Util {
                 sb.append(c);
             }
         }
-        return new SqlArgs(sb.toString(), vals.toArray());
+        return new SqlParams(sb.toString(), vals.toArray());
     }
 
     public static <T> boolean equals(T one, T two) {
@@ -180,7 +179,7 @@ public class Util {
         return result;
     }
 
-    public static Map<String, Object> makeArgMap(Object...args) {
+    public static Map<String, Object> makeParamMap(Object...args) {
         return makeMap(String.class, Object.class, args);
     }
 

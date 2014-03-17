@@ -15,24 +15,24 @@ import springer.helper.Util;
 import springer.impl.DefaultJdbcRead;
 import springer.impl.DefaultJdbcWrite;
 
-public class SqlArgs implements Serializable {
+public class SqlParams implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     public final String sql;
-    public final Object[] args;
+    public final Object[] params;
 
-    public SqlArgs(String sql) {
+    public SqlParams(String sql) {
         this(sql, new Object[0]);
     }
 
-    public SqlArgs(String sql, Object[] args) {
+    public SqlParams(String sql, Object[] args) {
         this(sql, args, new DefaultJdbcRead(), new DefaultJdbcWrite());
     }
 
-    public SqlArgs(String sql, Object[] args, JdbcRead reader, JdbcWrite writer) {
+    public SqlParams(String sql, Object[] args, JdbcRead reader, JdbcWrite writer) {
         this.sql = sql;
-        this.args = args;
+        this.params = args;
         this.reader = reader;
         this.writer = writer;
     }
@@ -42,54 +42,54 @@ public class SqlArgs implements Serializable {
 
     // ===== fluent interface methods =====
 
-    public SqlArgs usingReader(JdbcRead reader) {
-        return new SqlArgs(sql, args, reader, writer);
+    public SqlParams usingReader(JdbcRead reader) {
+        return new SqlParams(sql, params, reader, writer);
     }
 
-    public SqlArgs usingReader(JdbcWrite writer) {
-        return new SqlArgs(sql, args, reader, writer);
+    public SqlParams usingReader(JdbcWrite writer) {
+        return new SqlParams(sql, params, reader, writer);
     }
 
     // ----- Reader methods -----
 
     public List<Map<String, Object>> queryForList(Connection conn) {
-        return reader.queryForList(conn, sql, args);
+        return reader.queryForList(conn, sql, params);
     }
 
     public List<Map<String, Object>> queryForList(Connection conn, long limit, boolean throwLimitExceedException) {
-        return reader.queryForList(conn, sql, args, limit, throwLimitExceedException);
+        return reader.queryForList(conn, sql, params, limit, throwLimitExceedException);
     }
 
     public <T> List<T> queryForList(Connection conn, RowExtractor<T> extractor) {
-        return reader.queryForList(conn, sql, args, extractor);
+        return reader.queryForList(conn, sql, params, extractor);
     }
 
     public <T> List<T> queryForList(Connection conn, RowExtractor<T> extractor, long limit,
             boolean throwLimitExceedException) {
-        return reader.queryForList(conn, sql, args, extractor, limit, throwLimitExceedException);
+        return reader.queryForList(conn, sql, params, extractor, limit, throwLimitExceedException);
     }
 
     public <K, V> Map<K, V> queryForMap(Connection conn, RowExtractor<K> keyExtractor, RowExtractor<V> valueExtractor) {
-        return reader.queryForMap(conn, sql, args, keyExtractor, valueExtractor);
+        return reader.queryForMap(conn, sql, params, keyExtractor, valueExtractor);
     }
 
     public <K, V> Map<K, V> queryForMap(Connection conn, RowExtractor<K> keyExtractor, RowExtractor<V> valueExtractor,
             long limit, boolean throwLimitExceedException) {
-        return reader.queryForMap(conn, sql, args, keyExtractor, valueExtractor, limit, throwLimitExceedException);
+        return reader.queryForMap(conn, sql, params, keyExtractor, valueExtractor, limit, throwLimitExceedException);
     }
 
     public <T> T queryCustom(Connection conn, ResultSetExtractor<T> extractor) {
-        return reader.queryCustom(conn, sql, args, extractor);
+        return reader.queryCustom(conn, sql, params, extractor);
     }
 
     // ----- Writer methods -----
 
     public KeyHolder genkey(Connection conn) {
-        return writer.genkey(conn, sql, args);
+        return writer.genkey(conn, sql, params);
     }
 
     public int update(Connection conn) {
-        return writer.update(conn, sql, args);
+        return writer.update(conn, sql, params);
     }
 
     public int[] batchUpdate(Connection conn, Object[][] argsArray) {
@@ -100,21 +100,21 @@ public class SqlArgs implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("sql = %s, args = %s", sql, Arrays.toString(args));
+        return String.format("sql = %s, args = %s", sql, Arrays.toString(params));
     }
 
     @Override
     public int hashCode() {
-        return ("" + sql + '|' + Arrays.toString(args)).hashCode();
+        return ("" + sql + '|' + Arrays.toString(params)).hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof SqlArgs)) {
+        if (obj == null || !(obj instanceof SqlParams)) {
             return false;
         }
-        final SqlArgs that = (SqlArgs) obj;
-        return Util.equals(sql, that.sql) && Util.equals(args, that.args);
+        final SqlParams that = (SqlParams) obj;
+        return Util.equals(sql, that.sql) && Util.equals(params, that.params);
     }
 
 }
