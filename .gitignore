@@ -9,3 +9,5 @@ pom.xml.asc
 .settings
 .classpath
 .project
+/.*
+
