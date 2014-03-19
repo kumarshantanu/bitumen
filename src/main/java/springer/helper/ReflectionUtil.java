@@ -6,15 +6,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class ReflectionUtil {
 
     public static class Primitive {
-
-        // these get initialized to their default values
+        // These gets initialized to their default values
         private static boolean DEFAULT_BOOLEAN;
         private static byte DEFAULT_BYTE;
         private static char DEFAULT_CHAR;
@@ -43,7 +44,7 @@ public class ReflectionUtil {
                 return DEFAULT_DOUBLE;
             } else {
                 throw new IllegalArgumentException(
-                    "Class type " + clazz + " not supported");
+                    "Class type " + clazz + " not a supported primitive");
             }
         }
 
@@ -66,7 +67,7 @@ public class ReflectionUtil {
                 return Double.class;
             } else {
                 throw new IllegalArgumentException(
-                    "Class type " + clazz + " not supported");
+                    "Class type " + clazz + " not a supported primitive");
             }
         }
 
@@ -103,7 +104,7 @@ public class ReflectionUtil {
                 final Object value = map.get(fname);
                 final Class<?> fclass = each.getType();
                 if (!Modifier.isFinal(modifiers)) {
-                    final Object fvalue = value instanceof Map<?, ?> && !fclass.equals(Map.class)?
+                    final Object fvalue = value instanceof Map<?, ?> && !Map.class.isAssignableFrom(fclass)?
                             fromMap((Map<String, ?>) value, fclass):
                                 value == null && fclass.isPrimitive()?
                                         Primitive.getDefaultValue(fclass): value;
@@ -114,10 +115,6 @@ public class ReflectionUtil {
         } catch(IllegalAccessException e) {
             throw new IllegalArgumentException(e);
         }
-    }
-
-    protected static <T> Map<String, Object> getFields(T object) {
-        return getFieldValues(object, object.getClass());
     }
 
     private static Object cast(Class<?> clazz, Object value) {
@@ -144,20 +141,21 @@ public class ReflectionUtil {
 
     }
 
-    protected static <T> Map<String, Object> getFieldValues(Object object, Class<T> clazz) {
+    protected static <T> Map<String, Object> getFieldValues(Object object, Class<T> clazz, boolean includeTransients) {
         if (!clazz.isInstance(object)) {
             throw new IllegalArgumentException("Object " + object + " is not an instance of class " + clazz.getName());
         }
         final Field[] fields = clazz.getDeclaredFields();
         final Map<String, Object> data = new LinkedHashMap<String, Object>(fields.length);
         for (Field each: fields) {
+            if (!includeTransients && Modifier.isTransient(each.getModifiers())) {
+                continue;
+            }
             each.setAccessible(true);
             Object val;
             try {
                 val = each.get(object);
                 data.put(each.getName(), val);
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException(e);
             } catch (IllegalAccessException e) {
                 throw new IllegalArgumentException(e);
             }
@@ -170,12 +168,43 @@ public class ReflectionUtil {
     }
 
     public static <T> Map<String, Object> toMap(Object object, Class<T> clazz) {
-        final Map<String, Object> fields = getFieldValues(object, clazz);
+        return toMap(object, clazz, false);
+    }
+
+    public static final String JDK_CLASS_REGEX = "(java|javax)\\..+";
+
+    public static <T> Map<String, Object> toMap(Object object, Class<T> clazz, boolean includeTransients) {
+        final Map<String, Object> fields = getFieldValues(object, clazz, includeTransients);
         final Map<String, Object> result = new LinkedHashMap<String, Object>();
         for (String each: fields.keySet()) {
             Object value = fields.get(each);
             String cname = value == null? null: value.getClass().getName();
-            result.put(each, value == null || cname.matches("(java|javax)\\..+")? value: toMap(value));
+            if (value == null || cname.matches(JDK_CLASS_REGEX) || value instanceof Map || value instanceof Collection) {
+                if (value instanceof Map) {
+                    result.put(each, normalize((Map<?, ?>) value));
+                } else {
+                    result.put(each, value);
+                }
+            } else {System.out.println("    ---- Branching out on fieldName = " + each);
+                result.put(each, toMap(value));
+            }
+        }
+        return result;
+    }
+
+    public static <K, V> Map<Object, Object> normalize(Map<K, V> map) {
+        final Map<Object, Object> result = new LinkedHashMap<Object, Object>(map.size());
+        for (Entry<K, V> each: map.entrySet()) {
+            final K oldKey = each.getKey();
+            final Class<?> oldKeyClass = oldKey.getClass();
+            final Object newKey = oldKeyClass.getName().matches(JDK_CLASS_REGEX)? oldKey: toMap(oldKey);
+            final V oldValue = each.getValue();
+            Object newValue = null;
+            if (oldValue != null) {
+                final Class<?> oldValueClass = oldValue.getClass();
+                newValue = oldValueClass.getName().matches(JDK_CLASS_REGEX)? oldValue: toMap(oldValue);
+            }
+            result.put(newKey, newValue);
         }
         return result;
     }
