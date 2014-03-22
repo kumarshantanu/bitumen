@@ -18,8 +18,19 @@
   </licenses>
 
   <scm>
-    <url>git@github.com:kumarshantanu/springer.git</url>
+    <url>https://github.com/kumarshantanu/springer</url>
+    <connection>git@github.com:kumarshantanu/springer.git</connection>
   </scm>
+
+  <developers>
+    <developer>
+      <id>kumarshantanu</id>
+      <name>Shantanu Kumar</name>
+      <email>kumar.shantanu@gmail.com</email>
+      <url>https://github.com/kumarshantanu</url>
+      <timezone>GMT+5:30</timezone>
+    </developer>
+  </developers>
 
   <dependencies>
     <dependency>
@@ -56,6 +67,8 @@
 
   <build>
     <plugins>
+
+      <!-- make it compatible with Java 5 and above -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -64,6 +77,50 @@
           <target>1.5</target>
         </configuration>
       </plugin>
+
+      <!-- generate springer-x.y.z-sources.jar -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- generate springer-x.y.z-javadoc.jar -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- sign generated artifacts with GPG -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 
