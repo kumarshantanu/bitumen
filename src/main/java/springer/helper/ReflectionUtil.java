@@ -15,7 +15,7 @@ import java.util.Map.Entry;
 public class ReflectionUtil {
 
     public static class Primitive {
-        // These gets initialized to their default values
+        // These get initialized to their default values
         private static boolean DEFAULT_BOOLEAN;
         private static byte DEFAULT_BYTE;
         private static char DEFAULT_CHAR;
@@ -44,7 +44,7 @@ public class ReflectionUtil {
                 return DEFAULT_DOUBLE;
             } else {
                 throw new IllegalArgumentException(
-                    "Class type " + clazz + " not a supported primitive");
+                    "Class type " + clazz + " is not a supported primitive");
             }
         }
 
@@ -67,27 +67,106 @@ public class ReflectionUtil {
                 return Double.class;
             } else {
                 throw new IllegalArgumentException(
-                    "Class type " + clazz + " not a supported primitive");
+                    "Class type " + clazz + " is not a supported primitive");
             }
         }
 
     }
 
-    private static <T> T instantiate(Class<T> cls, Map<String, ? extends Object> args) {
-        // Create instance of the given class
-        @SuppressWarnings("unchecked")
-        final Constructor<T> constr = (Constructor<T>) cls.getConstructors()[0];
-        final List<Object> params = new ArrayList<Object>();
-        try {
-            for (Class<?> pType : constr.getParameterTypes()) {
-                params.add((pType.isPrimitive()) ? Primitive.toWrapper(pType).newInstance() : null);
+    /**
+     * Instantiate gracefully and return the instance.
+     * @param cls the class to instantiate
+     * @param args arguments to pass to the constructor (in same order)
+     * @param shouldSetAccessible whether to setAccessible to true before instantiating (for non-public constructors)
+     * @return instance of the class
+     */
+    public static <T> T instantiate(Class<T> cls, Object[] args, boolean shouldSetAccessible) {
+        if (args == null || args.length == 0) {
+            try {
+                return cls.newInstance();
+            } catch (InstantiationException e) {
+                throw new IllegalArgumentException(e);
+            } catch (IllegalAccessException e) {
+                throw new IllegalArgumentException(e);
             }
-            return constr.newInstance(params.toArray());
-        } catch(IllegalAccessException e) {
-            throw new IllegalArgumentException(e);
-        } catch (InvocationTargetException e) {
-            throw new IllegalArgumentException(e);
+        } else {
+            @SuppressWarnings("unchecked")
+            final Constructor<T>[] constructors = (Constructor<T>[]) cls.getConstructors();
+            for (Constructor<T> each: constructors) {
+                final Class<?>[] paramTypes = each.getParameterTypes();
+                if (args.length == paramTypes.length) {
+                    boolean match = true;
+                    for (int i = 0; i < args.length; i++) {
+                        if (!(paramTypes[i].isInstance(args[i]))) {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if (match) {
+                        if (shouldSetAccessible) {
+                            each.setAccessible(true);
+                        }
+                        try {
+                            return each.newInstance(args);
+                        } catch (InstantiationException e) {
+                            throw new IllegalArgumentException(e);
+                        } catch (IllegalAccessException e) {
+                            throw new IllegalArgumentException(e);
+                        } catch (IllegalArgumentException e) {
+                            throw new IllegalArgumentException(e);
+                        } catch (InvocationTargetException e) {
+                            throw new IllegalArgumentException(e);
+                        }
+                    }
+                }
+            }
+            throw new IllegalArgumentException("No matching constructor found for class " + cls + " in args: " + args);
+        }
+    }
+
+    /**
+     * Somehow instantiate the class, even though with null values in fields.
+     * @param cls
+     * @return
+     */
+    public static <T> T instantiate(Class<T> cls) {
+        try {
+            return cls.newInstance();
         } catch (InstantiationException e) {
+            // use brute-force way of instantiation
+            @SuppressWarnings("unchecked")
+            final Constructor<T> constr = (Constructor<T>) cls.getConstructors()[0];
+            final List<Object> params = new ArrayList<Object>();
+            try {
+                for (Class<?> pType : constr.getParameterTypes()) {
+                    params.add((pType.isPrimitive()) ? Primitive.toWrapper(pType).newInstance() : null);
+                }
+                return constr.newInstance(params.toArray());
+            } catch(IllegalAccessException e2) {
+                throw new IllegalArgumentException(e2);
+            } catch (InvocationTargetException e2) {
+                throw new IllegalArgumentException(e2);
+            } catch (InstantiationException e2) {
+                throw new IllegalArgumentException(e2);
+            }
+        } catch (IllegalAccessException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    public static <T> T populate(T instance, Map<String, ? extends Object> fieldValues) {
+        final Field[] fields = instance.getClass().getDeclaredFields();
+        try {
+            for (Field each: fields) {
+                final int modifiers = each.getModifiers();
+                each.setAccessible(true);
+                final String fname = each.getName();
+                if (fieldValues.containsKey(fname) && !Modifier.isFinal(modifiers)) {
+                    each.set(instance, fieldValues.get(fname));
+                }
+            }
+            return instance;
+        } catch(IllegalAccessException e) {
             throw new IllegalArgumentException(e);
         }
     }
@@ -96,7 +175,7 @@ public class ReflectionUtil {
     public static <T> T fromMap(Map<String, ?> map, Class<T> clazz) {
         final Field[] fields = clazz.getDeclaredFields();
         try {
-            final T result = instantiate(clazz, map);
+            final T result = populate(instantiate(clazz), map);
             for (Field each: fields) {
                 final int modifiers = each.getModifiers();
                 each.setAccessible(true);
