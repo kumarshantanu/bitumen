@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -43,8 +44,7 @@ public class ReflectionUtil {
             } else if (clazz.equals(double.class)) {
                 return DEFAULT_DOUBLE;
             } else {
-                throw new IllegalArgumentException(
-                    "Class type " + clazz + " is not a supported primitive");
+                return null;
             }
         }
 
@@ -66,8 +66,7 @@ public class ReflectionUtil {
             } else if (clazz.equals(double.class)) {
                 return Double.class;
             } else {
-                throw new IllegalArgumentException(
-                    "Class type " + clazz + " is not a supported primitive");
+                return clazz;
             }
         }
 
@@ -97,7 +96,8 @@ public class ReflectionUtil {
                 if (args.length == paramTypes.length) {
                     boolean match = true;
                     for (int i = 0; i < args.length; i++) {
-                        if (!(paramTypes[i].isInstance(args[i]))) {
+                        // args[i] == null ..implies that.. match = true (for this particular argument)
+                        if (args[i] != null && !(Primitive.toWrapper(paramTypes[i]).isInstance(args[i]))) {
                             match = false;
                             break;
                         }
@@ -120,7 +120,8 @@ public class ReflectionUtil {
                     }
                 }
             }
-            throw new IllegalArgumentException("No matching constructor found for class " + cls + " in args: " + args);
+            throw new IllegalArgumentException(String.format(
+                    "No matching constructor found for %s in args: %s", cls, Arrays.toString(args)));
         }
     }
 
