@@ -1,6 +1,6 @@
 # springer
 
-Java JDBC library to emulate key-value store over JDBC backed database. Designed for Java 8 and beyond, compatible with Java 5 and upward.
+Java JDBC library to emulate key-value store over JDBC backed database. Designed for Java 8 and beyond, compatible with Java 6 and upward.
 
 ## Usage
 
