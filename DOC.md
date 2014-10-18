@@ -25,12 +25,12 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import springer.JdbcRead;
-import springer.JdbcWrite;
-import springer.helper.ConnectionActivityNoResult;
-import springer.helper.DataSourceTemplate;
-import springer.impl.DefaultJdbcRead;
-import springer.impl.DefaultJdbcWrite;
+import springer.jdbc.JdbcRead;
+import springer.jdbc.JdbcWrite;
+import springer.jdbc.helper.ConnectionActivityNoResult;
+import springer.jdbc.helper.DataSourceTemplate;
+import springer.jdbc.impl.DefaultJdbcRead;
+import springer.jdbc.impl.DefaultJdbcWrite;
 
 public class JdbcExample {
 
@@ -102,10 +102,10 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import springer.helper.ConnectionActivityNoResult;
-import springer.helper.DataSourceTemplate;
-import springer.helper.Util;
-import springer.type.SqlParams;
+import springer.jdbc.helper.ConnectionActivityNoResult;
+import springer.jdbc.helper.DataSourceTemplate;
+import springer.jdbc.helper.Util;
+import springer.jdbc.type.SqlParams;
 
 public class FluentExample {
 
@@ -218,13 +218,13 @@ import java.sql.Connection;
 
 import javax.sql.DataSource;
 
-import springer.KeyvalRead;
-import springer.KeyvalWrite;
-import springer.helper.ConnectionActivity;
-import springer.helper.DataSourceTemplate;
-import springer.impl.DefaultKeyvalRead;
-import springer.impl.DefaultKeyvalWrite;
-import springer.type.TableMetadata;
+import springer.jdbc.kv.KeyvalRead;
+import springer.jdbc.kv.KeyvalWrite;
+import springer.jdbc.helper.ConnectionActivity;
+import springer.jdbc.helper.DataSourceTemplate;
+import springer.jdbc.kv.impl.DefaultKeyvalRead;
+import springer.jdbc.kv.impl.DefaultKeyvalWrite;
+import springer.jdbc.type.TableMetadata;
 
 public class Example {
 

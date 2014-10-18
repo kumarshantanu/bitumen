@@ -1,7 +1,7 @@
 package springer.test.helper;
 
-import springer.KeyvalRead;
-import springer.KeyvalWrite;
+import springer.jdbc.kv.KeyvalRead;
+import springer.jdbc.kv.KeyvalWrite;
 
 public interface KeyvalTestSuite {
 

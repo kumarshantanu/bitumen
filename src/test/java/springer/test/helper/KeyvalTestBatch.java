@@ -11,14 +11,14 @@ import javax.sql.DataSource;
 
 import org.junit.Assert;
 
-import springer.JdbcException;
-import springer.KeyvalRead;
-import springer.KeyvalWrite;
-import springer.helper.ConnectionActivity;
-import springer.helper.ConnectionActivityNoResult;
-import springer.helper.DataSourceTemplate;
-import springer.helper.Util;
-import springer.type.ValueVersion;
+import springer.jdbc.JdbcException;
+import springer.jdbc.helper.ConnectionActivity;
+import springer.jdbc.helper.ConnectionActivityNoResult;
+import springer.jdbc.helper.DataSourceTemplate;
+import springer.jdbc.kv.KeyvalRead;
+import springer.jdbc.kv.KeyvalWrite;
+import springer.jdbc.type.ValueVersion;
+import springer.util.Util;
 
 public class KeyvalTestBatch implements KeyvalTestSuite {
 

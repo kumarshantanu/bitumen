@@ -7,13 +7,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import springer.JdbcWrite;
-import springer.KeyvalWrite;
-import springer.helper.Util;
-import springer.impl.DefaultJdbcWrite;
-import springer.impl.DefaultKeyvalWrite;
-import springer.type.KeyValueVersion;
-import springer.type.TableMetadata;
+import springer.jdbc.JdbcWrite;
+import springer.jdbc.impl.DefaultJdbcWrite;
+import springer.jdbc.kv.KeyvalWrite;
+import springer.jdbc.kv.impl.DefaultKeyvalWrite;
+import springer.jdbc.type.KeyValueVersion;
+import springer.jdbc.type.TableMetadata;
+import springer.util.Util;
 
 public class MysqlKeyvalWrite<K, V> implements KeyvalWrite<K, V> {
 
