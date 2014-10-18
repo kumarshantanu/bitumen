@@ -138,6 +138,9 @@ public class DI {
         private final Object LOCK = new Object();
 
         public ComponentSourceSingleton(IComponentSource<T, K> componentFactory) {
+            if (componentFactory == null) {
+                throw new IllegalArgumentException("Component factory cannot be null");
+            }
             this.componentFactory = componentFactory;
         }
 
