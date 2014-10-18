@@ -13,8 +13,8 @@ public class DependencyBuilder<K> implements IDependencyBuilder<K> {
         if (key == null) {
             throw new IllegalArgumentException("Key cannot be null");
         }
-        if (graph.containsKey(key)) {
-            throw new IllegalArgumentException("Key already defined: " + key);
+        if (source == null) {
+            throw new IllegalArgumentException("Source cannot be null");
         }
         graph.put(key, source);
         return this;
