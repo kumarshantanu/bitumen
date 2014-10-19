@@ -11,8 +11,8 @@ import java.util.concurrent.ConcurrentMap;
 
 import springer.jdbc.IJdbcRead;
 import springer.jdbc.IRowExtractor;
-import springer.jdbc.helper.JdbcUtil;
 import springer.jdbc.impl.DefaultJdbcRead;
+import springer.jdbc.impl.JdbcUtil;
 import springer.jdbc.kv.IKeyvalRead;
 import springer.jdbc.kv.ValueVersion;
 import springer.util.Util;

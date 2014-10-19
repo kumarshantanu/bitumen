@@ -12,9 +12,9 @@ import javax.sql.DataSource;
 import org.junit.Assert;
 
 import springer.jdbc.JdbcException;
-import springer.jdbc.helper.IConnectionActivity;
-import springer.jdbc.helper.IConnectionActivityNoResult;
-import springer.jdbc.helper.DataSourceTemplate;
+import springer.jdbc.impl.DataSourceTemplate;
+import springer.jdbc.impl.IConnectionActivity;
+import springer.jdbc.impl.IConnectionActivityNoResult;
 import springer.jdbc.kv.IKeyvalRead;
 import springer.jdbc.kv.IKeyvalWrite;
 import springer.jdbc.kv.ValueVersion;

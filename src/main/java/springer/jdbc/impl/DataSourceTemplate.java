@@ -1,4 +1,4 @@
-package springer.jdbc.helper;
+package springer.jdbc.impl;
 
 import javax.sql.DataSource;
 

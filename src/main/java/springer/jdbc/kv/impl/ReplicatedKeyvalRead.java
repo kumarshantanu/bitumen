@@ -9,8 +9,8 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import springer.jdbc.helper.IConnectionActivity;
-import springer.jdbc.helper.JdbcUtil;
+import springer.jdbc.impl.IConnectionActivity;
+import springer.jdbc.impl.JdbcUtil;
 import springer.jdbc.kv.IKeyvalRead;
 import springer.jdbc.kv.ValueVersion;
 import springer.util.Util;

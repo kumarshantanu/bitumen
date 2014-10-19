@@ -15,7 +15,6 @@ import springer.jdbc.JdbcException;
 import springer.jdbc.IJdbcRead;
 import springer.jdbc.IResultSetExtractor;
 import springer.jdbc.IRowExtractor;
-import springer.jdbc.helper.JdbcUtil;
 import springer.util.Util;
 
 public class DefaultJdbcRead implements IJdbcRead {

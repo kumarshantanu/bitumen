@@ -11,12 +11,12 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
-import springer.jdbc.helper.IConnectionActivity;
-import springer.jdbc.helper.IConnectionActivityNoResult;
-import springer.jdbc.helper.DataSourceTemplate;
-import springer.jdbc.helper.JdbcUtil;
+import springer.jdbc.impl.DataSourceTemplate;
 import springer.jdbc.impl.DefaultJdbcRead;
 import springer.jdbc.impl.DefaultJdbcWrite;
+import springer.jdbc.impl.IConnectionActivity;
+import springer.jdbc.impl.IConnectionActivityNoResult;
+import springer.jdbc.impl.JdbcUtil;
 import springer.jdbc.kv.impl.TableMetadata;
 
 public class TestUtil {

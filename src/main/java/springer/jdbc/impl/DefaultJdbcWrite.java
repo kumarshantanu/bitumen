@@ -9,7 +9,6 @@ import java.util.Arrays;
 import springer.jdbc.JdbcException;
 import springer.jdbc.IJdbcRead;
 import springer.jdbc.IJdbcWrite;
-import springer.jdbc.helper.JdbcUtil;
 import springer.util.Util;
 
 public class DefaultJdbcWrite implements IJdbcWrite {

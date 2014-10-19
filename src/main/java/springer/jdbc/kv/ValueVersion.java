@@ -5,7 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import springer.jdbc.IRowExtractor;
-import springer.jdbc.helper.JdbcUtil;
+import springer.jdbc.impl.JdbcUtil;
 import springer.util.Util;
 
 public class ValueVersion<V> implements Serializable {
