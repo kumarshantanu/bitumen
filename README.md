@@ -1,6 +1,11 @@
 # springer
 
-Java JDBC library to emulate key-value store over JDBC backed database. Designed for Java 8 and beyond, compatible with Java 6 and upward.
+A simple Java library (no XML, no annotations) to provide
+* Dependency Injection (DI)
+* JDBC access
+* Key-value store over JDBC backed database
+
+Designed for Java 8 and beyond, compatible with Java 6 and above.
 
 ## Usage
 
