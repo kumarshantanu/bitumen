@@ -17,7 +17,7 @@ import springer.jdbc.helper.DataSourceTemplate;
 import springer.jdbc.helper.JdbcUtil;
 import springer.jdbc.impl.DefaultJdbcRead;
 import springer.jdbc.impl.DefaultJdbcWrite;
-import springer.jdbc.type.TableMetadata;
+import springer.jdbc.kv.impl.TableMetadata;
 
 public class TestUtil {
 

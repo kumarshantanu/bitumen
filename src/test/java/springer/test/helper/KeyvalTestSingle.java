@@ -13,7 +13,7 @@ import springer.jdbc.helper.ConnectionActivityNoResult;
 import springer.jdbc.helper.DataSourceTemplate;
 import springer.jdbc.kv.KeyvalRead;
 import springer.jdbc.kv.KeyvalWrite;
-import springer.jdbc.type.ValueVersion;
+import springer.jdbc.kv.ValueVersion;
 import springer.util.Util;
 
 public class KeyvalTestSingle implements KeyvalTestSuite {

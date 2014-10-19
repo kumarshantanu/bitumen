@@ -12,8 +12,7 @@ import javax.sql.DataSource;
 import springer.jdbc.helper.ConnectionActivity;
 import springer.jdbc.helper.JdbcUtil;
 import springer.jdbc.kv.KeyvalRead;
-import springer.jdbc.type.TableMetadata;
-import springer.jdbc.type.ValueVersion;
+import springer.jdbc.kv.ValueVersion;
 import springer.util.Util;
 
 public class ReplicatedKeyvalRead<K, V> implements KeyvalRead<K, V> {

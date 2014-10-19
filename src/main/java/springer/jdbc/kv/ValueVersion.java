@@ -1,4 +1,4 @@
-package springer.jdbc.type;
+package springer.jdbc.kv;
 
 import java.io.Serializable;
 import java.sql.ResultSet;

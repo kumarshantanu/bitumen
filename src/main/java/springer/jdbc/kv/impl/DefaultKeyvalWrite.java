@@ -8,9 +8,8 @@ import java.util.Map.Entry;
 
 import springer.jdbc.JdbcWrite;
 import springer.jdbc.impl.DefaultJdbcWrite;
+import springer.jdbc.kv.KeyValueVersion;
 import springer.jdbc.kv.KeyvalWrite;
-import springer.jdbc.type.KeyValueVersion;
-import springer.jdbc.type.TableMetadata;
 import springer.util.Util;
 
 public class DefaultKeyvalWrite<K, V> implements KeyvalWrite<K, V> {

@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
-import springer.jdbc.type.KeyValueVersion;
-
 public interface KeyvalWrite<K, V> {
 
     // ---- insert (fails if key already exists) ----

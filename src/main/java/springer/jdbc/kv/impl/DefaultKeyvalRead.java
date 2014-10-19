@@ -14,8 +14,7 @@ import springer.jdbc.RowExtractor;
 import springer.jdbc.helper.JdbcUtil;
 import springer.jdbc.impl.DefaultJdbcRead;
 import springer.jdbc.kv.KeyvalRead;
-import springer.jdbc.type.TableMetadata;
-import springer.jdbc.type.ValueVersion;
+import springer.jdbc.kv.ValueVersion;
 import springer.util.Util;
 
 public class DefaultKeyvalRead<K, V> implements KeyvalRead<K, V> {
