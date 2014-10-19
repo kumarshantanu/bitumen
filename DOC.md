@@ -5,12 +5,121 @@ Springer can be used to:
 * Work with SQL databases
 * Emulate key-value store
 
-Springer uses [`javax.sql.DataSource`](http://download.java.net/jdk8/docs/api/javax/sql/DataSource.html) to obtain JDBC
+Springer uses [`javax.sql.DataSource`](http://docs.oracle.com/javase/8/docs/api/javax/sql/DataSource.html) to obtain JDBC
 connections. You can use [Apache DBCP](http://commons.apache.org/proper/commons-dbcp/), [BoneCP](http://jolbox.com/) or a
-suitable library to create a [`javax.sql.DataSource`](http://docs.oracle.com/javase/7/docs/api/javax/sql/DataSource.html)
+suitable library to create a [`javax.sql.DataSource`](http://docs.oracle.com/javase/8/docs/api/javax/sql/DataSource.html)
 instance.
 
-## Work with SQL databases
+## Dependency Injection
+
+Springer provides a simple, programmatic API for dependency injection. Consider the Java 8 example below:
+
+```java
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import springer.di.DI;
+import springer.di.DependencyBuilder;
+import springer.di.IComponentSource;
+import springer.di.IDependencyBuilder;
+import springer.di.PropertyGetter;
+import springer.example.support.DefaultBizService;
+import springer.example.support.DefaultComplexService;
+import springer.example.support.DefaultDataAccess;
+import springer.example.support.DefaultEmailer;
+import springer.example.support.DummyDataSource;
+import springer.example.support.IBizService;
+import springer.example.support.IComplexService;
+import springer.example.support.IDataAccess;
+import springer.example.support.IEmailer;
+
+public class DIExample {
+
+    public enum Bean {
+        APP_PROPERTIES    (Properties.class),
+        DUMMY_DATA_SOURCE (DummyDataSource.class),
+        EMAIL_SERVICE     (IEmailer.class),
+        DATA_ACCESS       (IDataAccess.class),
+        COMPLEX_SERVICE   (IComplexService.class),
+        BIZ_SERVICE       (IBizService.class);
+
+        public final Class<?> type;
+
+        private Bean() { this.type = Object.class; }
+        private Bean(Class<?> type) { this.type = type; }
+
+        public static Map<Bean, Class<?>> getTypes() {
+            final Bean[] values = Bean.values();
+            final Map<Bean, Class<?>> types = new LinkedHashMap<>();
+            for (Bean each: values) {
+                types.put(each, each.type);
+            }
+            return types;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public void init(Properties appConfig) {
+        final PropertyGetter<Bean> pg = new PropertyGetter<>(appConfig, Bean.class);
+        final Map<Bean, Class<?>> types = Bean.getTypes();
+        final IDependencyBuilder<Bean> db = new DependencyBuilder<Bean>();
+        db
+        // adding constant
+        .addConstant(Bean.APP_PROPERTIES, appConfig)
+
+        // add constructor based on java.util.Property values
+        .addSingleton(Bean.DUMMY_DATA_SOURCE, DI.construct(DummyDataSource.class,
+                pg.getString("db.jdbc.url"), pg.getString("db.username"), pg.getString("db.password")))
+
+        // add constructor based on component keys
+        .addSingleton(Bean.DATA_ACCESS, DI.constructByKey(DefaultDataAccess.class, Bean.DUMMY_DATA_SOURCE))
+
+        // add constructor based on both component keys and constants
+        .addSingleton(Bean.EMAIL_SERVICE, DI.construct(DefaultEmailer.class,
+                DI.sourceOf(Bean.DATA_ACCESS), pg.getString("smtp.host"), pg.getInteger("smtp.port")))
+
+        // add factory method
+        .addSingleton(Bean.COMPLEX_SERVICE, this::createComplexService)
+
+        // add auto-detecting constructor
+        .addSingleton(Bean.BIZ_SERVICE, DI.autoConstruct(types, DefaultBizService.class))
+        .getDependencyMap();
+
+        // verify everything works
+        Properties ps = db.getInstance(Bean.APP_PROPERTIES, Properties.class);
+        DummyDataSource ds = db.getInstance(Bean.DUMMY_DATA_SOURCE, DummyDataSource.class);
+        IDataAccess da = db.getInstance(Bean.DATA_ACCESS, IDataAccess.class);
+        IEmailer em = db.getInstance(Bean.EMAIL_SERVICE, IEmailer.class);
+        IBizService bs = db.getInstance(Bean.BIZ_SERVICE, IBizService.class);
+        if (bs == null) {
+            throw new RuntimeException("Could not instantiate BizService");
+        } else {
+            System.out.println("All well");
+        }
+    }
+
+    IComplexService createComplexService(Map<Bean, IComponentSource<?, Bean>> beans) {
+        Properties appConfig = DI.getInstance(beans, Bean.APP_PROPERTIES, Properties.class);
+        Object initState = appConfig.get("complex.init.state");
+        DefaultComplexService cs = new DefaultComplexService();
+        cs.setStarted(initState==null? false: Boolean.parseBoolean((String) initState));
+        return cs;
+    }
+
+    public static void main(String[] args) {
+        Properties appConfig = new Properties();
+        appConfig.setProperty("db.jdbc.url", "jdbc:mysql://localhost:3306/test");
+        appConfig.setProperty("db.username", "user");
+        appConfig.setProperty("db.password", "pass");
+        appConfig.setProperty("smtp.host", "localhost");
+        appConfig.setProperty("smtp.port", "25");
+        new DIExample().init(appConfig);
+    }
+}
+```
+
+## Work with SQL databases using JDBC
 
 Springer supports interface-based API for flexibility, as well as fluent interface. It also supports transactions,
 positional parameters and named parameters.
@@ -25,17 +134,17 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import springer.jdbc.JdbcRead;
-import springer.jdbc.JdbcWrite;
-import springer.jdbc.helper.ConnectionActivityNoResult;
-import springer.jdbc.helper.DataSourceTemplate;
+import springer.jdbc.IJdbcRead;
+import springer.jdbc.IJdbcWrite;
+import springer.jdbc.impl.DataSourceTemplate;
 import springer.jdbc.impl.DefaultJdbcRead;
 import springer.jdbc.impl.DefaultJdbcWrite;
+import springer.jdbc.impl.IConnectionActivityNoResult;
 
 public class JdbcExample {
 
-    final JdbcRead  reader = new DefaultJdbcRead();
-    final JdbcWrite writer = new DefaultJdbcWrite();
+    final IJdbcRead  reader = new DefaultJdbcRead();
+    final IJdbcWrite writer = new DefaultJdbcWrite();
 
     final DataSourceTemplate dst;
 
@@ -102,10 +211,11 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import springer.jdbc.helper.ConnectionActivityNoResult;
-import springer.jdbc.helper.DataSourceTemplate;
-import springer.jdbc.helper.Util;
-import springer.jdbc.type.SqlParams;
+import springer.jdbc.impl.DataSourceTemplate;
+import springer.jdbc.impl.IConnectionActivityNoResult;
+import springer.jdbc.impl.JdbcUtil;
+import springer.jdbc.impl.SqlParams;
+import springer.util.Util;
 
 public class FluentExample {
 
@@ -117,7 +227,7 @@ public class FluentExample {
 
     public void crud() {
         // Java 7 and below
-        dst.withTransactionNoResult(new ConnectionActivityNoResult() {
+        dst.withTransactionNoResult(new IConnectionActivityNoResult() {
             @Override
             public void execute(Connection conn) {
                 // insert using positional parameters
@@ -165,7 +275,7 @@ public class FluentExample {
     }
 ```
 
-## Emulate key-value store
+## Emulate key-value store over JDBC
 
 Springer can also help emulate key-value store over ordinary SQL databases. It is tested with H2, MySQL and PostgreSQL.
 
@@ -218,10 +328,10 @@ import java.sql.Connection;
 
 import javax.sql.DataSource;
 
-import springer.jdbc.kv.KeyvalRead;
-import springer.jdbc.kv.KeyvalWrite;
-import springer.jdbc.helper.ConnectionActivity;
-import springer.jdbc.helper.DataSourceTemplate;
+import springer.jdbc.impl.IConnectionActivity;
+import springer.jdbc.impl.DataSourceTemplate;
+import springer.jdbc.kv.IKeyvalRead;
+import springer.jdbc.kv.IKeyvalWrite;
 import springer.jdbc.kv.impl.DefaultKeyvalRead;
 import springer.jdbc.kv.impl.DefaultKeyvalWrite;
 import springer.jdbc.type.TableMetadata;
@@ -230,9 +340,9 @@ public class Example {
 
     final TableMetadata meta = TableMetadata.create("session", "id", "value",
             "version", "created", "updated");
-    final KeyvalWrite<String, String> writer = new DefaultKeyvalWrite<String, String>(
+    final IKeyvalWrite<String, String> writer = new DefaultKeyvalWrite<String, String>(
             meta);
-    final KeyvalRead<String, String> reader = new DefaultKeyvalRead<String, String>(
+    final IKeyvalRead<String, String> reader = new DefaultKeyvalRead<String, String>(
             meta, String.class, String.class);
     final DataSourceTemplate dst;
 
@@ -241,7 +351,7 @@ public class Example {
     }
 
     public void savePair() {
-        final Long version = dst.withTransaction(new ConnectionActivity<Long>() {
+        final Long version = dst.withTransaction(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.save(conn, "ABCD",
                         "{\"email\": \"foo@bar.com\", \"age\": 29}");
@@ -251,7 +361,7 @@ public class Example {
     }
 
     public void readValue() {
-      final String value = dst.withConnection(new ConnectionActivity<String>() {
+      final String value = dst.withConnection(new IConnectionActivity<String>() {
           public String execute(Connection conn) {
               return reader.read(conn, "ABCD");
           }
