@@ -24,6 +24,7 @@ import springer.jdbc.impl.DefaultJdbcRead;
 import springer.jdbc.impl.DefaultJdbcWrite;
 import springer.jdbc.impl.IConnectionActivity;
 import springer.jdbc.impl.IConnectionActivityNoResult;
+import springer.jdbc.impl.JdbcUtil;
 import springer.jdbc.impl.SqlParams;
 import springer.test.helper.TestUtil;
 import springer.util.Util;
@@ -159,20 +160,20 @@ public class DefaultJdbcTest {
             @Override
             public void execute(Connection conn) {
                 // insert
-                SqlParams insert = Util.namedParamReplace(
+                SqlParams insert = JdbcUtil.namedParamReplace(
                         "INSERT INTO session (skey, value, version, created, updated) VALUES (:skey, :value, :version, :created, :updated)",
                         Util.makeParamMap("skey", s1.skey, "value", s1.value, "version", s1.version, "created", s1.created, "updated", s1.updated));
                 int id = (Integer) insert.genkey(conn).get().intValue();
                 Assert.assertNotNull(id);
                 Assert.assertEquals(s1, readSession(conn, id));  // read
                 // update
-                SqlParams update = Util.namedParamReplace(
+                SqlParams update = JdbcUtil.namedParamReplace(
                         "UPDATE session SET value = :value WHERE id = :id",
                         Util.makeParamMap("value", s2.value, "id", id));
                 update.update(conn);
                 Assert.assertEquals(s2, readSession(conn, id));  // read
                 // delete
-                SqlParams delete = Util.namedParamReplace(
+                SqlParams delete = JdbcUtil.namedParamReplace(
                         "DELETE FROM session WHERE id = :id",
                         Collections.singletonMap("id", (Object) id));
                 delete.update(conn);
