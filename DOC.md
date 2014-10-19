@@ -2,8 +2,9 @@
 
 Springer can be used to:
 
-* Work with SQL databases
-* Emulate key-value store
+* Accomplish Dependency Injection without XML/annotations
+* Work with SQL databases using JDBC
+* Emulate key-value store over JDBC
 
 Springer uses [`javax.sql.DataSource`](http://docs.oracle.com/javase/8/docs/api/javax/sql/DataSource.html) to obtain JDBC
 connections. You can use [Apache DBCP](http://commons.apache.org/proper/commons-dbcp/), [BoneCP](http://jolbox.com/) or a
@@ -12,7 +13,8 @@ instance.
 
 ## Dependency Injection
 
-Springer provides a simple, programmatic API for dependency injection. Consider the Java 8 example below:
+Springer provides a simple, programmatic API for dependency injection. Implicit setter-based injection is not supported.
+Constructor based injection is supported. Consider the Java 8 example below:
 
 ```java
 import java.util.LinkedHashMap;
