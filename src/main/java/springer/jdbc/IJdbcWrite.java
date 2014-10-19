@@ -2,11 +2,11 @@ package springer.jdbc;
 
 import java.sql.Connection;
 
-public interface JdbcWrite {
+public interface IJdbcWrite {
 
     // generate key
 
-    public KeyHolder genkey(Connection conn, String sql, Object[] params);
+    public IKeyHolder genkey(Connection conn, String sql, Object[] params);
 
     // update
 

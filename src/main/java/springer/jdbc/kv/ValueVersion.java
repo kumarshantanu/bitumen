@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import springer.jdbc.RowExtractor;
+import springer.jdbc.IRowExtractor;
 import springer.jdbc.helper.JdbcUtil;
 import springer.util.Util;
 
@@ -41,9 +41,9 @@ public class ValueVersion<V> implements Serializable {
                 Util.equals(version, that.version);
     }
 
-    public static <V> RowExtractor<ValueVersion<V>> makeExtractor(final Class<V> valueClass, final int valueColumnIndex,
+    public static <V> IRowExtractor<ValueVersion<V>> makeExtractor(final Class<V> valueClass, final int valueColumnIndex,
             final int versionColumnIndex) {
-        return new RowExtractor<ValueVersion<V>>() {
+        return new IRowExtractor<ValueVersion<V>>() {
             
             public ValueVersion<V> extract(ResultSet rs) {
                 try {

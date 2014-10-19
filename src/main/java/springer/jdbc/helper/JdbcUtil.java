@@ -13,12 +13,12 @@ import java.util.Arrays;
 import javax.sql.DataSource;
 
 import springer.jdbc.JdbcException;
-import springer.jdbc.RowExtractor;
+import springer.jdbc.IRowExtractor;
 import springer.util.Util;
 
 public class JdbcUtil {
 
-    public static <V> V withConnection(DataSource dataSource, ConnectionActivity<V> activity) {
+    public static <V> V withConnection(DataSource dataSource, IConnectionActivity<V> activity) {
         final Connection conn = getConnection(dataSource);
         try {
             final V result = activity.execute(conn);
@@ -50,8 +50,8 @@ public class JdbcUtil {
     }
 
     public static <V> V withTransaction(DataSource dataSource,
-            final int txnIsolation, final ConnectionActivity<V> activity) {
-        return withConnection(dataSource, new ConnectionActivity<V>() {
+            final int txnIsolation, final IConnectionActivity<V> activity) {
+        return withConnection(dataSource, new IConnectionActivity<V>() {
             public V execute(Connection conn) {
                 requireTransaction(conn, txnIsolation);
                 return activity.execute(conn);
@@ -59,8 +59,8 @@ public class JdbcUtil {
         });
     }
 
-    public static <V> V withTransaction(DataSource dataSource, final ConnectionActivity<V> activity) {
-        return withConnection(dataSource, new ConnectionActivity<V>() {
+    public static <V> V withTransaction(DataSource dataSource, final IConnectionActivity<V> activity) {
+        return withConnection(dataSource, new IConnectionActivity<V>() {
             public V execute(Connection conn) {
                 requireTransaction(conn);
                 return activity.execute(conn);
@@ -68,7 +68,7 @@ public class JdbcUtil {
         });
     }
 
-    public static void withConnectionNoResult(DataSource dataSource, ConnectionActivityNoResult activity) {
+    public static void withConnectionNoResult(DataSource dataSource, IConnectionActivityNoResult activity) {
         final Connection conn = getConnection(dataSource);
         try {
             activity.execute(conn);
@@ -99,8 +99,8 @@ public class JdbcUtil {
     }
 
     public static void withTransactionNoResult(DataSource dataSource,
-            final int txnIsolation, final ConnectionActivityNoResult activity) {
-        withConnectionNoResult(dataSource, new ConnectionActivityNoResult() {
+            final int txnIsolation, final IConnectionActivityNoResult activity) {
+        withConnectionNoResult(dataSource, new IConnectionActivityNoResult() {
             public void execute(Connection conn) {
                 requireTransaction(conn, txnIsolation);
                 activity.execute(conn);
@@ -108,8 +108,8 @@ public class JdbcUtil {
         });
     }
 
-    public static void withTransactionNoResult(DataSource dataSource, final ConnectionActivityNoResult activity) {
-        withConnectionNoResult(dataSource, new ConnectionActivityNoResult() {
+    public static void withTransactionNoResult(DataSource dataSource, final IConnectionActivityNoResult activity) {
+        withConnectionNoResult(dataSource, new IConnectionActivityNoResult() {
             public void execute(Connection conn) {
                 requireTransaction(conn);
                 activity.execute(conn);
@@ -125,8 +125,8 @@ public class JdbcUtil {
         return result;
     }
 
-    public static <T> RowExtractor<T> makeColumnExtractor(final Class<T> columnClass, final int columnIndex) {
-        return new RowExtractor<T>() {
+    public static <T> IRowExtractor<T> makeColumnExtractor(final Class<T> columnClass, final int columnIndex) {
+        return new IRowExtractor<T>() {
             public T extract(ResultSet rs) throws SQLException {
                 return columnClass.cast(getValue(rs, columnIndex));
             }

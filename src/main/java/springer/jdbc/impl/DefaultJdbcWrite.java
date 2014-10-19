@@ -7,12 +7,12 @@ import java.sql.SQLException;
 import java.util.Arrays;
 
 import springer.jdbc.JdbcException;
-import springer.jdbc.JdbcRead;
-import springer.jdbc.JdbcWrite;
+import springer.jdbc.IJdbcRead;
+import springer.jdbc.IJdbcWrite;
 import springer.jdbc.helper.JdbcUtil;
 import springer.util.Util;
 
-public class DefaultJdbcWrite implements JdbcWrite {
+public class DefaultJdbcWrite implements IJdbcWrite {
 
     public GeneratedKeyHolder genkey(Connection conn, String sql, Object[] params) {
         final PreparedStatement pstmt = JdbcUtil.prepareStatementWithParams(conn, sql, params, true);
@@ -24,8 +24,8 @@ public class DefaultJdbcWrite implements JdbcWrite {
         }
         try {
             final ResultSet rs = pstmt.getGeneratedKeys();
-            return new GeneratedKeyHolder(DefaultJdbcRead.extractMaps(rs, JdbcRead.NO_LIMIT,
-                    JdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
+            return new GeneratedKeyHolder(DefaultJdbcRead.extractMaps(rs, IJdbcRead.NO_LIMIT,
+                    IJdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
         } catch (SQLException e) {
             throw new JdbcException(String.format("Unable to extract gnerated keys for SQL statement: [%s], args: %s",
                     sql, Arrays.toString(params)), e);

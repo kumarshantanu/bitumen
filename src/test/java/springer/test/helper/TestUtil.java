@@ -11,8 +11,8 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
-import springer.jdbc.helper.ConnectionActivity;
-import springer.jdbc.helper.ConnectionActivityNoResult;
+import springer.jdbc.helper.IConnectionActivity;
+import springer.jdbc.helper.IConnectionActivityNoResult;
 import springer.jdbc.helper.DataSourceTemplate;
 import springer.jdbc.helper.JdbcUtil;
 import springer.jdbc.impl.DefaultJdbcRead;
@@ -70,7 +70,7 @@ public class TestUtil {
     }
 
     public static void createTable(DataSource ds) {
-        JdbcUtil.withConnectionNoResult(ds, new ConnectionActivityNoResult() {
+        JdbcUtil.withConnectionNoResult(ds, new IConnectionActivityNoResult() {
             public void execute(Connection conn) {
                 new DefaultJdbcWrite().update(conn, loadProperties().getProperty("create.table.ddl"), null);
             }
@@ -78,7 +78,7 @@ public class TestUtil {
     }
 
     public static void dropTable(DataSource ds) {
-        JdbcUtil.withConnectionNoResult(ds, new ConnectionActivityNoResult() {
+        JdbcUtil.withConnectionNoResult(ds, new IConnectionActivityNoResult() {
             public void execute(Connection conn) {
                 new DefaultJdbcWrite().update(conn, loadProperties().getProperty("drop.table.ddl"), null);
             }
@@ -86,7 +86,7 @@ public class TestUtil {
     }
 
     public static void deleteAll(DataSourceTemplate dst) {
-        dst.withConnectionNoResult(new ConnectionActivityNoResult() {
+        dst.withConnectionNoResult(new IConnectionActivityNoResult() {
             public void execute(Connection conn) {
                 new DefaultJdbcWrite().update(conn, "DELETE FROM session", null);
             }
@@ -94,7 +94,7 @@ public class TestUtil {
     }
 
     public static <K> long findRowCountForKeys(DataSourceTemplate dst, final List<K> keys) {
-        return dst.withConnection(new ConnectionActivity<List<Long>>() {
+        return dst.withConnection(new IConnectionActivity<List<Long>>() {
             public List<Long> execute(Connection conn) {
                 return new DefaultJdbcRead().queryForList(
                         conn, String.format("SELECT COUNT(*) FROM session WHERE skey IN (%s)",

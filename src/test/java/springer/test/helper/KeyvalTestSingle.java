@@ -8,11 +8,11 @@ import javax.sql.DataSource;
 import org.junit.Assert;
 
 import springer.jdbc.JdbcException;
-import springer.jdbc.helper.ConnectionActivity;
-import springer.jdbc.helper.ConnectionActivityNoResult;
+import springer.jdbc.helper.IConnectionActivity;
+import springer.jdbc.helper.IConnectionActivityNoResult;
 import springer.jdbc.helper.DataSourceTemplate;
-import springer.jdbc.kv.KeyvalRead;
-import springer.jdbc.kv.KeyvalWrite;
+import springer.jdbc.kv.IKeyvalRead;
+import springer.jdbc.kv.IKeyvalWrite;
 import springer.jdbc.kv.ValueVersion;
 import springer.util.Util;
 
@@ -24,18 +24,18 @@ public class KeyvalTestSingle implements KeyvalTestSuite {
         this.dst = new DataSourceTemplate(ds);
     }
 
-    private String readValue(final KeyvalRead<Integer, String> reader, final Integer key) {
-        return dst.withConnection(new ConnectionActivity<String>() {
+    private String readValue(final IKeyvalRead<Integer, String> reader, final Integer key) {
+        return dst.withConnection(new IConnectionActivity<String>() {
             public String execute(Connection conn) {
                 return reader.read(conn, key);
             }
         });
     }
 
-    public void insertTest(final KeyvalWrite<Integer, String> writer, final KeyvalRead<Integer, String> reader) {
+    public void insertTest(final IKeyvalWrite<Integer, String> writer, final IKeyvalRead<Integer, String> reader) {
         final int key1 = 1;
         final String val1 = "abc";
-        final Long version1 = dst.withConnection(new ConnectionActivity<Long>() {
+        final Long version1 = dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.insert(conn, key1, val1);
             }
@@ -51,7 +51,7 @@ public class KeyvalTestSingle implements KeyvalTestSuite {
         // attempt a duplicate insert which should fail
         boolean exception = false;
         try {
-            dst.withConnection(new ConnectionActivity<Long>() {
+            dst.withConnection(new IConnectionActivity<Long>() {
                 public Long execute(Connection conn) {
                     return writer.insert(conn, key1, val1);
                 }
@@ -62,13 +62,13 @@ public class KeyvalTestSingle implements KeyvalTestSuite {
         Assert.assertTrue(exception);
     }
 
-    public void crudTest(final KeyvalWrite<Integer, String> writer, final KeyvalRead<Integer, String> reader) {
+    public void crudTest(final IKeyvalWrite<Integer, String> writer, final IKeyvalRead<Integer, String> reader) {
         // ----- INSERT (SAVE) -----
 
         // write (actually insert, because the value doesn't exist) key-value pair
         final int key = 1;
         final String newValue1 = "abc";
-        final Long version1 = dst.withConnection(new ConnectionActivity<Long>() {
+        final Long version1 = dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.save(conn, key, newValue1);
             }
@@ -85,7 +85,7 @@ public class KeyvalTestSingle implements KeyvalTestSuite {
 
         // write again (it is an update this time)
         final String newValue2 = "xyz";
-        final Long version2 = dst.withConnection(new ConnectionActivity<Long>() {
+        final Long version2 = dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.save(conn, key, newValue2);
             }
@@ -102,7 +102,7 @@ public class KeyvalTestSingle implements KeyvalTestSuite {
         // ----- DELETE -----
 
         // delete key-value pair
-        dst.withConnectionNoResult(new ConnectionActivityNoResult() {
+        dst.withConnectionNoResult(new IConnectionActivityNoResult() {
             public void execute(Connection conn) {
                 writer.delete(conn, key);
             }
@@ -115,11 +115,11 @@ public class KeyvalTestSingle implements KeyvalTestSuite {
         Assert.assertEquals(0, TestUtil.findRowCountForKeys(dst, Arrays.asList(key)));
     }
 
-    public void versionTest(final KeyvalWrite<Integer, String> writer, final KeyvalRead<Integer, String> reader) {
+    public void versionTest(final IKeyvalWrite<Integer, String> writer, final IKeyvalRead<Integer, String> reader) {
         // save (insert)
         final int key = 2;
         final String newValue1 = "abc";
-        final Long version1 = dst.withConnection(new ConnectionActivity<Long>() {
+        final Long version1 = dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.save(conn, key, newValue1);
             }
@@ -130,7 +130,7 @@ public class KeyvalTestSingle implements KeyvalTestSuite {
 
         // swap using invalid version, which should fail
         final String newValue2 = "pqr";
-        final Long version2 = dst.withConnection(new ConnectionActivity<Long>() {
+        final Long version2 = dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.swap(conn, key, newValue2, Util.newVersion());
             }
@@ -140,7 +140,7 @@ public class KeyvalTestSingle implements KeyvalTestSuite {
 
         // swap using valid version, which should succeed
         final String newValue3 = "pqr";
-        final Long version3 = dst.withConnection(new ConnectionActivity<Long>() {
+        final Long version3 = dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.swap(conn, key, newValue3, version1);
             }
@@ -152,7 +152,7 @@ public class KeyvalTestSingle implements KeyvalTestSuite {
         // ----- REMOVE -----
 
         // remove with wrong version, which should fail
-        dst.withConnectionNoResult(new ConnectionActivityNoResult() {
+        dst.withConnectionNoResult(new IConnectionActivityNoResult() {
             public void execute(Connection conn) {
                 writer.remove(conn, key, version1);
             }
@@ -160,7 +160,7 @@ public class KeyvalTestSingle implements KeyvalTestSuite {
         Assert.assertEquals(newValue3, readValue(reader, key));
 
         // remove with correct version, which should pass
-        dst.withConnectionNoResult(new ConnectionActivityNoResult() {
+        dst.withConnectionNoResult(new IConnectionActivityNoResult() {
             public void execute(Connection conn) {
                 writer.remove(conn, key, version3);
             }
@@ -168,12 +168,12 @@ public class KeyvalTestSingle implements KeyvalTestSuite {
         Assert.assertNull(readValue(reader, key));
     }
 
-    public void readTest(final KeyvalWrite<Integer, String> writer, final KeyvalRead<Integer, String> reader) {
+    public void readTest(final IKeyvalWrite<Integer, String> writer, final IKeyvalRead<Integer, String> reader) {
         final int key = 3;
 
         // save (insert)
         final String newValue1 = "abc";
-        final Long version1 = dst.withConnection(new ConnectionActivity<Long>() {
+        final Long version1 = dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.save(conn, key, newValue1);
             }
@@ -181,28 +181,28 @@ public class KeyvalTestSingle implements KeyvalTestSuite {
         Assert.assertNotNull(version1);
 
         // contains (which returns null due to bad key)
-        Assert.assertNull(dst.withConnection(new ConnectionActivity<Long>() {
+        Assert.assertNull(dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return reader.contains(conn, Integer.MAX_VALUE);
             }
         }));
 
         // contains (which returns valid version)
-        Assert.assertEquals(version1, dst.withConnection(new ConnectionActivity<Long>() {
+        Assert.assertEquals(version1, dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return reader.contains(conn, key);
             }
         }));
 
         // containsVersion (which returns null due to bad key)
-        Assert.assertFalse(dst.withConnection(new ConnectionActivity<Boolean>() {
+        Assert.assertFalse(dst.withConnection(new IConnectionActivity<Boolean>() {
             public Boolean execute(Connection conn) {
                 return reader.containsVersion(conn, Integer.MAX_VALUE, Util.newVersion());
             }
         }));
 
         // containsVersion (which passes valid version)
-        Assert.assertTrue(dst.withConnection(new ConnectionActivity<Boolean>() {
+        Assert.assertTrue(dst.withConnection(new IConnectionActivity<Boolean>() {
             public Boolean execute(Connection conn) {
                 return reader.containsVersion(conn, key, version1);
             }
@@ -215,21 +215,21 @@ public class KeyvalTestSingle implements KeyvalTestSuite {
         Assert.assertEquals(newValue1, readValue(reader, key));
 
         // readForVersion (which returns null due to bad version)
-        Assert.assertNull(dst.withConnection(new ConnectionActivity<String>() {
+        Assert.assertNull(dst.withConnection(new IConnectionActivity<String>() {
             public String execute(Connection conn) {
                 return reader.readForVersion(conn, key, Util.newVersion());
             }
         }));
 
         // readForVersion (which returns correct value due to correct version)
-        Assert.assertEquals(newValue1, dst.withConnection(new ConnectionActivity<String>() {
+        Assert.assertEquals(newValue1, dst.withConnection(new IConnectionActivity<String>() {
             public String execute(Connection conn) {
                 return reader.readForVersion(conn, key, version1);
             }
         }));
 
         // readAll
-        final ValueVersion<String> vv = dst.withConnection(new ConnectionActivity<ValueVersion<String>>() {
+        final ValueVersion<String> vv = dst.withConnection(new IConnectionActivity<ValueVersion<String>>() {
             public ValueVersion<String> execute(Connection conn) {
                 return reader.readAll(conn, key);
             }

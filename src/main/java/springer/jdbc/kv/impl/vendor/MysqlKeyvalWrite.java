@@ -7,15 +7,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import springer.jdbc.JdbcWrite;
+import springer.jdbc.IJdbcWrite;
 import springer.jdbc.impl.DefaultJdbcWrite;
 import springer.jdbc.kv.KeyValueVersion;
-import springer.jdbc.kv.KeyvalWrite;
+import springer.jdbc.kv.IKeyvalWrite;
 import springer.jdbc.kv.impl.DefaultKeyvalWrite;
 import springer.jdbc.kv.impl.TableMetadata;
 import springer.util.Util;
 
-public class MysqlKeyvalWrite<K, V> implements KeyvalWrite<K, V> {
+public class MysqlKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
 
     public static final String
     upsertFormat = "INSERT INTO $tableName ($keyColname, $valueColname, $versionColname, $createTimestampColname, $updateTimestampColname)"
@@ -24,7 +24,7 @@ public class MysqlKeyvalWrite<K, V> implements KeyvalWrite<K, V> {
 
     public final String upsertSql;
 
-    public final JdbcWrite writer;
+    public final IJdbcWrite writer;
 
     public final DefaultKeyvalWrite<K, V> generic;
     public final boolean populateTimestamp;
@@ -33,7 +33,7 @@ public class MysqlKeyvalWrite<K, V> implements KeyvalWrite<K, V> {
         this(meta, useMySQLTimestamp, new DefaultJdbcWrite());
     }
 
-    public MysqlKeyvalWrite(TableMetadata meta, boolean useMySQLTimestamp, JdbcWrite writer) {
+    public MysqlKeyvalWrite(TableMetadata meta, boolean useMySQLTimestamp, IJdbcWrite writer) {
         this.writer = writer;
         this.generic = new DefaultKeyvalWrite<K, V>(meta);
         final String template = meta.groovyReplaceKeep(upsertFormat);

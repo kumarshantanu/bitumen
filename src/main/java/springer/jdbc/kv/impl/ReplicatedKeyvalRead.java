@@ -9,24 +9,24 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import springer.jdbc.helper.ConnectionActivity;
+import springer.jdbc.helper.IConnectionActivity;
 import springer.jdbc.helper.JdbcUtil;
-import springer.jdbc.kv.KeyvalRead;
+import springer.jdbc.kv.IKeyvalRead;
 import springer.jdbc.kv.ValueVersion;
 import springer.util.Util;
 
-public class ReplicatedKeyvalRead<K, V> implements KeyvalRead<K, V> {
+public class ReplicatedKeyvalRead<K, V> implements IKeyvalRead<K, V> {
 
-    public final ReplicationSlavesPointer slavesPointer;
-    public final KeyvalRead<K, V> reader;
+    public final IReplicationSlavesPointer slavesPointer;
+    public final IKeyvalRead<K, V> reader;
 
     public ReplicatedKeyvalRead(final TableMetadata meta, Class<K> keyClass, Class<V> valClass,
-            ReplicationSlavesPointer slavesPointer) {
+            IReplicationSlavesPointer slavesPointer) {
         this(meta, keyClass, valClass, slavesPointer, new DefaultKeyvalRead<K, V>(meta, keyClass, valClass));
     }
 
     public ReplicatedKeyvalRead(final TableMetadata meta, Class<K> keyClass, Class<V> valClass,
-            ReplicationSlavesPointer slavesPointer, KeyvalRead<K, V> orig) {
+            IReplicationSlavesPointer slavesPointer, IKeyvalRead<K, V> orig) {
         this.slavesPointer = slavesPointer;
         this.reader = orig;
     }
@@ -74,7 +74,7 @@ public class ReplicatedKeyvalRead<K, V> implements KeyvalRead<K, V> {
         if (latest == null) {
             return null;
         }
-        V copy = JdbcUtil.withConnection(slave, new ConnectionActivity<V>() {
+        V copy = JdbcUtil.withConnection(slave, new IConnectionActivity<V>() {
             public V execute(Connection conn) {
                 return reader.readForVersion(conn, key, latest);
             }
@@ -96,7 +96,7 @@ public class ReplicatedKeyvalRead<K, V> implements KeyvalRead<K, V> {
             }
             return Util.zipmap(keys, data);
         }
-        final Map<K, V> copy = JdbcUtil.withConnection(slave, new ConnectionActivity<Map<K, V>>() {
+        final Map<K, V> copy = JdbcUtil.withConnection(slave, new IConnectionActivity<Map<K, V>>() {
             public Map<K, V> execute(Connection conn) {
                 return reader.batchRead(conn, keys);
             }
@@ -120,7 +120,7 @@ public class ReplicatedKeyvalRead<K, V> implements KeyvalRead<K, V> {
     // ---- readVersion (requires old version) ----
 
     public V consistentReadVersion(Connection conn, DataSource slave, final K key, final long version) {
-        V copy = JdbcUtil.withConnection(slave, new ConnectionActivity<V>() {
+        V copy = JdbcUtil.withConnection(slave, new IConnectionActivity<V>() {
             public V execute(Connection conn) {
                 return reader.readForVersion(conn, key, version);
             }
@@ -134,7 +134,7 @@ public class ReplicatedKeyvalRead<K, V> implements KeyvalRead<K, V> {
     }
 
     public Map<K, V> consistentBatchReadVersion(Connection conn, DataSource slave, final Map<K, Long> keyVersions) {
-        final Map<K, V> copy = JdbcUtil.withConnection(slave, new ConnectionActivity<Map<K, V>>() {
+        final Map<K, V> copy = JdbcUtil.withConnection(slave, new IConnectionActivity<Map<K, V>>() {
             public Map<K, V> execute(Connection conn) {
                 return reader.batchReadForVersion(conn, keyVersions);
             }
@@ -164,7 +164,7 @@ public class ReplicatedKeyvalRead<K, V> implements KeyvalRead<K, V> {
             return null;
         }
         ValueVersion<V> copy = JdbcUtil.withConnection(slave,
-                new ConnectionActivity<ValueVersion<V>>() {
+                new IConnectionActivity<ValueVersion<V>>() {
                     public ValueVersion<V> execute(Connection conn) {
                         return reader.readAll(conn, key);
                     }
@@ -180,7 +180,7 @@ public class ReplicatedKeyvalRead<K, V> implements KeyvalRead<K, V> {
     public Map<K, ValueVersion<V>> consistentBatchReadAll(Connection conn, DataSource slave, List<K> keys) {
         final List<Long> latest = batchContains(conn, keys);
         final Map<K, Long> keyVersions = Util.zipmap(keys, latest);
-        final Map<K, V> slaveKeyVals = JdbcUtil.withConnection(slave, new ConnectionActivity<Map<K, V>>() {
+        final Map<K, V> slaveKeyVals = JdbcUtil.withConnection(slave, new IConnectionActivity<Map<K, V>>() {
             public Map<K, V> execute(Connection slaveConn) {
                 return reader.batchReadForVersion(slaveConn, keyVersions);
             }

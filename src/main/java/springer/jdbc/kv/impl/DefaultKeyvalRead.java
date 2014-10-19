@@ -9,15 +9,15 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import springer.jdbc.JdbcRead;
-import springer.jdbc.RowExtractor;
+import springer.jdbc.IJdbcRead;
+import springer.jdbc.IRowExtractor;
 import springer.jdbc.helper.JdbcUtil;
 import springer.jdbc.impl.DefaultJdbcRead;
-import springer.jdbc.kv.KeyvalRead;
+import springer.jdbc.kv.IKeyvalRead;
 import springer.jdbc.kv.ValueVersion;
 import springer.util.Util;
 
-public class DefaultKeyvalRead<K, V> implements KeyvalRead<K, V> {
+public class DefaultKeyvalRead<K, V> implements IKeyvalRead<K, V> {
 
     public static final String
     versionFormat          = "SELECT $versionColname FROM $tableName WHERE $keyColname = ?",    // key
@@ -36,7 +36,7 @@ public class DefaultKeyvalRead<K, V> implements KeyvalRead<K, V> {
     condFetchSql, condMultiFetchSql, fetchAllSql, batchFetchAllSql;
 
     public final TableMetadata meta;
-    public final JdbcRead reader;
+    public final IJdbcRead reader;
 
     private final ConcurrentMap<Integer, String> keyVersionExpressions = new ConcurrentHashMap<Integer, String>();
     private String getFor(int count) {
@@ -50,20 +50,20 @@ public class DefaultKeyvalRead<K, V> implements KeyvalRead<K, V> {
         return newExpr;
     }
 
-    public final RowExtractor<K> keyExtractor1;
-    public final RowExtractor<V> valExtractor1;
-    public final RowExtractor<V> valExtractor2;
-    public final RowExtractor<ValueVersion<V>> valueVersionExtractor12;
-    public final RowExtractor<ValueVersion<V>> valueVersionExtractor23;
-    public final RowExtractor<Long> versionExtractor1 = JdbcUtil.makeColumnExtractor(Long.class, 1);
-    public final RowExtractor<Long> versionExtractor2 = JdbcUtil.makeColumnExtractor(Long.class, 2);
-    public final RowExtractor<Long> countExtractor2 = JdbcUtil.makeColumnExtractor(Long.class, 2);
+    public final IRowExtractor<K> keyExtractor1;
+    public final IRowExtractor<V> valExtractor1;
+    public final IRowExtractor<V> valExtractor2;
+    public final IRowExtractor<ValueVersion<V>> valueVersionExtractor12;
+    public final IRowExtractor<ValueVersion<V>> valueVersionExtractor23;
+    public final IRowExtractor<Long> versionExtractor1 = JdbcUtil.makeColumnExtractor(Long.class, 1);
+    public final IRowExtractor<Long> versionExtractor2 = JdbcUtil.makeColumnExtractor(Long.class, 2);
+    public final IRowExtractor<Long> countExtractor2 = JdbcUtil.makeColumnExtractor(Long.class, 2);
 
     public DefaultKeyvalRead(TableMetadata meta, Class<K> keyClass, Class<V> valClass) {
         this(meta, keyClass, valClass, new DefaultJdbcRead());
     }
 
-    public DefaultKeyvalRead(TableMetadata meta, Class<K> keyClass, Class<V> valClass, JdbcRead reader) {
+    public DefaultKeyvalRead(TableMetadata meta, Class<K> keyClass, Class<V> valClass, IJdbcRead reader) {
         this.meta = meta;
         this.versionSql          = meta.groovyReplace(versionFormat);
         this.multiVersionSql     = meta.groovyReplaceKeep(multiVersionFormat);
@@ -96,7 +96,7 @@ public class DefaultKeyvalRead<K, V> implements KeyvalRead<K, V> {
 
     public Long contains(Connection conn, K key) {
         return Util.firstItem(reader.queryForList(conn, versionSql, new Object[] { key }, versionExtractor1, 1,
-                JdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
+                IJdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
     }
 
     public List<Long> batchContains(Connection conn, List<K> keys) {
@@ -115,7 +115,7 @@ public class DefaultKeyvalRead<K, V> implements KeyvalRead<K, V> {
     public boolean containsVersion(Connection conn, K key, long version) {
         return Util.firstItem(reader.queryForList(
                 conn, condVersionSql, new Object[] { key, version }, versionExtractor1, 1,
-                JdbcRead.NO_LIMIT_EXCEED_EXCEPTION)) > 0;
+                IJdbcRead.NO_LIMIT_EXCEED_EXCEPTION)) > 0;
     }
 
     public Map<K, Boolean> batchContainsVersion(Connection conn, Map<K, Long> keyVersions) {
@@ -134,7 +134,7 @@ public class DefaultKeyvalRead<K, V> implements KeyvalRead<K, V> {
 
     public V read(Connection conn, K key) {
         return Util.firstItem(reader.queryForList(conn, fetchSql, new Object[] { key }, valExtractor1, 1,
-                JdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
+                IJdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
     }
 
     public Map<K, V> batchRead(Connection conn, List<K> keys) {
@@ -146,7 +146,7 @@ public class DefaultKeyvalRead<K, V> implements KeyvalRead<K, V> {
 
     public V readForVersion(Connection conn, K key, long version) {
         return Util.firstItem(reader.queryForList(conn, condFetchSql, new Object[] { key, version }, valExtractor1, 1,
-                JdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
+                IJdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
     }
 
     public Map<K, V> batchReadForVersion(Connection conn, Map<K, Long> keyVersions) {
@@ -159,7 +159,7 @@ public class DefaultKeyvalRead<K, V> implements KeyvalRead<K, V> {
 
     public ValueVersion<V> readAll(Connection conn, K key) {
         return Util.firstItem(reader.queryForList(conn, fetchAllSql, new Object[] { key }, valueVersionExtractor12, 1,
-                JdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
+                IJdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
     }
 
     public Map<K, ValueVersion<V>> batchReadAll(Connection conn, List<K> keys) {

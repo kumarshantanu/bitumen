@@ -3,7 +3,7 @@ package springer.jdbc;
 import java.util.List;
 import java.util.Map;
 
-public interface KeyHolder {
+public interface IKeyHolder {
 
     public Number get();
 

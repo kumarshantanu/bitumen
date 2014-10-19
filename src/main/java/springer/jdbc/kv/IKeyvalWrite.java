@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
-public interface KeyvalWrite<K, V> {
+public interface IKeyvalWrite<K, V> {
 
     // ---- insert (fails if key already exists) ----
 

@@ -6,11 +6,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import springer.jdbc.JdbcRead;
-import springer.jdbc.JdbcWrite;
-import springer.jdbc.KeyHolder;
-import springer.jdbc.ResultSetExtractor;
-import springer.jdbc.RowExtractor;
+import springer.jdbc.IJdbcRead;
+import springer.jdbc.IJdbcWrite;
+import springer.jdbc.IKeyHolder;
+import springer.jdbc.IResultSetExtractor;
+import springer.jdbc.IRowExtractor;
 import springer.util.Util;
 
 public class SqlParams implements Serializable {
@@ -28,15 +28,15 @@ public class SqlParams implements Serializable {
         this(sql, params, new DefaultJdbcRead(), new DefaultJdbcWrite());
     }
 
-    public SqlParams(String sql, Object[] args, JdbcRead reader, JdbcWrite writer) {
+    public SqlParams(String sql, Object[] args, IJdbcRead reader, IJdbcWrite writer) {
         this.sql = sql;
         this.params = args;
         this.reader = reader;
         this.writer = writer;
     }
 
-    public transient final JdbcRead reader;
-    public transient final JdbcWrite writer;
+    public transient final IJdbcRead reader;
+    public transient final IJdbcWrite writer;
 
     // ===== fluent interface methods =====
 
@@ -44,11 +44,11 @@ public class SqlParams implements Serializable {
         return new SqlParams(sql, params, reader, writer);
     }
 
-    public SqlParams usingReader(JdbcRead reader) {
+    public SqlParams usingReader(IJdbcRead reader) {
         return new SqlParams(sql, params, reader, writer);
     }
 
-    public SqlParams usingReader(JdbcWrite writer) {
+    public SqlParams usingReader(IJdbcWrite writer) {
         return new SqlParams(sql, params, reader, writer);
     }
 
@@ -62,31 +62,31 @@ public class SqlParams implements Serializable {
         return reader.queryForList(conn, sql, params, limit, throwLimitExceedException);
     }
 
-    public <T> List<T> queryForList(Connection conn, RowExtractor<T> extractor) {
+    public <T> List<T> queryForList(Connection conn, IRowExtractor<T> extractor) {
         return reader.queryForList(conn, sql, params, extractor);
     }
 
-    public <T> List<T> queryForList(Connection conn, RowExtractor<T> extractor, long limit,
+    public <T> List<T> queryForList(Connection conn, IRowExtractor<T> extractor, long limit,
             boolean throwLimitExceedException) {
         return reader.queryForList(conn, sql, params, extractor, limit, throwLimitExceedException);
     }
 
-    public <K, V> Map<K, V> queryForMap(Connection conn, RowExtractor<K> keyExtractor, RowExtractor<V> valueExtractor) {
+    public <K, V> Map<K, V> queryForMap(Connection conn, IRowExtractor<K> keyExtractor, IRowExtractor<V> valueExtractor) {
         return reader.queryForMap(conn, sql, params, keyExtractor, valueExtractor);
     }
 
-    public <K, V> Map<K, V> queryForMap(Connection conn, RowExtractor<K> keyExtractor, RowExtractor<V> valueExtractor,
+    public <K, V> Map<K, V> queryForMap(Connection conn, IRowExtractor<K> keyExtractor, IRowExtractor<V> valueExtractor,
             long limit, boolean throwLimitExceedException) {
         return reader.queryForMap(conn, sql, params, keyExtractor, valueExtractor, limit, throwLimitExceedException);
     }
 
-    public <T> T queryCustom(Connection conn, ResultSetExtractor<T> extractor) {
+    public <T> T queryCustom(Connection conn, IResultSetExtractor<T> extractor) {
         return reader.queryCustom(conn, sql, params, extractor);
     }
 
     // ----- Writer methods -----
 
-    public KeyHolder genkey(Connection conn) {
+    public IKeyHolder genkey(Connection conn) {
         return writer.genkey(conn, sql, params);
     }
 

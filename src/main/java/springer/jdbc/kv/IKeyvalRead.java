@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
-public interface KeyvalRead<K, V> {
+public interface IKeyvalRead<K, V> {
 
     // ---- contains ----
 

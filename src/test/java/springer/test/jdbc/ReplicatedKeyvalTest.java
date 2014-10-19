@@ -10,11 +10,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import springer.jdbc.kv.KeyvalRead;
-import springer.jdbc.kv.KeyvalWrite;
+import springer.jdbc.kv.IKeyvalRead;
+import springer.jdbc.kv.IKeyvalWrite;
 import springer.jdbc.kv.impl.DefaultKeyvalWrite;
 import springer.jdbc.kv.impl.ReplicatedKeyvalRead;
-import springer.jdbc.kv.impl.ReplicationSlavesPointer;
+import springer.jdbc.kv.impl.IReplicationSlavesPointer;
 import springer.test.helper.KeyvalTestBatch;
 import springer.test.helper.KeyvalTestSingle;
 import springer.test.helper.TestUtil;
@@ -39,9 +39,9 @@ public class ReplicatedKeyvalTest {
         dataSource = null;
     }
 
-    final KeyvalWrite<Integer, String> writer = new DefaultKeyvalWrite<Integer, String>(TestUtil.meta);
+    final IKeyvalWrite<Integer, String> writer = new DefaultKeyvalWrite<Integer, String>(TestUtil.meta);
     final List<DataSource> slaveDataSources = TestUtil.makeSlaveTestDataSources();
-    final KeyvalRead<Integer, String> reader = new ReplicatedKeyvalRead<Integer, String>(TestUtil.meta, Integer.class, String.class, new ReplicationSlavesPointer() {
+    final IKeyvalRead<Integer, String> reader = new ReplicatedKeyvalRead<Integer, String>(TestUtil.meta, Integer.class, String.class, new IReplicationSlavesPointer() {
         public List<DataSource> getDataSources() {
             return slaveDataSources;
         }

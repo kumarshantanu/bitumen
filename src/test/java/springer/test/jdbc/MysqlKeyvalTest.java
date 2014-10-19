@@ -8,8 +8,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import springer.jdbc.kv.KeyvalRead;
-import springer.jdbc.kv.KeyvalWrite;
+import springer.jdbc.kv.IKeyvalRead;
+import springer.jdbc.kv.IKeyvalWrite;
 import springer.jdbc.kv.impl.DefaultKeyvalRead;
 import springer.jdbc.kv.impl.vendor.MysqlKeyvalWrite;
 import springer.test.helper.KeyvalTestBatch;
@@ -36,8 +36,8 @@ public class MysqlKeyvalTest {
         dataSource = null;
     }
 
-    final KeyvalWrite<Integer, String> writer = new MysqlKeyvalWrite<Integer, String>(TestUtil.meta, false);
-    final KeyvalRead<Integer, String> reader = new DefaultKeyvalRead<Integer, String>(TestUtil.meta, Integer.class, String.class);
+    final IKeyvalWrite<Integer, String> writer = new MysqlKeyvalWrite<Integer, String>(TestUtil.meta, false);
+    final IKeyvalRead<Integer, String> reader = new DefaultKeyvalRead<Integer, String>(TestUtil.meta, Integer.class, String.class);
 
     @Before
     public void setUp() throws Exception {

@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import springer.jdbc.JdbcWrite;
+import springer.jdbc.IJdbcWrite;
 import springer.jdbc.impl.DefaultJdbcWrite;
 import springer.jdbc.kv.KeyValueVersion;
-import springer.jdbc.kv.KeyvalWrite;
+import springer.jdbc.kv.IKeyvalWrite;
 import springer.util.Util;
 
-public class DefaultKeyvalWrite<K, V> implements KeyvalWrite<K, V> {
+public class DefaultKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
 
     public static final String
     insertFormat     = "INSERT INTO $tableName ($keyColname, $valueColname, $versionColname, $createTimestampColname,"
@@ -28,13 +28,13 @@ public class DefaultKeyvalWrite<K, V> implements KeyvalWrite<K, V> {
 
     public final String insertSql, updateSql, swapSql, touchSql, versionSql, deleteSql, condDeleteSql;
 
-    public final JdbcWrite writer;
+    public final IJdbcWrite writer;
 
     public DefaultKeyvalWrite(final TableMetadata meta) {
         this(meta, new DefaultJdbcWrite());
     }
 
-    public DefaultKeyvalWrite(final TableMetadata meta, JdbcWrite writer) {
+    public DefaultKeyvalWrite(final TableMetadata meta, IJdbcWrite writer) {
         this.insertSql     = meta.groovyReplace(insertFormat);
         this.updateSql     = meta.groovyReplace(updateFormat);
         this.swapSql       = meta.groovyReplace(swapFormat);

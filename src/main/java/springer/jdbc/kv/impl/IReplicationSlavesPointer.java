@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-public interface ReplicationSlavesPointer {
+public interface IReplicationSlavesPointer {
 
     public List<DataSource> getDataSources();
 

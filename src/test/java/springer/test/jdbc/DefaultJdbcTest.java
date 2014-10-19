@@ -16,11 +16,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import springer.jdbc.JdbcRead;
-import springer.jdbc.JdbcWrite;
-import springer.jdbc.RowExtractor;
-import springer.jdbc.helper.ConnectionActivity;
-import springer.jdbc.helper.ConnectionActivityNoResult;
+import springer.jdbc.IJdbcRead;
+import springer.jdbc.IJdbcWrite;
+import springer.jdbc.IRowExtractor;
+import springer.jdbc.helper.IConnectionActivity;
+import springer.jdbc.helper.IConnectionActivityNoResult;
 import springer.jdbc.helper.DataSourceTemplate;
 import springer.jdbc.impl.DefaultJdbcRead;
 import springer.jdbc.impl.DefaultJdbcWrite;
@@ -55,8 +55,8 @@ public class DefaultJdbcTest {
         TestUtil.dropTable(dataSource);
     }
 
-    final JdbcRead reader = new DefaultJdbcRead();
-    final JdbcWrite writer = new DefaultJdbcWrite();
+    final IJdbcRead reader = new DefaultJdbcRead();
+    final IJdbcWrite writer = new DefaultJdbcWrite();
 
     public static class Session {
         public int id;
@@ -97,7 +97,7 @@ public class DefaultJdbcTest {
         };
     }
 
-    public static final RowExtractor<Session> sessionExtractor = new RowExtractor<Session>() {
+    public static final IRowExtractor<Session> sessionExtractor = new IRowExtractor<Session>() {
         @Override
         public Session extract(ResultSet rs) throws SQLException {
             final Session session = new Session();
@@ -134,7 +134,7 @@ public class DefaultJdbcTest {
 
     @Test
     public void positionalParamsCrudTest() {
-        dst.withConnectionNoResult(new ConnectionActivityNoResult() {
+        dst.withConnectionNoResult(new IConnectionActivityNoResult() {
             @Override
             public void execute(Connection conn) {
                 // insert
@@ -155,7 +155,7 @@ public class DefaultJdbcTest {
 
     @Test
     public void namedParamsCrudTest() {
-        dst.withConnectionNoResult(new ConnectionActivityNoResult() {
+        dst.withConnectionNoResult(new IConnectionActivityNoResult() {
             @Override
             public void execute(Connection conn) {
                 // insert
@@ -184,7 +184,7 @@ public class DefaultJdbcTest {
     @Test
     public void transactionTest() {
         // commit with one update
-        final int id = dst.withTransaction(new ConnectionActivity<Integer>() {
+        final int id = dst.withTransaction(new IConnectionActivity<Integer>() {
             @Override
             public Integer execute(Connection conn) {
                 final int id = writer.genkey(conn,
@@ -194,7 +194,7 @@ public class DefaultJdbcTest {
                 return id;
             }
         });
-        dst.withConnectionNoResult(new ConnectionActivityNoResult() {
+        dst.withConnectionNoResult(new IConnectionActivityNoResult() {
             @Override
             public void execute(Connection conn) {
                 Assert.assertEquals(s1, readSession(conn, id));  // read
@@ -204,7 +204,7 @@ public class DefaultJdbcTest {
         // rollback with two updates
         final boolean go = true;
         try {
-            dst.withTransactionNoResult(new ConnectionActivityNoResult() {
+            dst.withTransactionNoResult(new IConnectionActivityNoResult() {
                 @Override
                 public void execute(Connection conn) {
                     // TODO Auto-generated method stub
@@ -220,7 +220,7 @@ public class DefaultJdbcTest {
         } catch (RuntimeException e) {
             // swallow exception
         }
-        long rows = dst.withConnection(new ConnectionActivity<Long>() {
+        long rows = dst.withConnection(new IConnectionActivity<Long>() {
             @Override
             public Long execute(Connection conn) {
                 return (Long) reader.queryForList(conn, "SELECT COUNT(*) FROM session", null).get(0)

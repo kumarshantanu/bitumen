@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import springer.jdbc.KeyHolder;
+import springer.jdbc.IKeyHolder;
 
-public class GeneratedKeyHolder implements KeyHolder {
+public class GeneratedKeyHolder implements IKeyHolder {
 
     private final List<Map<String, Object>> keyList;
 

@@ -12,11 +12,11 @@ import javax.sql.DataSource;
 import org.junit.Assert;
 
 import springer.jdbc.JdbcException;
-import springer.jdbc.helper.ConnectionActivity;
-import springer.jdbc.helper.ConnectionActivityNoResult;
+import springer.jdbc.helper.IConnectionActivity;
+import springer.jdbc.helper.IConnectionActivityNoResult;
 import springer.jdbc.helper.DataSourceTemplate;
-import springer.jdbc.kv.KeyvalRead;
-import springer.jdbc.kv.KeyvalWrite;
+import springer.jdbc.kv.IKeyvalRead;
+import springer.jdbc.kv.IKeyvalWrite;
 import springer.jdbc.kv.ValueVersion;
 import springer.util.Util;
 
@@ -28,8 +28,8 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         this.dst = new DataSourceTemplate(ds);
     }
 
-    private List<String> readValues(final KeyvalRead<Integer, String> reader, final List<Integer> keys) {
-        final Map<Integer, String> kvPairs = dst.withConnection(new ConnectionActivity<Map<Integer, String>>() {
+    private List<String> readValues(final IKeyvalRead<Integer, String> reader, final List<Integer> keys) {
+        final Map<Integer, String> kvPairs = dst.withConnection(new IConnectionActivity<Map<Integer, String>>() {
             public Map<Integer, String> execute(Connection conn) {
                 return reader.batchRead(conn, keys);
             }
@@ -41,11 +41,11 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         return result;
     }
 
-    public void insertTest(final KeyvalWrite<Integer, String> writer, final KeyvalRead<Integer, String> reader) {
+    public void insertTest(final IKeyvalWrite<Integer, String> writer, final IKeyvalRead<Integer, String> reader) {
         // write (actually insert, because the value doesn't exist) key-value pairs
         final List<Integer> keys = Arrays.asList(1, 2, 3);
         final List<String> vals1 = Arrays.asList("abc", "bcd", "cde");
-        final Long version1 = dst.withConnection(new ConnectionActivity<Long>() {
+        final Long version1 = dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.batchInsert(conn, Util.zipmap(keys, vals1));
             }
@@ -61,7 +61,7 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         // attempt duplicate insert, which should fail
         boolean exception = false;
         try {
-            dst.withConnection(new ConnectionActivity<Long>() {
+            dst.withConnection(new IConnectionActivity<Long>() {
                 public Long execute(Connection conn) {
                     return writer.batchInsert(conn, Util.zipmap(keys, vals1));
                 }
@@ -72,13 +72,13 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         Assert.assertTrue(exception);
     }
 
-    public void crudTest(final KeyvalWrite<Integer, String> writer, KeyvalRead<Integer, String> reader) {
+    public void crudTest(final IKeyvalWrite<Integer, String> writer, IKeyvalRead<Integer, String> reader) {
         // ----- INSERT (SAVE) -----
 
         // write (actually insert, because the value doesn't exist) key-value pairs
         final List<Integer> keys = Arrays.asList(1, 2, 3);
         final List<String> vals1 = Arrays.asList("abc", "bcd", "cde");
-        final Long version1 = dst.withConnection(new ConnectionActivity<Long>() {
+        final Long version1 = dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.batchSave(conn, Util.zipmap(keys, vals1));
             }
@@ -95,7 +95,7 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
 
         // write again (it is an update this time)
         final List<String> vals2 = Arrays.asList("vwx", "wxy", "xyz");
-        final Long version2 = dst.withConnection(new ConnectionActivity<Long>() {
+        final Long version2 = dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.batchSave(conn, Util.zipmap(keys, vals2));
             }
@@ -114,7 +114,7 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         // write again
         final List<Integer> keys2 = Arrays.asList(1, 2, 3, 4);
         final List<String> vals3 = Arrays.asList("pqr", "qrs", "rst", "stu");
-        final Long version3 = dst.withConnection(new ConnectionActivity<Long>() {
+        final Long version3 = dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.batchSave(conn, Util.zipmap(keys2, vals3));
             }
@@ -131,7 +131,7 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         // ----- DELETE -----
 
         // delete key-value pairs
-        dst.withConnectionNoResult(new ConnectionActivityNoResult() {
+        dst.withConnectionNoResult(new IConnectionActivityNoResult() {
             public void execute(Connection conn) {
                 writer.batchDelete(conn, keys);
             }
@@ -147,11 +147,11 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         }
     }
 
-    public void versionTest(final KeyvalWrite<Integer, String> writer, KeyvalRead<Integer, String> reader) {
+    public void versionTest(final IKeyvalWrite<Integer, String> writer, IKeyvalRead<Integer, String> reader) {
         // save (insert)
         final List<Integer> keys = Arrays.asList(2, 3, 4);
         final List<String> vals1 = Arrays.asList("abc", "bcd", "cde");
-        final Long version1 = dst.withConnection(new ConnectionActivity<Long>() {
+        final Long version1 = dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.batchSave(conn, Util.zipmap(keys, vals1));
             }
@@ -162,7 +162,7 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
 
         // swap using invalid version, which should fail
         final List<String> vals2 = Arrays.asList("pqr", "qrs", "rst");
-        final Long version2 = dst.withConnection(new ConnectionActivity<Long>() {
+        final Long version2 = dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.batchSwap(conn, Util.zipmap(keys, vals2), Util.newVersion());
             }
@@ -172,7 +172,7 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
 
         // swap using valid version, which should succeed
         final List<String> vals3 = Arrays.asList("uvw", "vwx", "wxy");
-        final Long version3 = dst.withConnection(new ConnectionActivity<Long>() {
+        final Long version3 = dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.batchSwap(conn, Util.zipmap(keys, vals3), version1);
             }
@@ -184,7 +184,7 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         // ----- REMOVE -----
 
         // remove with wrong version, which should fail
-        dst.withConnectionNoResult(new ConnectionActivityNoResult() {
+        dst.withConnectionNoResult(new IConnectionActivityNoResult() {
             public void execute(Connection conn) {
                 writer.batchRemove(conn, keys, version1);
             }
@@ -192,7 +192,7 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         Assert.assertEquals(vals3, readValues(reader, keys));
 
         // remove with correct version, which should pass
-        dst.withConnectionNoResult(new ConnectionActivityNoResult() {
+        dst.withConnectionNoResult(new IConnectionActivityNoResult() {
             public void execute(Connection conn) {
                 writer.batchRemove(conn, keys, version3);
             }
@@ -202,12 +202,12 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         }
     }
 
-    public void readTest(final KeyvalWrite<Integer, String> writer, final KeyvalRead<Integer, String> reader) {
+    public void readTest(final IKeyvalWrite<Integer, String> writer, final IKeyvalRead<Integer, String> reader) {
         final List<Integer> keys = Arrays.asList(1, 2, 3);
 
         // save (insert)
         final List<String> vals1 = Arrays.asList("abc", "bcd", "cde");
-        final Long version1 = dst.withConnection(new ConnectionActivity<Long>() {
+        final Long version1 = dst.withConnection(new IConnectionActivity<Long>() {
             public Long execute(Connection conn) {
                 return writer.batchSave(conn, Util.zipmap(keys, vals1));
             }
@@ -215,7 +215,7 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         Assert.assertNotNull(version1);
 
         // contains (which returns null due to bad key)
-        for (Long each : dst.withConnection(new ConnectionActivity<List<Long>>() {
+        for (Long each : dst.withConnection(new IConnectionActivity<List<Long>>() {
                     public List<Long> execute(Connection conn) {
                         return reader.batchContains(conn, Arrays.asList(Integer.MAX_VALUE));
                     }
@@ -224,7 +224,7 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         }
 
         // contains (which returns valid version)
-        for (Long each : dst.withConnection(new ConnectionActivity<List<Long>>() {
+        for (Long each : dst.withConnection(new IConnectionActivity<List<Long>>() {
                     public List<Long> execute(Connection conn) {
                         final List<Long> result = reader.batchContains(conn, keys);
                         return result;
@@ -234,7 +234,7 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         }
 
         // containsVersion (which returns null due to bad key)
-        for (Boolean each : dst.withConnection(new ConnectionActivity<Map<Integer, Boolean>>() {
+        for (Boolean each : dst.withConnection(new IConnectionActivity<Map<Integer, Boolean>>() {
                     public Map<Integer, Boolean> execute(Connection conn) {
                         return reader.batchContainsVersion(conn, Collections.singletonMap(Integer.MAX_VALUE,
                                         Util.newVersion()));
@@ -244,7 +244,7 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         }
 
         // containsVersion (which passes valid version)
-        for (Boolean each : dst.withConnection(new ConnectionActivity<Map<Integer, Boolean>>() {
+        for (Boolean each : dst.withConnection(new IConnectionActivity<Map<Integer, Boolean>>() {
                     public Map<Integer, Boolean> execute(Connection conn) {
                         return reader.batchContainsVersion(conn,
                                 Util.zipmap(keys, Arrays.asList(version1, version1, version1)));
@@ -262,7 +262,7 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         Assert.assertEquals(vals1, readValues(reader, keys));
 
         // readForVersion (which returns null due to bad version)
-        for (String each : dst.withConnection(new ConnectionActivity<Map<Integer, String>>() {
+        for (String each : dst.withConnection(new IConnectionActivity<Map<Integer, String>>() {
                     public Map<Integer, String> execute(Connection conn) {
                         return reader.batchReadForVersion(conn,
                                 Util.zipmap(keys,
@@ -273,7 +273,7 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         }
 
         // readForVersion (which returns correct value due to correct version)
-        final Map<Integer, String> kvPairs = dst.withConnection(new ConnectionActivity<Map<Integer, String>>() {
+        final Map<Integer, String> kvPairs = dst.withConnection(new IConnectionActivity<Map<Integer, String>>() {
             public Map<Integer, String> execute(Connection conn) {
                 return reader.batchReadForVersion(conn, Util.zipmap(keys, Arrays.asList(version1, version1, version1)));
             }
@@ -282,7 +282,7 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
 
         // readAll
         final Map<Integer, ValueVersion<String>> kvv = dst
-                .withConnection(new ConnectionActivity<Map<Integer, ValueVersion<String>>>() {
+                .withConnection(new IConnectionActivity<Map<Integer, ValueVersion<String>>>() {
                     public Map<Integer, ValueVersion<String>> execute(
                             Connection conn) {
                         return reader.batchReadAll(conn, keys);
