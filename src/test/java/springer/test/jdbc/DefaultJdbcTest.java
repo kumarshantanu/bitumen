@@ -24,7 +24,7 @@ import springer.jdbc.helper.ConnectionActivityNoResult;
 import springer.jdbc.helper.DataSourceTemplate;
 import springer.jdbc.impl.DefaultJdbcRead;
 import springer.jdbc.impl.DefaultJdbcWrite;
-import springer.jdbc.type.SqlParams;
+import springer.jdbc.impl.SqlParams;
 import springer.test.helper.TestUtil;
 import springer.util.Util;
 

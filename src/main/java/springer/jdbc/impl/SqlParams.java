@@ -1,4 +1,4 @@
-package springer.jdbc.type;
+package springer.jdbc.impl;
 
 import java.io.Serializable;
 import java.sql.Connection;
@@ -11,8 +11,6 @@ import springer.jdbc.JdbcWrite;
 import springer.jdbc.KeyHolder;
 import springer.jdbc.ResultSetExtractor;
 import springer.jdbc.RowExtractor;
-import springer.jdbc.impl.DefaultJdbcRead;
-import springer.jdbc.impl.DefaultJdbcWrite;
 import springer.util.Util;
 
 public class SqlParams implements Serializable {

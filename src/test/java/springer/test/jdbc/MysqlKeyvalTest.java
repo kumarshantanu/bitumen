@@ -11,10 +11,10 @@ import org.junit.Test;
 import springer.jdbc.kv.KeyvalRead;
 import springer.jdbc.kv.KeyvalWrite;
 import springer.jdbc.kv.impl.DefaultKeyvalRead;
+import springer.jdbc.kv.impl.vendor.MysqlKeyvalWrite;
 import springer.test.helper.KeyvalTestBatch;
 import springer.test.helper.KeyvalTestSingle;
 import springer.test.helper.TestUtil;
-import springer.vendor.MysqlKeyvalWrite;
 
 public class MysqlKeyvalTest {
 

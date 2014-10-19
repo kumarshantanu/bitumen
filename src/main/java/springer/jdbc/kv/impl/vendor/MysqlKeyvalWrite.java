@@ -1,4 +1,4 @@
-package springer.vendor;
+package springer.jdbc.kv.impl.vendor;
 
 import java.sql.Connection;
 import java.sql.Timestamp;
