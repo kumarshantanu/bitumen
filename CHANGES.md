@@ -5,11 +5,16 @@
 
 * Optional indexing over map documents (support for synchronous and asynchronous)
 * Reflection util to convert bean to/from map
+* Reflection based auto-generated RowMapper/RowExtractor
 * Serializer/deserializer interface to convert bean to/from EDN/JSON
 
 
-## 2014-March-?? / 0.1.0
+## 2014-November-?? / 0.1.0
 
+* Dependency Injection
+   * Factory and method based
+   * Constant and singleton support
+   * Constructor based, auto-detected
 * JDBC operations
    * Read operations
    * Write operations
@@ -32,6 +37,6 @@
    * Fully customizable table column names
    * Restriction-free key and value types
    * Vendor-specific optimization
-      * MySQL - save operation
+      * MySQL - save operation (UPSERT)
 * Sharding, Partitioning and Master/slave replication friendly API
 
