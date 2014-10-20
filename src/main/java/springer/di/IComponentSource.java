@@ -13,7 +13,7 @@ public interface IComponentSource<T, K> {
     /**
      * Given dependencies (or a dependency graph), obtain component and return the same.
      * @param dependencies zero or more dependencies, or a dependency graph
-     * @return component
+     * @return             the component
      */
     public T get(Map<K, IComponentSource<?, K>> dependencies);
 

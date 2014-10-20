@@ -13,9 +13,9 @@ public class PropertyGetter<K> {
     private final Class<K> componentKeyClass;
 
     /**
-     * Construct a <tt>PropertyGetter</tt> instance from a map of property key-value pairs and component key type.
-     * @param properties a map of key-value pairs
-     * @param componentKeyClass component type
+     * Construct a {@link PropertyGetter} instance from a map of property key-value pairs and component key type.
+     * @param  properties        a map of key-value pairs
+     * @param  componentKeyClass component type
      */
     public PropertyGetter(Map<?, ?> properties, Class<K> componentKeyClass) {
         this.properties = properties;
@@ -24,18 +24,18 @@ public class PropertyGetter<K> {
 
     /**
      * Given a property key, retrieve the corresponding value and return a component source wrapper of the value.
-     * @param key property key
-     * @return component source that always returns the corresponding property value
+     * @param  key property key
+     * @return     component source that always returns the corresponding property value
      */
     public IComponentSource<?, K> get(Object key) {
         return DI.constantly(properties.get(key), componentKeyClass);
     }
 
     /**
-     * Given a property key, retrieve the corresponding <tt>String</tt> value and return a component source wrapper of
+     * Given a property key, retrieve the corresponding {@link String} value and return a component source wrapper of
      * the value.
-     * @param key property key
-     * @return component source that always returns the corresponding property value as <tt>String</tt>
+     * @param  key property key
+     * @return     component source that always returns the corresponding property value as {@link String}
      */
     public IComponentSource<String, K> getString(Object key) {
         final Object value = properties.get(key);
@@ -46,10 +46,10 @@ public class PropertyGetter<K> {
     }
 
     /**
-     * Given a property key, retrieve the corresponding <tt>Boolean</tt> value and return a component source wrapper of
+     * Given a property key, retrieve the corresponding {@link Boolean} value and return a component source wrapper of
      * the value.
-     * @param key property key
-     * @return component source that always returns the corresponding property value as <tt>Boolean</tt>
+     * @param  key property key
+     * @return     component source that always returns the corresponding property value as {@link Boolean}
      */
     public IComponentSource<Boolean, K> getBoolean(Object key) {
         final Object value = properties.get(key);
@@ -64,10 +64,10 @@ public class PropertyGetter<K> {
     }
 
     /**
-     * Given a property key, retrieve the corresponding <tt>Integer</tt> value and return a component source wrapper of
+     * Given a property key, retrieve the corresponding {@link Integer} value and return a component source wrapper of
      * the value.
-     * @param key property key
-     * @return component source that always returns the corresponding property value as <tt>Integer</tt>
+     * @param  key property key
+     * @return     component source that always returns the corresponding property value as {@link Integer}
      */
     public IComponentSource<Integer, K> getInteger(Object key) {
         final Object value = properties.get(key);
@@ -82,10 +82,10 @@ public class PropertyGetter<K> {
     }
 
     /**
-     * Given a property key, retrieve the corresponding <tt>Long</tt> value and return a component source wrapper of
+     * Given a property key, retrieve the corresponding {@link Long} value and return a component source wrapper of
      * the value.
-     * @param key property key
-     * @return component source that always returns the corresponding property value as <tt>Long</tt>
+     * @param  key property key
+     * @return     component source that always returns the corresponding property value as {@link Long}
      */
     public IComponentSource<Long, K> getLong(Object key) {
         final Object value = properties.get(key);
@@ -100,10 +100,10 @@ public class PropertyGetter<K> {
     }
 
     /**
-     * Given a property key, retrieve the corresponding <tt>Float</tt> value and return a component source wrapper of
+     * Given a property key, retrieve the corresponding {@link Float} value and return a component source wrapper of
      * the value.
-     * @param key property key
-     * @return component source that always returns the corresponding property value as <tt>Float</tt>
+     * @param  key property key
+     * @return     component source that always returns the corresponding property value as {@link Float}
      */
     public IComponentSource<Float, K> getFloat(Object key) {
         final Object value = properties.get(key);
@@ -118,10 +118,10 @@ public class PropertyGetter<K> {
     }
 
     /**
-     * Given a property key, retrieve the corresponding <tt>Double</tt> value and return a component source wrapper of
+     * Given a property key, retrieve the corresponding {@link Double} value and return a component source wrapper of
      * the value.
-     * @param key property key
-     * @return component source that always returns the corresponding property value as <tt>Double</tt>
+     * @param  key property key
+     * @return     component source that always returns the corresponding property value as {@link Double}
      */
     public IComponentSource<Double, K> getDouble(Object key) {
         final Object value = properties.get(key);
