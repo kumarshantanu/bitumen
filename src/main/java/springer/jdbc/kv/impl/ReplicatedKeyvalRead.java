@@ -22,11 +22,10 @@ public class ReplicatedKeyvalRead<K, V> implements IKeyvalRead<K, V> {
 
     public ReplicatedKeyvalRead(final TableMetadata meta, Class<K> keyClass, Class<V> valClass,
             IReplicationSlavesPointer slavesPointer) {
-        this(meta, keyClass, valClass, slavesPointer, new DefaultKeyvalRead<K, V>(meta, keyClass, valClass));
+        this(slavesPointer, new DefaultKeyvalRead<K, V>(meta, keyClass, valClass));
     }
 
-    public ReplicatedKeyvalRead(final TableMetadata meta, Class<K> keyClass, Class<V> valClass,
-            IReplicationSlavesPointer slavesPointer, IKeyvalRead<K, V> orig) {
+    public ReplicatedKeyvalRead(IReplicationSlavesPointer slavesPointer, IKeyvalRead<K, V> orig) {
         this.slavesPointer = slavesPointer;
         this.reader = orig;
     }
@@ -169,7 +168,7 @@ public class ReplicatedKeyvalRead<K, V> implements IKeyvalRead<K, V> {
                         return reader.readAll(conn, key);
                     }
                 });
-        return (copy == null || !copy.version.equals(latest)) ? reader.readAll(conn, key) : copy;
+        return copy == null || !copy.version.equals(latest)? reader.readAll(conn, key): copy;
     }
 
     public ValueVersion<V> readAll(Connection conn, K key) {

@@ -25,7 +25,8 @@ public class KeyValueVersion<K, V> implements Serializable {
 
     @Override
     public int hashCode() {
-        return ("" + key + '|' + value + '|' + version).hashCode();
+        final String compositeString = "" + key + '|' + value + '|' + version;
+        return compositeString.hashCode();
     }
 
     @Override

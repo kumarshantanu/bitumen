@@ -5,6 +5,6 @@ import java.sql.SQLException;
 
 public interface IRowExtractor<T> {
 
-    public T extract(ResultSet rs) throws SQLException;
+    T extract(ResultSet rs) throws SQLException;
 
 }

@@ -27,7 +27,8 @@ public class ValueVersion<V> implements Serializable {
 
     @Override
     public int hashCode() {
-        return ("" + value + '|' + version).hashCode();
+        final String compositeString = "" + value + '|' + version;
+        return compositeString.hashCode();
     }
 
     @Override

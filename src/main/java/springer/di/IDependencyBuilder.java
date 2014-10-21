@@ -17,7 +17,7 @@ public interface IDependencyBuilder<K> {
      * @param  source the component source associated with the key
      * @return        {@link IDependencyBuilder} instance (usually same instance on which this method is invoked)
      */
-    public IDependencyBuilder<K> set(K key, IComponentSource<?, K> source);
+    IDependencyBuilder<K> set(K key, IComponentSource<?, K> source);
 
     // ----- syntactic sugar -----
 
@@ -28,7 +28,7 @@ public interface IDependencyBuilder<K> {
      * @param  source the component source associated with the key
      * @return        {@link IDependencyBuilder} instance (usually same instance on which this method is invoked)
      */
-    public IDependencyBuilder<K> add(K key, IComponentSource<?, K> source);
+    IDependencyBuilder<K> add(K key, IComponentSource<?, K> source);
 
     /**
      * Add a pair of key and associated component source as a singleton. The source is wrapped into a singleton if not
@@ -37,7 +37,7 @@ public interface IDependencyBuilder<K> {
      * @param  source the component source associated with the key
      * @return        {@link IDependencyBuilder} instance (usually same instance on which this method is invoked)
      */
-    public IDependencyBuilder<K> addSingleton(K key, IComponentSource<?, K> source);
+    IDependencyBuilder<K> addSingleton(K key, IComponentSource<?, K> source);
 
     /**
      * Add a pair of key and associated component source as a factory. Throw <tt>IllegalArgumentException</tt> if key
@@ -46,7 +46,7 @@ public interface IDependencyBuilder<K> {
      * @param  source the component source associated with the key
      * @return        {@link IDependencyBuilder} instance (usually same instance on which this method is invoked)
      */
-    public IDependencyBuilder<K> addFactory(K key, IComponentSource<?, K> source);
+    IDependencyBuilder<K> addFactory(K key, IComponentSource<?, K> source);
 
     /**
      * Add a pair of key and associated value wrapped as a component source. Throw <tt>IllegalArgumentException</tt>
@@ -55,7 +55,7 @@ public interface IDependencyBuilder<K> {
      * @param  value the constant value to be returned by the source
      * @return       {@link IDependencyBuilder} instance (usually same instance on which this method is invoked)
      */
-    public IDependencyBuilder<K> addConstant(K key, Object value);
+    IDependencyBuilder<K> addConstant(K key, Object value);
 
     // ----- get the map that was built -----
 
@@ -63,7 +63,7 @@ public interface IDependencyBuilder<K> {
      * Return the dependency graph built so far.
      * @return dependency graph, of type {@code Map<K, IComponentSource<?, K>>}
      */
-    public Map<K, IComponentSource<?, K>> getDependencyMap();
+    Map<K, IComponentSource<?, K>> getDependencyMap();
 
     // ----- obtaining instance -----
 
@@ -74,6 +74,6 @@ public interface IDependencyBuilder<K> {
      * @param  clazz        expected type - a {@code Class<T>} object
      * @return              component, which is cast to the type specified via <tt>clazz</tt>
      */
-    public <T> T getInstance(K componentKey, Class<T> clazz);
+    <T> T getInstance(K componentKey, Class<T> clazz);
 
 }

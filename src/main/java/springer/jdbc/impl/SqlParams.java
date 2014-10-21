@@ -107,7 +107,8 @@ public class SqlParams implements Serializable {
 
     @Override
     public int hashCode() {
-        return ("" + sql + '|' + Arrays.toString(params)).hashCode();
+        final String compositeString = "" + sql + '|' + Arrays.toString(params);
+        return compositeString.hashCode();
     }
 
     @Override

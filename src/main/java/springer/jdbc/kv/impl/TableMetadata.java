@@ -76,8 +76,9 @@ public class TableMetadata implements Serializable {
 
     @Override
     public int hashCode() {
-        return (tableName + '|' + keyColname + '|' + valueColname + '|' + versionColname + '|' + createTimestampColname
-                + '|' + updateTimestampColname).toLowerCase().hashCode();
+        final String compositeString = tableName + '|' + keyColname + '|' + valueColname + '|' + versionColname + '|'
+                + createTimestampColname + '|' + updateTimestampColname;
+        return compositeString.toLowerCase().hashCode();
     }
 
     @Override

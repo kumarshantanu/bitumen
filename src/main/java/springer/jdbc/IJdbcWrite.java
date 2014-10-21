@@ -6,12 +6,12 @@ public interface IJdbcWrite {
 
     // generate key
 
-    public IKeyHolder genkey(Connection conn, String sql, Object[] params);
+    IKeyHolder genkey(Connection conn, String sql, Object[] params);
 
     // update
 
-    public int update(Connection conn, String sql, Object[] params);
+    int update(Connection conn, String sql, Object[] params);
 
-    public int[] batchUpdate(Connection conn, String sql, Object[][] paramsArray);
+    int[] batchUpdate(Connection conn, String sql, Object[][] paramsArray);
 
 }

@@ -6,6 +6,6 @@ import javax.sql.DataSource;
 
 public interface IReplicationSlavesPointer {
 
-    public List<DataSource> getDataSources();
+    List<DataSource> getDataSources();
 
 }

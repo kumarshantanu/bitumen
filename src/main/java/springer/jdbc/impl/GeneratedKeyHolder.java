@@ -20,7 +20,8 @@ public class GeneratedKeyHolder implements IKeyHolder {
     }
 
     private void ensureGeneratedKeys() {
-        if (keyList.isEmpty() || (keyList.size() == 1 && keyList.get(0).isEmpty())) {
+        final boolean emptyGenkey = keyList.size() == 1 && keyList.get(0).isEmpty();
+        if (keyList.isEmpty() || emptyGenkey) {
             throw new IllegalStateException("No generated key found. Check whether the SQL contains identity column");
         }
     }

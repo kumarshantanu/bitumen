@@ -15,6 +15,6 @@ public interface IComponentSource<T, K> {
      * @param dependencies zero or more dependencies, or a dependency graph
      * @return             the component
      */
-    public T get(Map<K, IComponentSource<?, K>> dependencies);
+    T get(Map<K, IComponentSource<?, K>> dependencies);
 
 }

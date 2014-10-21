@@ -140,7 +140,7 @@ public class ReflectionUtil {
             final List<Object> params = new ArrayList<Object>();
             try {
                 for (Class<?> pType : constr.getParameterTypes()) {
-                    params.add((pType.isPrimitive()) ? Primitive.toWrapper(pType).newInstance() : null);
+                    params.add(pType.isPrimitive()? Primitive.toWrapper(pType).newInstance(): null);
                 }
                 return constr.newInstance(params.toArray());
             } catch(IllegalAccessException e2) {

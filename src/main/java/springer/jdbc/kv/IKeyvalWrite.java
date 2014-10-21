@@ -8,42 +8,42 @@ public interface IKeyvalWrite<K, V> {
 
     // ---- insert (fails if key already exists) ----
 
-    public long insert(Connection conn, K key, V value);
+    long insert(Connection conn, K key, V value);
 
-    public long batchInsert(Connection conn, Map<K, V> pairs);
+    long batchInsert(Connection conn, Map<K, V> pairs);
 
     // ---- save, regardless of whether they already exist ----
 
-    public long save(Connection conn, K key, V value);
+    long save(Connection conn, K key, V value);
 
-    public long batchSave(Connection conn, Map<K, V> pairs);
+    long batchSave(Connection conn, Map<K, V> pairs);
 
     // ---- swap (requires old version) ----
 
-    public Long swap(Connection conn, K key, V value, long version);
+    Long swap(Connection conn, K key, V value, long version);
 
-    public Long batchSwap(Connection conn, Map<K, V> pairs, long version);
+    Long batchSwap(Connection conn, Map<K, V> pairs, long version);
 
-    public Long batchSwap(Connection conn, List<KeyValueVersion<K, V>> triplets);
+    Long batchSwap(Connection conn, List<KeyValueVersion<K, V>> triplets);
 
     // ---- touch (update version) ----
 
-    public Long touch(Connection conn, K key);
+    Long touch(Connection conn, K key);
 
-    public Long batchTouch(Connection conn, List<K> keys);
+    Long batchTouch(Connection conn, List<K> keys);
 
     // ---- delete ----
 
-    public void delete(Connection conn, K key);
+    void delete(Connection conn, K key);
 
-    public void batchDelete(Connection conn, List<K> keys);
+    void batchDelete(Connection conn, List<K> keys);
 
     // ---- remove (requires old version) ----
 
-    public void remove(Connection conn, K key, long version);
+    void remove(Connection conn, K key, long version);
 
-    public void batchRemove(Connection conn, List<K> keys, long version);
+    void batchRemove(Connection conn, List<K> keys, long version);
 
-    public void batchRemove(Connection conn, Map<K, Long> keys);
+    void batchRemove(Connection conn, Map<K, Long> keys);
 
 }

@@ -5,12 +5,12 @@ import java.util.Map;
 
 public interface IKeyHolder {
 
-    public Number get();
+    Number get();
 
-    public Number get(String ColumnName);
+    Number get(String ColumnName);
 
-    public Map<String, Object> getKeys();
+    Map<String, Object> getKeys();
 
-    public List<Map<String, Object>> getKeyList();
+    List<Map<String, Object>> getKeyList();
 
 }
