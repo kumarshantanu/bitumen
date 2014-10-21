@@ -44,7 +44,7 @@ public interface IDependencyBuilder<K> {
      * already exists in the dependency graph, or if source is a singleton.
      * @param  key    the key
      * @param  source the component source associated with the key
-     * @return        {@link IDependencyBuilder<K>} instance (usually same instance on which this method is invoked)
+     * @return        {@link IDependencyBuilder} instance (usually same instance on which this method is invoked)
      */
     public IDependencyBuilder<K> addFactory(K key, IComponentSource<?, K> source);
 

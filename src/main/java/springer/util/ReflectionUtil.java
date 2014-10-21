@@ -127,8 +127,8 @@ public class ReflectionUtil {
 
     /**
      * Somehow instantiate the class, even though with null values in fields.
-     * @param cls
-     * @return
+     * @param  cls class to instantiate
+     * @return     instance of class <tt>cls</tt>
      */
     public static <T> T instantiate(Class<T> cls) {
         try {
