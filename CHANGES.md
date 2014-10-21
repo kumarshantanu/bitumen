@@ -4,9 +4,15 @@
 ## TODO / 0.2.0
 
 * Optional indexing over map documents (support for synchronous and asynchronous)
-* Reflection util to convert bean to/from map
+* Reflection util to convert bean to/from map, reflection/enum based RowMapper/RowExtractor
 * Reflection based auto-generated RowMapper/RowExtractor
 * Serializer/deserializer interface to convert bean to/from EDN/JSON
+* Add @SafeVarargs to springer.di.DI.construct(..) when Java 7 is the minimum JDK version required
+* Additional methods in IJdbcRead:
+   * public <K> List<Map<K, Object>> queryForList(Connection conn, String sql, Object[] params, Class<K> clazz);
+   * public <K> List<Map<K, Object>> queryForList(Connection conn, String sql, Object[] params, Class<K> clazz,
+       long limit, boolean throwLimitExceedException);
+
 
 
 ## 2014-November-?? / 0.1.0
