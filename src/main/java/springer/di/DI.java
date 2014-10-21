@@ -196,6 +196,7 @@ public class DI {
         return new NewInstanceComponentSourceByKey<T, K>(clazz, argKeys, shouldSetAccessible);
     }
 
+    // @SafeVarargs // TODO uncomment when Java 7 is the minimum JDK version required
     public static <T, K> IComponentSource<T, K> construct(final Class<T> clazz,
             final @SuppressWarnings("unchecked") IComponentSource<?, K>...argSources) {
         return instantiate(clazz, false, argSources);
