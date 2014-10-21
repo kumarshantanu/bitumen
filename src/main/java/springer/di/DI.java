@@ -18,7 +18,11 @@ import java.util.concurrent.TimeoutException;
 import springer.util.ReflectionUtil;
 import springer.util.ThreadUtil;
 
-public class DI {
+public final class DI {
+
+    private DI() {
+        // do nothing, this is an unusable constructor on purpose
+    }
 
     public static <T, K> T getInstance(Map<K, IComponentSource<?, K>> dependencies, K componentKey, Class<T> clazz) {
         if (!dependencies.containsKey(componentKey)) {
@@ -32,7 +36,7 @@ public class DI {
         if (instance != null && !clazz.isInstance(instance)) {
             throw new IllegalArgumentException(String.format(
                     "Expected instance of type %s, but found '%s' of type %s",
-                            clazz, instance, instance==null? "NULL": instance.getClass().toString()));
+                            clazz, instance, instance == null ? "NULL" : instance.getClass().toString()));
         }
         return clazz.cast(instance);
     }
