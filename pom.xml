@@ -23,7 +23,7 @@
 
   <scm>
     <url>https://github.com/kumarshantanu/springer</url>
-    <connection>git@github.com:kumarshantanu/springer.git</connection>
+    <connection>scm:git:git@github.com:kumarshantanu/springer.git</connection>
   </scm>
 
   <developers>
@@ -32,7 +32,7 @@
       <name>Shantanu Kumar</name>
       <email>kumar.shantanu@gmail.com</email>
       <url>https://github.com/kumarshantanu</url>
-      <timezone>GMT+5:30</timezone>
+      <timezone>+05:30</timezone>
     </developer>
   </developers>
 
@@ -129,7 +129,72 @@
         </executions>
       </plugin>
 
+      <!-- PMD plugin, invoked as - pmd:pmd -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>3.2</version>
+        <configuration>
+          <linkXref>true</linkXref>
+          <sourceEncoding>utf-8</sourceEncoding>
+          <targetJdk>1.6</targetJdk>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.13</version>
+        <executions>
+          <execution>
+            <id>validate</id>
+            <phase>validate</phase>
+            <configuration>
+              <configLocation>checkstyle.xml</configLocation>
+              <encoding>UTF-8</encoding>
+              <consoleOutput>true</consoleOutput>
+              <failsOnError>true</failsOnError>
+              <linkXRef>false</linkXRef>
+            </configuration>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
+
+  <reporting>
+    <plugins>
+        <!-- <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jxr-plugin</artifactId>
+            <version>2.3</version>
+        </plugin> -->
+
+        <!-- PMD plugin, invocation as: mvn site -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-pmd-plugin</artifactId>
+          <version>3.2</version>
+        </plugin>
+
+        <!-- Checkstyle plugin, invocation as: mvn site -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>2.13</version>
+          <reportSets>
+            <reportSet>
+              <reports>
+                <report>checkstyle</report>
+              </reports>
+            </reportSet>
+          </reportSets>
+        </plugin>
+    </plugins>
+  </reporting>
 
 </project>
