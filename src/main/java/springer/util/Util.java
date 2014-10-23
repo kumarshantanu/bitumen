@@ -1,5 +1,6 @@
 package springer.util;
 
+import java.io.PrintStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -171,6 +172,15 @@ public class Util {
 
     public static void echo(String format, Object...args) {
         //System.out.printf(format, args);
+    }
+
+    public static void swallow(Throwable e, PrintStream ps) {
+        ps.println("Swallowing exception: " + e);
+        e.printStackTrace(ps);
+    }
+
+    public static void swallow(Throwable e) {
+        swallow(e, System.err);
     }
 
 }

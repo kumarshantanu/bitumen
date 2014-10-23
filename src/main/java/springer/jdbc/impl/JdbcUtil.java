@@ -35,7 +35,7 @@ public class JdbcUtil {
                     conn.rollback();
                 }
             } catch (Exception e2) {
-                // swallow exception
+                Util.swallow(e2);
             }
             throw new JdbcException("Error committing transaction", e);
         } catch (RuntimeException e) {
@@ -44,7 +44,7 @@ public class JdbcUtil {
                     conn.rollback();
                 }
             } catch (Exception e2) {
-                // swallow exception
+                Util.swallow(e2);
             }
             throw e;
         } finally {
@@ -84,7 +84,7 @@ public class JdbcUtil {
                     conn.rollback();
                 }
             } catch (Exception e2) {
-                // swallow exception
+                Util.swallow(e2);
             }
             throw new JdbcException("Error committing transaction", e);
         } catch (RuntimeException e) {
@@ -93,7 +93,7 @@ public class JdbcUtil {
                     conn.rollback();
                 }
             } catch (Exception e2) {
-                // swallow exception
+                Util.swallow(e2);
             }
             throw e;
         } finally {
@@ -158,10 +158,9 @@ public class JdbcUtil {
                     return rs.getDate(columnIndex);
                 }
             }
-            if (data instanceof java.sql.Date) {
-                if ("java.sql.Timestamp".equals(rs.getMetaData().getColumnClassName(columnIndex))) {
-                    return rs.getTimestamp(columnIndex);
-                }
+            if (data instanceof java.sql.Date &&
+                    "java.sql.Timestamp".equals(rs.getMetaData().getColumnClassName(columnIndex))) {
+                return rs.getTimestamp(columnIndex);
             }
         }
         return data;
@@ -254,7 +253,7 @@ public class JdbcUtil {
         try {
             rs.close();
         } catch (SQLException e) {
-            // swallow exception
+            Util.swallow(e);
         }
     }
 
@@ -263,7 +262,7 @@ public class JdbcUtil {
         try {
             stmt.close();
         } catch (SQLException e) {
-            // swallow exception
+            Util.swallow(e);
         }
     }
 
@@ -272,7 +271,7 @@ public class JdbcUtil {
         try {
             conn.close();
         } catch (SQLException e) {
-            // swallow exception
+            Util.swallow(e);
         }
     }
 
@@ -314,12 +313,14 @@ public class JdbcUtil {
                 }
                 final StringBuilder name = new StringBuilder();
                 name.append(first);
-                for (++i; i < len; i++) {
+                i++; // hop to next char
+                while (i < len) {
                     final char x = format.charAt(i);
                     if (!Character.isJavaIdentifierPart(x)) {
                         break;
                     }
                     name.append(x);
+                    i++; // hop to next char
                 }
                 final String nameStr = name.toString();
                 if (!values.containsKey(nameStr)) {
