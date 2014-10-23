@@ -143,28 +143,42 @@
         </configuration>
       </plugin>
 
+      <!-- CheckStyle plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <version>2.13</version>
         <configuration>
-          <configLocation>checkstyle.xml</configLocation>
+          <logViolationsToConsole>true</logViolationsToConsole>
           <encoding>UTF-8</encoding>
           <consoleOutput>true</consoleOutput>
           <failsOnError>true</failsOnError>
-          <linkXRef>false</linkXRef>
+          <linkXRef>true</linkXRef>
           <checkstyleRules>
-            <module name="Checker">
-              <module name="LineLength">
-                <property name="max" value="120"/>
+              <module name="Checker">
+                <module name="TreeWalker">
+                  <module name="LineLength">
+                    <property name="max" value="120"/>
+                  </module>
+                </module>
+                <module name="FileTabCharacter"/>
               </module>
-              <module name="FileTabCharacter"/>
-            </module>
           </checkstyleRules>
         </configuration>
         <goals>
           <goal>check</goal>
         </goals>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <configuration>
+          <xmlOutput>true</xmlOutput>
+          <!-- Optional directory to put findbugs xdoc xml report -->
+          <xmlOutputDirectory>target/site</xmlOutputDirectory>
+        </configuration>
       </plugin>
 
       <!-- This is a dependency of maven-site-plugin, which is part of Maven. Since we can't specify maven-site-plugin
@@ -198,21 +212,22 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>2.13</version>
-        <configuration>
-          <!-- <configLocation>checkstyle.xml</configLocation> -->
-          <encoding>UTF-8</encoding>
-          <consoleOutput>true</consoleOutput>
-          <failsOnError>false</failsOnError>
-          <linkXRef>false</linkXRef>
-          <checkstyleRules>
-            <module name="Checker">
-              <module name="LineLength">
-                <property name="max" value="120"/>
+          <configuration>
+            <encoding>UTF-8</encoding>
+            <consoleOutput>true</consoleOutput>
+            <failsOnError>false</failsOnError>
+            <linkXRef>true</linkXRef>
+            <checkstyleRules>
+              <module name="Checker">
+                <module name="TreeWalker">
+                  <module name="LineLength">
+                    <property name="max" value="120"/>
+                  </module>
+                </module>
+                <module name="FileTabCharacter"/>
               </module>
-              <module name="FileTabCharacter"/>
-            </module>
-          </checkstyleRules>
-        </configuration>
+            </checkstyleRules>
+          </configuration>
           <reportSets>
             <reportSet>
               <reports>
@@ -220,6 +235,17 @@
               </reports>
             </reportSet>
           </reportSets>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>findbugs-maven-plugin</artifactId>
+          <version>3.0.0</version>
+          <configuration>
+            <xmlOutput>true</xmlOutput>
+            <!-- Optional directory to put findbugs xdoc xml report -->
+            <xmlOutputDirectory>target/site</xmlOutputDirectory>
+          </configuration>
         </plugin>
 
         <plugin>

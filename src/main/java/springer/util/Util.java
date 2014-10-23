@@ -183,4 +183,8 @@ public class Util {
         swallow(e, System.err);
     }
 
+    public static String getClassName(Object instance) {
+        return (instance == null) ? "NULL" : instance.getClass().toString();
+    }
+
 }
