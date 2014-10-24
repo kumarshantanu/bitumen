@@ -5,12 +5,19 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * JDBC read operations
+ * JDBC read operations.
  *
  */
 public interface IJdbcRead {
 
+    /**
+     * Used to represent "no limit" for the <tt>limit</tt> argument in methods in this interface.
+     */
     long NO_LIMIT = -1;
+
+    /**
+     * Used to represent literal values for the <tt>throwLimitExceedException</tt> argument in methods in this class.
+     */
     boolean THROW_LIMIT_EXCEED_EXCEPTION = true, NO_LIMIT_EXCEED_EXCEPTION = false;
 
     /**
@@ -36,6 +43,7 @@ public interface IJdbcRead {
 
     /**
      * Execute SQL query and return result as a list, using a row-extractor to extract each row as a list item.
+     * @param  <T>       element type of the returned list
      * @param  conn      an active {@link java.sql.Connection} connection
      * @param  sql       SQL statement
      * @param  params    SQL statement parameters
@@ -47,6 +55,7 @@ public interface IJdbcRead {
     /**
      * Execute SQL query and return result as a list, using a row-extractor to extract each row as a list item, while
      * honoring specified row count <i>limit</i>.
+     * @param  <T>       element type of the returned list
      * @param  conn      an active {@link java.sql.Connection} connection
      * @param  sql       SQL statement
      * @param  params    SQL statement parameters
@@ -61,6 +70,8 @@ public interface IJdbcRead {
     /**
      * Execute SQL query and return result as a map, using a key extractor and a value extractor to extract each row as
      * a pair of key and value.
+     * @param  <K>            key type of the returned map
+     * @param  <V>            value type of the returned map
      * @param  conn           an active {@link java.sql.Connection} connection
      * @param  sql            SQL statement
      * @param  params         SQL statement parameters
@@ -74,6 +85,8 @@ public interface IJdbcRead {
     /**
      * Execute SQL query and return result as a map, using a key extractor and a value extractor to extract each row as
      * a pair of key and value, while honoring specified row count <i>limit</i>.
+     * @param  <K>            key type of the returned map
+     * @param  <V>            value type of the returned map
      * @param  conn           an active {@link java.sql.Connection} connection
      * @param  sql            SQL statement
      * @param  params         SQL statement parameters
@@ -88,6 +101,7 @@ public interface IJdbcRead {
 
     /**
      * Execute SQL query and return result as determined by specified result-set extractor.
+     * @param  <T>       element type of the returned list
      * @param  conn      an active {@link java.sql.Connection} connection
      * @param  sql       SQL statement
      * @param  params    SQL statement parameters
