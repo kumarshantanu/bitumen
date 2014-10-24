@@ -9,17 +9,24 @@ import java.util.Map;
  */
 public class PropertyGetter<K> {
 
+    /**
+     * The key-value map to pick up properties from.
+     */
     private final Map<?, ?> properties;
-    private final Class<K> componentKeyClass;
+
+    /**
+     * Component key class, required because "type erasure"!
+     */
+    private final Class<K> keyClass;
 
     /**
      * Construct a {@link PropertyGetter} instance from a map of property key-value pairs and component key type.
-     * @param  properties        a map of key-value pairs
+     * @param  keyValueMap       a map of key-value pairs
      * @param  componentKeyClass component type
      */
-    public PropertyGetter(Map<?, ?> properties, Class<K> componentKeyClass) {
-        this.properties = properties;
-        this.componentKeyClass = componentKeyClass;
+    public PropertyGetter(final Map<?, ?> keyValueMap, final Class<K> componentKeyClass) {
+        this.properties = keyValueMap;
+        this.keyClass = componentKeyClass;
     }
 
     /**
@@ -27,8 +34,8 @@ public class PropertyGetter<K> {
      * @param  key property key
      * @return     component source that always returns the corresponding property value
      */
-    public IComponentSource<?, K> get(Object key) {
-        return DI.constantly(properties.get(key), componentKeyClass);
+    public final IComponentSource<?, K> get(final Object key) {
+        return DI.constantly(properties.get(key), keyClass);
     }
 
     /**
@@ -37,12 +44,12 @@ public class PropertyGetter<K> {
      * @param  key property key
      * @return     component source that always returns the corresponding property value as {@link String}
      */
-    public IComponentSource<String, K> getString(Object key) {
+    public final IComponentSource<String, K> getString(final Object key) {
         final Object value = properties.get(key);
         if (value instanceof String || value == null) {
-            return DI.constantly((String) value, componentKeyClass);
+            return DI.constantly((String) value, keyClass);
         }
-        return DI.constantly(value.toString(), componentKeyClass);
+        return DI.constantly(value.toString(), keyClass);
     }
 
     /**
@@ -51,13 +58,13 @@ public class PropertyGetter<K> {
      * @param  key property key
      * @return     component source that always returns the corresponding property value as {@link Boolean}
      */
-    public IComponentSource<Boolean, K> getBoolean(Object key) {
+    public final IComponentSource<Boolean, K> getBoolean(final Object key) {
         final Object value = properties.get(key);
         if (value instanceof Boolean) {
-            return DI.constantly((Boolean) value, componentKeyClass);
+            return DI.constantly((Boolean) value, keyClass);
         }
         if (value instanceof String) {
-            return DI.constantly(Boolean.parseBoolean((String) value), componentKeyClass);
+            return DI.constantly(Boolean.parseBoolean((String) value), keyClass);
         }
         throw new IllegalArgumentException(String.format(
                 "Corresponding value for key '%s' can not be parsed as Boolean: %s", key, value));
@@ -69,13 +76,13 @@ public class PropertyGetter<K> {
      * @param  key property key
      * @return     component source that always returns the corresponding property value as {@link Integer}
      */
-    public IComponentSource<Integer, K> getInteger(Object key) {
+    public final IComponentSource<Integer, K> getInteger(final Object key) {
         final Object value = properties.get(key);
         if (value instanceof Number) {
-            return DI.constantly(((Number) value).intValue(), componentKeyClass);
+            return DI.constantly(((Number) value).intValue(), keyClass);
         }
         if (value instanceof String) {
-            return DI.constantly(Integer.parseInt((String) value), componentKeyClass);
+            return DI.constantly(Integer.parseInt((String) value), keyClass);
         }
         throw new IllegalArgumentException(String.format(
                 "Corresponding value for key '%s' can not be parsed as Integer: %s", key, value));
@@ -87,13 +94,13 @@ public class PropertyGetter<K> {
      * @param  key property key
      * @return     component source that always returns the corresponding property value as {@link Long}
      */
-    public IComponentSource<Long, K> getLong(Object key) {
+    public final IComponentSource<Long, K> getLong(final Object key) {
         final Object value = properties.get(key);
         if (value instanceof Number) {
-            return DI.constantly(((Number) value).longValue(), componentKeyClass);
+            return DI.constantly(((Number) value).longValue(), keyClass);
         }
         if (value instanceof String) {
-            return DI.constantly(Long.parseLong((String) value), componentKeyClass);
+            return DI.constantly(Long.parseLong((String) value), keyClass);
         }
         throw new IllegalArgumentException(String.format(
                 "Corresponding value for key '%s' can not be parsed as Long: %s", key, value));
@@ -105,13 +112,13 @@ public class PropertyGetter<K> {
      * @param  key property key
      * @return     component source that always returns the corresponding property value as {@link Float}
      */
-    public IComponentSource<Float, K> getFloat(Object key) {
+    public final IComponentSource<Float, K> getFloat(final Object key) {
         final Object value = properties.get(key);
         if (value instanceof Number) {
-            return DI.constantly(((Number) properties.get(key)).floatValue(), componentKeyClass);
+            return DI.constantly(((Number) properties.get(key)).floatValue(), keyClass);
         }
         if (value instanceof String) {
-            return DI.constantly(Float.parseFloat((String) value), componentKeyClass);
+            return DI.constantly(Float.parseFloat((String) value), keyClass);
         }
         throw new IllegalArgumentException(String.format(
                 "Corresponding value for key '%s' can not be parsed as Float: %s", key, value));
@@ -123,13 +130,13 @@ public class PropertyGetter<K> {
      * @param  key property key
      * @return     component source that always returns the corresponding property value as {@link Double}
      */
-    public IComponentSource<Double, K> getDouble(Object key) {
+    public final IComponentSource<Double, K> getDouble(final Object key) {
         final Object value = properties.get(key);
         if (value instanceof Number) {
-            return DI.constantly(((Number) value).doubleValue(), componentKeyClass);
+            return DI.constantly(((Number) value).doubleValue(), keyClass);
         }
         if (value instanceof String) {
-            return DI.constantly(Double.parseDouble((String) value), componentKeyClass);
+            return DI.constantly(Double.parseDouble((String) value), keyClass);
         }
         throw new IllegalArgumentException(String.format(
                 "Corresponding value for key '%s' can not be parsed as Double: %s", key, value));

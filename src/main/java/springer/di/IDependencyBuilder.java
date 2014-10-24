@@ -5,7 +5,7 @@ import java.util.Map;
 /**
  * Fluent interface for building a dependency graph of component sources.
  *
- * @param <K> the key type, which is typically a Java enum (or sometimes string)
+ * @param  <K> the key type, which is typically a Java enum (or sometimes string)
  */
 public interface IDependencyBuilder<K> {
 
@@ -70,6 +70,7 @@ public interface IDependencyBuilder<K> {
     /**
      * Given component key and expected component type, resolve component source and return the component using the
      * dependency graph.
+     * @param  <T>          component type
      * @param  componentKey the component key
      * @param  clazz        expected type - a {@code Class<T>} object
      * @return              component, which is cast to the type specified via <tt>clazz</tt>
