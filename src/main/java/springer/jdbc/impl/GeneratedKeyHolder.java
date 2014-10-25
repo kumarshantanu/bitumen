@@ -7,18 +7,39 @@ import java.util.Map;
 
 import springer.jdbc.IKeyHolder;
 
+/**
+ * Default implementation of {@link IKeyHolder}.
+ *
+ */
 public class GeneratedKeyHolder implements IKeyHolder {
 
+    /**
+     * The list of generated keys to hold.
+     */
     private final List<Map<String, Object>> keyList;
 
+    /**
+     * Construct instance that has no generated keys.
+     */
     public GeneratedKeyHolder() {
-        this.keyList = new ArrayList<Map<String,Object>>(1);
+        this.keyList = new ArrayList<Map<String, Object>>(1);
     }
 
-    public GeneratedKeyHolder(List<Map<String, Object>> keyList) {
-        this.keyList = keyList;
+    /**
+     * Construct instance with valid generated keys.
+     * @param  generatedKeyList list of generated keys
+     */
+    public GeneratedKeyHolder(final List<Map<String, Object>> generatedKeyList) {
+        if (generatedKeyList == null || generatedKeyList.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Expected non-empty list of generated keys, found: " + String.valueOf(generatedKeyList));
+        }
+        this.keyList = generatedKeyList;
     }
 
+    /**
+     * Ensure that one or more generated keys actually exist. Throw {@code IllegalStateException} otherwise.
+     */
     private void ensureGeneratedKeys() {
         final boolean emptyGenkey = keyList.size() == 1 && keyList.get(0).isEmpty();
         if (keyList.isEmpty() || emptyGenkey) {
@@ -27,7 +48,7 @@ public class GeneratedKeyHolder implements IKeyHolder {
     }
 
     @Override
-    public Number get() {
+    public final Number get() {
         ensureGeneratedKeys();
         final int keyListSize = keyList.size();
         if (keyListSize > 1) {
@@ -38,7 +59,7 @@ public class GeneratedKeyHolder implements IKeyHolder {
     }
 
     @Override
-    public Number get(String columnName) {
+    public final Number get(final String columnName) {
         ensureGeneratedKeys();
         final int keyListSize = keyList.size();
         if (keyListSize > 1) {
@@ -49,13 +70,13 @@ public class GeneratedKeyHolder implements IKeyHolder {
     }
 
     @Override
-    public Map<String, Object> getKeys() {
+    public final Map<String, Object> getKeys() {
         ensureGeneratedKeys();
         return Collections.unmodifiableMap(keyList.get(0));
     }
 
     @Override
-    public List<Map<String, Object>> getKeyList() {
+    public final List<Map<String, Object>> getKeyList() {
         return Collections.unmodifiableList(keyList);
     }
 

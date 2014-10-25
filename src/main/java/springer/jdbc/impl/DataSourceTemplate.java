@@ -1,36 +1,93 @@
 package springer.jdbc.impl;
 
+import java.sql.Connection;
+
 import javax.sql.DataSource;
 
+/**
+ * {@link DataSource} operations.
+ *
+ */
 public class DataSourceTemplate {
 
-    public final DataSource dataSource;
+    /**
+     * Encapsulated {@link DataSource} to act upon.
+     */
+    private final DataSource dataSource;
 
-    public DataSourceTemplate(final DataSource dataSource) {
-        this.dataSource = dataSource;
+    /**
+     * Construct from {@link DataSource} instance.
+     * @param  jdbcDataSource {@link DataSource} instance
+     */
+    public DataSourceTemplate(final DataSource jdbcDataSource) {
+        this.dataSource = jdbcDataSource;
     }
 
-    public <V> V withConnection(IConnectionActivity<V> activity) {
+    /**
+     * Execute an activity using a {@link Connection} instance and clean it up afterward.
+     * @param  <V>      return type of the activity
+     * @param  activity the activity
+     * @return          whatever that activity returns
+     * @see             JdbcUtil#withConnection(DataSource, IConnectionActivity)
+     */
+    public final <V> V withConnection(final IConnectionActivity<V> activity) {
         return JdbcUtil.withConnection(dataSource, activity);
     }
 
-    public void withConnectionNoResult(IConnectionActivityNoResult activity) {
+    /**
+     * Execute an activity using a {@link Connection} instance and clean it up afterward.
+     * @param  activity the activity
+     * @see             JdbcUtil#withConnectionNoResult(DataSource, IConnectionActivityNoResult)
+     */
+    public final void withConnectionNoResult(final IConnectionActivityNoResult activity) {
         JdbcUtil.withConnectionNoResult(dataSource, activity);
     }
 
-    public <V> V withTransaction(IConnectionActivity<V> activity, int txnIsolation) {
+    /**
+     * Execute a transaction using a {@link Connection} instance and specified transaction isolation level,
+     * and clean it up afterward.
+     * @param  <V>          return type of transaction activity
+     * @param  activity     transaction activity
+     * @param  txnIsolation transaction isolation level as specified in {@link Connection}
+     * @return              whatever transaction activity returns
+     * @see                 JdbcUtil#withTransaction(DataSource, int, IConnectionActivity)
+     * @see                 Connection
+     */
+    public final <V> V withTransaction(final IConnectionActivity<V> activity, final int txnIsolation) {
         return JdbcUtil.withTransaction(dataSource, txnIsolation, activity);
     }
 
-    public <V> V withTransaction(IConnectionActivity<V> activity) {
+    /**
+     * Execute a transaction using a {@link Connection} instance and default transaction isolation level,
+     * and clean it up afterward.
+     * @param  <V>      return type of transaction activity
+     * @param  activity transaction activity
+     * @return          whatever transaction activity returns
+     * @see             JdbcUtil#withTransaction(DataSource, IConnectionActivity)
+     */
+    public final <V> V withTransaction(final IConnectionActivity<V> activity) {
         return JdbcUtil.withTransaction(dataSource, activity);
     }
 
-    public void withTransactionNoResult(IConnectionActivityNoResult activity, int txnIsolation) {
+    /**
+     * Execute a transaction using a {@link Connection} instance and specified transaction isolation level,
+     * and clean it up afterward.
+     * @param  activity     transaction activity
+     * @param  txnIsolation transaction isolation level as specified in {@link Connection}
+     * @see                 JdbcUtil#withTransactionNoResult(DataSource, int, IConnectionActivityNoResult)
+     * @see                 Connection
+     */
+    public final void withTransactionNoResult(final IConnectionActivityNoResult activity, final int txnIsolation) {
         JdbcUtil.withTransactionNoResult(dataSource, txnIsolation, activity);
     }
 
-    public void withTransactionNoResult(IConnectionActivityNoResult activity) {
+    /**
+     * Execute a transaction using a {@link Connection} instance and default transaction isolation level,
+     * and clean it up afterward.
+     * @param  activity transaction activity
+     * @see             JdbcUtil#withTransactionNoResult(DataSource, IConnectionActivityNoResult)
+     */
+    public final void withTransactionNoResult(final IConnectionActivityNoResult activity) {
         JdbcUtil.withTransactionNoResult(dataSource, activity);
     }
 

@@ -11,9 +11,14 @@ import springer.jdbc.IJdbcRead;
 import springer.jdbc.IJdbcWrite;
 import springer.util.Util;
 
+/**
+ * Default implementation of {@link IJdbcWrite}.
+ *
+ */
 public class DefaultJdbcWrite implements IJdbcWrite {
 
-    public GeneratedKeyHolder genkey(Connection conn, String sql, Object[] params) {
+    @Override
+    public final GeneratedKeyHolder genkey(final Connection conn, final String sql, final Object[] params) {
         final PreparedStatement pstmt = JdbcUtil.prepareStatementWithParams(conn, sql, params, true);
         try {
             pstmt.executeUpdate();
@@ -31,7 +36,8 @@ public class DefaultJdbcWrite implements IJdbcWrite {
         }
     }
 
-    public int update(Connection conn, String sql, Object[] params) {
+    @Override
+    public final int update(final Connection conn, final String sql, final Object[] params) {
         Util.echo("Update SQL: [%s], args: %s\n", sql, Arrays.toString(params));
         final PreparedStatement pstmt = JdbcUtil.prepareStatementWithParams(conn, sql, params);
         try {
@@ -44,7 +50,8 @@ public class DefaultJdbcWrite implements IJdbcWrite {
         }
     }
 
-    public int[] batchUpdate(Connection conn, String sql, Object[][] paramsArray) {
+    @Override
+    public final int[] batchUpdate(final Connection conn, final String sql, final Object[][] paramsArray) {
         Util.echo("Update SQL: [%s], batch-size: %d, args: %s\n",
                 sql, paramsArray.length, Arrays.toString(JdbcUtil.eachStr(paramsArray)));
         final PreparedStatement pstmt = JdbcUtil.prepareStatement(conn, sql);

@@ -13,106 +13,242 @@ import springer.jdbc.IResultSetExtractor;
 import springer.jdbc.IRowExtractor;
 import springer.util.Util;
 
+/**
+ * A bunch of JDBC read and write operations over encapsulated SQL statement and its parameters.
+ *
+ */
 public class SqlParams implements Serializable {
 
+    /**
+     * Class version for {@link Serializable}.
+     */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * SQL statement.
+     */
     public final String sql;
+
+    /**
+     * SQL statement parameters.
+     */
     public final Object[] params;
 
-    public SqlParams(String sql) {
-        this(sql, new Object[0]);
+    /**
+     * Construct instance from only SQL statement.
+     * @param  sqlStatement SQL statement
+     */
+    public SqlParams(final String sqlStatement) {
+        this(sqlStatement, new Object[0]);
     }
 
-    public SqlParams(String sql, Object[] params) {
-        this(sql, params, new DefaultJdbcRead(), new DefaultJdbcWrite());
+    /**
+     * Construct instance from SQL statement and its parameters.
+     * @param  sqlStatement SQL statement
+     * @param  sqlParams    SQL statement parameters
+     */
+    public SqlParams(final String sqlStatement, final Object[] sqlParams) {
+        this(sqlStatement, sqlParams, new DefaultJdbcRead(), new DefaultJdbcWrite());
     }
 
-    public SqlParams(String sql, Object[] args, IJdbcRead reader, IJdbcWrite writer) {
-        this.sql = sql;
-        this.params = args;
-        this.reader = reader;
-        this.writer = writer;
+    /**
+     * Construct instance from SQL statement, its parameters and JDBC reader and writer instances.
+     * @param  sqlStatement SQL statement
+     * @param  sqlParams    SQL statement parameters
+     * @param  jdbcReader   {@link IJdbcRead} instance
+     * @param  jdbcWriter   {@link IJdbcWrite} instance
+     */
+    public SqlParams(final String sqlStatement, final Object[] sqlParams, final IJdbcRead jdbcReader,
+            final IJdbcWrite jdbcWriter) {
+        this.sql = sqlStatement;
+        this.params = sqlParams;
+        this.reader = jdbcReader;
+        this.writer = jdbcWriter;
     }
 
-    public transient final IJdbcRead reader;
-    public transient final IJdbcWrite writer;
+    /**
+     * Reader used for JDBC read operations.
+     */
+    public final transient IJdbcRead reader;
+
+    /**
+     * Writer used for JDBC write operations.
+     */
+    public final transient IJdbcWrite writer;
 
     // ===== fluent interface methods =====
 
-    public SqlParams usingParams(Object[] params) {
-        return new SqlParams(sql, params, reader, writer);
+    /**
+     * Fluent style method to set SQL params.
+     * @param  sqlParams SQL statement params
+     * @return           <tt>this</tt> object
+     */
+    public final SqlParams usingParams(final Object[] sqlParams) {
+        return new SqlParams(sql, sqlParams, reader, writer);
     }
 
-    public SqlParams usingReader(IJdbcRead reader) {
-        return new SqlParams(sql, params, reader, writer);
+    /**
+     * Fluent style method to set JDBC reader.
+     * @param  jdbcReader JDBC reader
+     * @return            <tt>this</tt> object
+     */
+    public final SqlParams usingReader(final IJdbcRead jdbcReader) {
+        return new SqlParams(sql, params, jdbcReader, writer);
     }
 
-    public SqlParams usingReader(IJdbcWrite writer) {
-        return new SqlParams(sql, params, reader, writer);
+    /**
+     * Fluent style method to set JDBC writer.
+     * @param  jdbcWriter JDBC writer
+     * @return            <tt>this</tt> object
+     */
+    public final SqlParams usingReader(final IJdbcWrite jdbcWriter) {
+        return new SqlParams(sql, params, reader, jdbcWriter);
     }
 
     // ----- Reader methods -----
 
-    public List<Map<String, Object>> queryForList(Connection conn) {
+    /**
+     * Same as {@link IJdbcRead#queryForList(Connection, String, Object[])}.
+     * @param  conn JDBC connection
+     * @return      list of rows
+     * @see         IJdbcRead#queryForList(Connection, String, Object[])
+     */
+    public final List<Map<String, Object>> queryForList(final Connection conn) {
         return reader.queryForList(conn, sql, params);
     }
 
-    public List<Map<String, Object>> queryForList(Connection conn, long limit, boolean throwLimitExceedException) {
+    /**
+     * Same as {@link IJdbcRead#queryForList(Connection, String, Object[], long, boolean)}.
+     * @param  conn                      JDBC connection
+     * @param  limit                     maximum row count
+     * @param  throwLimitExceedException whether throw exception when result exceeds limit
+     * @return                           list of rows
+     * @see                              IJdbcRead#queryForList(Connection, String, Object[], long, boolean)
+     */
+    public final List<Map<String, Object>> queryForList(final Connection conn, final long limit,
+            final boolean throwLimitExceedException) {
         return reader.queryForList(conn, sql, params, limit, throwLimitExceedException);
     }
 
-    public <T> List<T> queryForList(Connection conn, IRowExtractor<T> extractor) {
+    /**
+     * Same as {@link IJdbcRead#queryForList(Connection, String, Object[], IRowExtractor)}.
+     * @param  <T>       extracted row type
+     * @param  conn      JDBC connection
+     * @param  extractor {@link IRowExtractor} instance
+     * @return           list of extracted rows
+     * @see              IJdbcRead#queryForList(Connection, String, Object[], IRowExtractor)
+     */
+    public final <T> List<T> queryForList(final Connection conn, final IRowExtractor<T> extractor) {
         return reader.queryForList(conn, sql, params, extractor);
     }
 
-    public <T> List<T> queryForList(Connection conn, IRowExtractor<T> extractor, long limit,
-            boolean throwLimitExceedException) {
+    /**
+     * See as {@link IJdbcRead#queryForList(Connection, String, Object[], IRowExtractor, long, boolean)}.
+     * @param  <T>       extracted row type
+     * @param  conn      JDBC connection
+     * @param  extractor {@link IRowExtractor} instance
+     * @param  limit     maximum row count
+     * @param  throwLimitExceedException whether throw exception when row count exceeds limit
+     * @return           list of extracted rows
+     * @see              IJdbcRead#queryForList(Connection, String, Object[], IRowExtractor, long, boolean)
+     */
+    public final <T> List<T> queryForList(final Connection conn, final IRowExtractor<T> extractor, final long limit,
+            final boolean throwLimitExceedException) {
         return reader.queryForList(conn, sql, params, extractor, limit, throwLimitExceedException);
     }
 
-    public <K, V> Map<K, V> queryForMap(Connection conn, IRowExtractor<K> keyExtractor, IRowExtractor<V> valueExtractor) {
+    /**
+     * Same as {@link IJdbcRead#queryForMap(Connection, String, Object[], IRowExtractor, IRowExtractor)}.
+     * @param  <K>            extracted key type
+     * @param  <V>            extracted value type
+     * @param  conn           JDBC connection
+     * @param  keyExtractor   extractor of keys
+     * @param  valueExtractor extractor of values
+     * @return                map of extracted keys and extracted values
+     * @see                   IJdbcRead#queryForMap(Connection, String, Object[], IRowExtractor, IRowExtractor)
+     */
+    public final <K, V> Map<K, V> queryForMap(final Connection conn, final IRowExtractor<K> keyExtractor,
+            final IRowExtractor<V> valueExtractor) {
         return reader.queryForMap(conn, sql, params, keyExtractor, valueExtractor);
     }
 
-    public <K, V> Map<K, V> queryForMap(Connection conn, IRowExtractor<K> keyExtractor, IRowExtractor<V> valueExtractor,
-            long limit, boolean throwLimitExceedException) {
+    /**
+     * Same as {@link IJdbcRead#queryForMap(Connection, String, Object[], IRowExtractor, IRowExtractor, long, boolean)}.
+     * @param  <K>            extracted key type
+     * @param  <V>            extracted value type
+     * @param  conn           JDBC connection
+     * @param  keyExtractor   extractor of keys
+     * @param  valueExtractor extractor of values
+     * @param  limit          maximum row count
+     * @param  throwLimitExceedException whether to throw exception if row count exceeds limit
+     * @return                map of extracted keys to extracted values
+     * @see            IJdbcRead#queryForMap(Connection, String, Object[], IRowExtractor, IRowExtractor, long, boolean)
+     */
+    public final <K, V> Map<K, V> queryForMap(final Connection conn, final IRowExtractor<K> keyExtractor,
+            final IRowExtractor<V> valueExtractor, final long limit, final boolean throwLimitExceedException) {
         return reader.queryForMap(conn, sql, params, keyExtractor, valueExtractor, limit, throwLimitExceedException);
     }
 
-    public <T> T queryCustom(Connection conn, IResultSetExtractor<T> extractor) {
+    /**
+     * Same as {@link IJdbcRead#queryCustom(Connection, String, Object[], IResultSetExtractor)}.
+     * @param  <T>       extracted result type
+     * @param  conn      JDBC connection
+     * @param  extractor result extractor
+     * @return           whatever that extractor returns
+     * @see              IJdbcRead#queryCustom(Connection, String, Object[], IResultSetExtractor)
+     */
+    public final <T> T queryCustom(final Connection conn, final IResultSetExtractor<T> extractor) {
         return reader.queryCustom(conn, sql, params, extractor);
     }
 
     // ----- Writer methods -----
 
-    public IKeyHolder genkey(Connection conn) {
+    /**
+     * Same as {@link IJdbcWrite#genkey(Connection, String, Object[])}.
+     * @param  conn JDBC connection
+     * @return      generated key holder
+     * @see         IJdbcWrite#genkey(Connection, String, Object[])
+     */
+    public final IKeyHolder genkey(final Connection conn) {
         return writer.genkey(conn, sql, params);
     }
 
-    public int update(Connection conn) {
+    /**
+     * Same as {@link IJdbcWrite#update(Connection, String, Object[])}.
+     * @param  conn JDBC connection
+     * @return      number of rows affected
+     * @see         IJdbcWrite#update(Connection, String, Object[])
+     */
+    public final int update(final Connection conn) {
         return writer.update(conn, sql, params);
     }
 
-    public int[] batchUpdate(Connection conn, Object[][] argsArray) {
+    /**
+     * Same as {@link IJdbcWrite#batchUpdate(Connection, String, Object[][])}.
+     * @param  conn      JDBC connection
+     * @param  argsArray batches of SQL params
+     * @return           number of rows affected for each param set
+     * @see              IJdbcWrite#batchUpdate(Connection, String, Object[][])
+     */
+    public final int[] batchUpdate(final Connection conn, final Object[][] argsArray) {
         return writer.batchUpdate(conn, sql, argsArray);
     }
 
     // ===== Object methods =====
 
     @Override
-    public String toString() {
+    public final String toString() {
         return String.format("sql = %s, args = %s", sql, Arrays.toString(params));
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         final String compositeString = "" + sql + '|' + Arrays.toString(params);
         return compositeString.hashCode();
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public final boolean equals(final Object obj) {
         if (obj == null || !(obj instanceof SqlParams)) {
             return false;
         }

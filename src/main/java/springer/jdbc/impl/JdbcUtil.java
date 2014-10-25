@@ -19,9 +19,28 @@ import springer.jdbc.JdbcException;
 import springer.jdbc.IRowExtractor;
 import springer.util.Util;
 
-public class JdbcUtil {
+/**
+ * JDBC utility methods.
+ *
+ */
+public final class JdbcUtil {
 
-    public static <V> V withConnection(DataSource dataSource, IConnectionActivity<V> activity) {
+    /**
+     * Utility class, hence inaccessible private constructor.
+     */
+    private JdbcUtil() {
+        // do nothing
+    }
+
+    /**
+     * Get a {@link Connection} from specified {@link DataSource}, execute an activity with the connection and finally
+     * clean it up.
+     * @param  <V>        return type of the activity
+     * @param  dataSource JDBC {@link DataSource} instance
+     * @param  activity   activity to perform
+     * @return            activity result
+     */
+    public static <V> V withConnection(final DataSource dataSource, final IConnectionActivity<V> activity) {
         final Connection conn = getConnection(dataSource);
         try {
             final V result = activity.execute(conn);
@@ -52,26 +71,51 @@ public class JdbcUtil {
         }
     }
 
-    public static <V> V withTransaction(DataSource dataSource,
+    /**
+     * Get a {@link Connection} from specified {@link DataSource}, execute a transaction activity using specified
+     * transaction isolation level with the connection and finally commit/rollback transaction and clean up the
+     * connection.
+     * @param  <V>          return type of the activity
+     * @param  dataSource   JDBC {@link DataSource} instance
+     * @param  txnIsolation JDBC transaction isolation to apply (as documented in {@link Connection})
+     * @param  activity     transaction activity
+     * @return              activity result
+     */
+    public static <V> V withTransaction(final DataSource dataSource,
             final int txnIsolation, final IConnectionActivity<V> activity) {
         return withConnection(dataSource, new IConnectionActivity<V>() {
-            public V execute(Connection conn) {
+            public V execute(final Connection conn) {
                 requireTransaction(conn, txnIsolation);
                 return activity.execute(conn);
             }
         });
     }
 
-    public static <V> V withTransaction(DataSource dataSource, final IConnectionActivity<V> activity) {
+    /**
+     * Get a {@link Connection} from specified {@link DataSource}, execute a transaction activity using default
+     * transaction isolation level with the connection and finally commit/rollback transaction and clean up the
+     * connection.
+     * @param  <V>        return type of the activity
+     * @param  dataSource JDBC {@link DataSource} instance
+     * @param  activity   transaction activity
+     * @return            activity result
+     */
+    public static <V> V withTransaction(final DataSource dataSource, final IConnectionActivity<V> activity) {
         return withConnection(dataSource, new IConnectionActivity<V>() {
-            public V execute(Connection conn) {
+            public V execute(final Connection conn) {
                 requireTransaction(conn);
                 return activity.execute(conn);
             }
         });
     }
 
-    public static void withConnectionNoResult(DataSource dataSource, IConnectionActivityNoResult activity) {
+    /**
+     * Get a {@link Connection} from specified {@link DataSource}, execute an activity with the connection and finally
+     * clean it up.
+     * @param  dataSource JDBC {@link DataSource} instance
+     * @param  activity   activity to perform
+     */
+    public static void withConnectionNoResult(final DataSource dataSource, final IConnectionActivityNoResult activity) {
         final Connection conn = getConnection(dataSource);
         try {
             activity.execute(conn);
@@ -101,26 +145,46 @@ public class JdbcUtil {
         }
     }
 
-    public static void withTransactionNoResult(DataSource dataSource,
+    /**
+     * Get a {@link Connection} from specified {@link DataSource}, execute a transaction activity using specified
+     * transaction isolation level with the connection and finally commit/rollback transaction and clean up the
+     * connection.
+     * @param  dataSource   JDBC {@link DataSource} instance
+     * @param  txnIsolation JDBC transaction isolation to apply (as documented in {@link Connection})
+     * @param  activity     transaction activity
+     */
+    public static void withTransactionNoResult(final DataSource dataSource,
             final int txnIsolation, final IConnectionActivityNoResult activity) {
         withConnectionNoResult(dataSource, new IConnectionActivityNoResult() {
-            public void execute(Connection conn) {
+            public void execute(final Connection conn) {
                 requireTransaction(conn, txnIsolation);
                 activity.execute(conn);
             }
         });
     }
 
-    public static void withTransactionNoResult(DataSource dataSource, final IConnectionActivityNoResult activity) {
+    /**
+     * Get a {@link Connection} from specified {@link DataSource}, execute a transaction activity using default
+     * transaction isolation level with the connection and finally commit/rollback transaction and clean up the
+     * connection.
+     * @param  dataSource JDBC {@link DataSource} instance
+     * @param  activity   transaction activity
+     */
+    public static void withTransactionNoResult(final DataSource dataSource, final IConnectionActivityNoResult activity) {
         withConnectionNoResult(dataSource, new IConnectionActivityNoResult() {
-            public void execute(Connection conn) {
+            public void execute(final Connection conn) {
                 requireTransaction(conn);
                 activity.execute(conn);
             }
         });
     }
 
-    public static String[] eachStr(Object[][] arrayOfArrays) {
+    /**
+     * This is a <tt>toString()</tt> equivalent for an array of arrays.
+     * @param  arrayOfArrays array of arrays
+     * @return               String representation suitable for printing
+     */
+    public static String[] eachStr(final Object[][] arrayOfArrays) {
         final String[] result = new String[arrayOfArrays.length];
         for (int i = 0; i < arrayOfArrays.length; i++) {
             result[i] = Arrays.toString(arrayOfArrays[i]);
@@ -128,15 +192,29 @@ public class JdbcUtil {
         return result;
     }
 
+    /**
+     * Create a row extractor that extracts just a column from every row in a {@link ResultSet}.
+     * @param  <T>         type of the column value
+     * @param  columnClass type of the column value
+     * @param  columnIndex column index in {@link ResultSet} (1 based)
+     * @return             row extractor
+     */
     public static <T> IRowExtractor<T> makeColumnExtractor(final Class<T> columnClass, final int columnIndex) {
         return new IRowExtractor<T>() {
-            public T extract(ResultSet rs) throws SQLException {
+            public T extract(final ResultSet rs) throws SQLException {
                 return columnClass.cast(getValue(rs, columnIndex));
             }
         };
     }
 
-    public static Object getValue(ResultSet rs, int columnIndex) throws SQLException {
+    /**
+     * Get column value from current row in a {@link ResultSet}.
+     * @param  rs          {@link ResultSet instance}
+     * @param  columnIndex column index in {@link ResultSet} (1 based)
+     * @return             column value
+     * @throws SQLException when {@link ResultSet} related operation throws an exception
+     */
+    public static Object getValue(final ResultSet rs, final int columnIndex) throws SQLException {
         final Object data = rs.getObject(columnIndex);
         if (data instanceof Clob) {
             return rs.getString(columnIndex);
@@ -151,22 +229,27 @@ public class JdbcUtil {
             }
             if (className.startsWith("oracle.sql.DATE")) {
                 final String metaDataClassName = rs.getMetaData().getColumnClassName(columnIndex);
-                if ("java.sql.Timestamp".equals(metaDataClassName) ||
-                        "oracle.sql.TIMESTAMP".equals(metaDataClassName)) {
+                if ("java.sql.Timestamp".equals(metaDataClassName)
+                        || "oracle.sql.TIMESTAMP".equals(metaDataClassName)) {
                     return rs.getTimestamp(columnIndex);
                 } else {
                     return rs.getDate(columnIndex);
                 }
             }
-            if (data instanceof java.sql.Date &&
-                    "java.sql.Timestamp".equals(rs.getMetaData().getColumnClassName(columnIndex))) {
+            if (data instanceof java.sql.Date
+                    && "java.sql.Timestamp".equals(rs.getMetaData().getColumnClassName(columnIndex))) {
                 return rs.getTimestamp(columnIndex);
             }
         }
         return data;
     }
 
-    public static Connection getConnection(DataSource dataSource) {
+    /**
+     * Obtain {@link Connection} from a specified {@link DataSource} instance.
+     * @param  dataSource {@link DataSource} instance
+     * @return            {@link Connection} object
+     */
+    public static Connection getConnection(final DataSource dataSource) {
         Connection conn = null;
         try {
             conn = dataSource.getConnection();
@@ -176,7 +259,11 @@ public class JdbcUtil {
         return conn;
     }
 
-    public static void requireTransaction(Connection conn) {
+    /**
+     * Set a {@link Connection} into transaction state without changing the isolation level.
+     * @param  conn {@link Connection} object
+     */
+    public static void requireTransaction(final Connection conn) {
         try {
             if (conn.getAutoCommit()) {
                 conn.setAutoCommit(false);
@@ -186,7 +273,12 @@ public class JdbcUtil {
         }
     }
 
-    public static void requireTransaction(Connection conn, int isolationLevel) {
+    /**
+     * Set a {@link Connection} into transaction state with specified isolation level.
+     * @param  conn           {@link Connection} object
+     * @param  isolationLevel the transaction isolation level (see {@link Connection} for possible values)
+     */
+    public static void requireTransaction(final Connection conn, final int isolationLevel) {
         requireTransaction(conn);
         try {
             conn.setTransactionIsolation(isolationLevel);
@@ -195,31 +287,71 @@ public class JdbcUtil {
         }
     }
 
-    public static PreparedStatement prepareStatementWithParams(Connection conn, String sql, Object[] args) {
+    /**
+     * Create and return a {@link PreparedStatement} from specified {@link Connection} object, SQL statement and
+     * its parameters.
+     * @param  conn {@link Connection} object
+     * @param  sql  SQL statement
+     * @param  args SQL statement parameters
+     * @return      {@link PreparedStatement} instance
+     */
+    public static PreparedStatement prepareStatementWithParams(final Connection conn, final String sql,
+            final Object[] args) {
         return prepareStatementWithParams(conn, sql, args, false);
     }
 
-    public static PreparedStatement prepareStatementWithParams(Connection conn, String sql, Object[] args,
-            boolean returnGeneratedkeys) {
+    /**
+     * Create and return a {@link PreparedStatement} from specified {@link Connection} object, SQL statement and
+     * its parameters.
+     * @param  conn                {@link Connection} object
+     * @param  sql                 SQL statement
+     * @param  args                SQL statement parameters
+     * @param  returnGeneratedkeys whether statement should return generated keys
+     * @return                     {@link PreparedStatement} instance
+     */
+    public static PreparedStatement prepareStatementWithParams(final Connection conn, final String sql,
+            final Object[] args, final boolean returnGeneratedkeys) {
         PreparedStatement pstmt = prepareStatement(conn, sql, returnGeneratedkeys);
         prepareParams(pstmt, args);
         return pstmt;
     }
 
-    public static PreparedStatement prepareStatement(Connection conn, String sql) {
+    /**
+     * Simply create a {@link PreparedStatement} from {@link Connection} object and SQL statement.
+     * @param  conn {@link Connection} object
+     * @param  sql  SQL statement
+     * @return      {@link PreparedStatement} instance
+     */
+    public static PreparedStatement prepareStatement(final Connection conn, final String sql) {
         return prepareStatement(conn, sql, false);
     }
 
-    public static PreparedStatement prepareStatement(Connection conn, String sql, boolean returnGeneratedkeys) {
+    /**
+     * Simply create a {@link PreparedStatement} from {@link Connection} object and SQL statement.
+     * @param  conn                {@link Connection} object
+     * @param  sql                 SQL statement
+     * @param  returnGeneratedkeys whether statement should return generated keys
+     * @return                     {@link PreparedStatement} instance
+     */
+    public static PreparedStatement prepareStatement(final Connection conn, final String sql,
+            final boolean returnGeneratedkeys) {
         try {
-            return returnGeneratedkeys?
-                    conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS): conn.prepareStatement(sql);
+            if (returnGeneratedkeys) {
+                return conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            } else {
+                return conn.prepareStatement(sql);
+            }
         } catch (SQLException e) {
             throw new JdbcException(String.format("Unable to prepare statement for SQL: [%s]", sql), e);
         }
     }
 
-    public static void prepareParams(PreparedStatement pstmt, Object[] params) {
+    /**
+     * Given a {@link PreparedStatement}, set the specified parameters.
+     * @param  pstmt  {@link PreparedStatement} instance
+     * @param  params statement parameters
+     */
+    public static void prepareParams(final PreparedStatement pstmt, final Object[] params) {
         if (params != null) {
             int i = -1;
             try {
@@ -248,8 +380,14 @@ public class JdbcUtil {
         }
     }
 
-    public static void close(ResultSet rs) {
-        if (rs == null) return;
+    /**
+     * Close a {@link ResultSet}.
+     * @param  rs {@link ResultSet} instance
+     */
+    public static void close(final ResultSet rs) {
+        if (rs == null) {
+            return;
+        }
         try {
             rs.close();
         } catch (SQLException e) {
@@ -257,8 +395,14 @@ public class JdbcUtil {
         }
     }
 
-    public static void close(Statement stmt) {
-        if (stmt == null) return;
+    /**
+     * Close a {@link Statement}.
+     * @param  stmt {@link Statement} instance
+     */
+    public static void close(final Statement stmt) {
+        if (stmt == null) {
+            return;
+        }
         try {
             stmt.close();
         } catch (SQLException e) {
@@ -266,8 +410,14 @@ public class JdbcUtil {
         }
     }
 
-    public static void close(Connection conn) {
-        if (conn == null) return;
+    /**
+     * Close a {@link Connection}.
+     * @param  conn {@link Connection} instance
+     */
+    public static void close(final Connection conn) {
+        if (conn == null) {
+            return;
+        }
         try {
             conn.close();
         } catch (SQLException e) {
@@ -275,12 +425,30 @@ public class JdbcUtil {
         }
     }
 
-    public static String argPlaceholders(int count) {
+    /**
+     * Return SQL statement parameter placeholder string for specified number of parameters.
+     * @param  count number of parameters
+     * @return       placeholder string
+     */
+    public static String argPlaceholders(final int count) {
         return Util.repeat("?", count, ", ");
     }
 
-    public static SqlParams embedReplace(char marker, String format, Map<String, String> values, boolean throwOnMissing,
-            boolean addToVals, Map<String, Object> addVals) {
+    /**
+     * Parse a 'format' string, identify variables and replace them with specified values, and do few more things
+     * useful for constructing and returning a {@link SqlParams} instance. '\' is the escape character; '\\' represents
+     * a single '\' in the 'format' string. Variable names are prefixed with a 'marker' character, and follow Java
+     * variable naming rules.
+     * @param  marker         character that is prefixed to every variable name in the 'format' string
+     * @param  format         the 'format' string
+     * @param  values         values to replace variables with
+     * @param  throwOnMissing whether throw exception on finding missing variable names (useful for partial rendering)
+     * @param  addToVals      whether variable values to be added to {@link SqlParams} 'params'
+     * @param  addVals        what values to add to {@link SqlParams} (different from <tt>values</tt>)
+     * @return                {@link SqlParams} instance
+     */
+    public static SqlParams embedReplace(final char marker, final String format, final Map<String, String> values,
+            final boolean throwOnMissing, final boolean addToVals, final Map<String, Object> addVals) {
         final int len = format.length();
         final StringBuilder sb = new StringBuilder(len);
         final List<Object> vals = new ArrayList<Object>();
@@ -346,7 +514,14 @@ public class JdbcUtil {
         return new SqlParams(sb.toString(), vals.toArray());
     }
 
-    public static SqlParams namedParamReplace(String format, Map<String, Object> values) {
+    /**
+     * Replace named parameters (i.e. variables with marker character ':') with placeholder '?' and add their values to
+     * {@link SqlParams} 'params'. Finally return a valid {@link SqlParams} instance.
+     * @param  format the SQL statement with embedded named parameters, e.g. "SELECT * FROM emp WHERE id = :id"
+     * @param  values values of named parameters, e.g. {"id" => 10}
+     * @return        {@link SqlParams} instance from derived SQL statement and parameter values
+     */
+    public static SqlParams namedParamReplace(final String format, final Map<String, Object> values) {
         final Map<String, String> subsVals = Util.zipmap(new ArrayList<String>(values.keySet()),
                 Util.repeat("?", values.size()));
         return embedReplace(':', format, subsVals, true, true, values);

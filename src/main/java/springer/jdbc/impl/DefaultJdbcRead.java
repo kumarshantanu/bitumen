@@ -17,16 +17,23 @@ import springer.jdbc.IResultSetExtractor;
 import springer.jdbc.IRowExtractor;
 import springer.util.Util;
 
+/**
+ * Default implementation of {@link IJdbcRead}.
+ *
+ */
 public class DefaultJdbcRead implements IJdbcRead {
 
-    public List<Map<String, Object>> queryForList(Connection conn, final String sql, Object[] params) {
+    @Override
+    public final List<Map<String, Object>> queryForList(final Connection conn, final String sql,
+            final Object[] params) {
         return queryForList(conn, sql, params, -1, true);
     }
 
-    public List<Map<String, Object>> queryForList(Connection conn, final String sql, Object[] params,
+    @Override
+    public final List<Map<String, Object>> queryForList(final Connection conn, final String sql, final Object[] params,
             final long limit, final boolean throwLimitExceedException) {
         return queryCustom(conn, sql, params, new IResultSetExtractor<List<Map<String, Object>>>() {
-            public List<Map<String, Object>> extract(ResultSet rs) {
+            public List<Map<String, Object>> extract(final ResultSet rs) {
                 try {
                     return extractMaps(rs, limit, throwLimitExceedException);
                 } catch (SQLException e) {
@@ -36,8 +43,16 @@ public class DefaultJdbcRead implements IJdbcRead {
         });
     }
 
-    public static List<Map<String, Object>> extractMaps(ResultSet rs, long limit, boolean throwLimitExceedException)
-            throws SQLException {
+    /**
+     * Extract a list of rows (where every row is a map of column names to values) from specified {@link ResultSet}.
+     * @param  rs                        {@link ResultSet} instance
+     * @param  limit                     maximum row count to retrieve
+     * @param  throwLimitExceedException whether throw exception when row count exceeds specified limit
+     * @return                           list of rows (maps)
+     * @throws SQLException              when {@link ResultSet} related operation throws exception
+     */
+    public static List<Map<String, Object>> extractMaps(final ResultSet rs, final long limit,
+            final boolean throwLimitExceedException) throws SQLException {
         final List<Map<String, Object>> result = new ArrayList<Map<String, Object>>(1);
         final ResultSetMetaData rsmd = rs.getMetaData();
         final int colCount = rsmd.getColumnCount();
@@ -72,14 +87,17 @@ public class DefaultJdbcRead implements IJdbcRead {
         return result;
     }
 
-    public <T> List<T> queryForList(Connection conn, final String sql, Object[] params, final IRowExtractor<T> extractor) {
+    @Override
+    public final <T> List<T> queryForList(final Connection conn, final String sql, final Object[] params,
+            final IRowExtractor<T> extractor) {
         return queryForList(conn, sql, params, extractor, -1, true);
     }
 
-    public <T> List<T> queryForList(Connection conn, final String sql, Object[] params, final IRowExtractor<T> extractor,
-            final long limit, final boolean throwLimitExceedException) {
+    @Override
+    public final <T> List<T> queryForList(final Connection conn, final String sql, final Object[] params,
+            final IRowExtractor<T> extractor, final long limit, final boolean throwLimitExceedException) {
         return queryCustom(conn, sql, params, new IResultSetExtractor<List<T>>() {
-            public List<T> extract(ResultSet rs) {
+            public List<T> extract(final ResultSet rs) {
                 final List<T> result = new ArrayList<T>(1);
                 try {
                     if (limit >= 0) {
@@ -106,13 +124,16 @@ public class DefaultJdbcRead implements IJdbcRead {
         });
     }
 
-    public <K, V> Map<K, V> queryForMap(Connection conn, String sql, Object[] params, IRowExtractor<K> keyExtractor,
-            IRowExtractor<V> valueExtractor) {
+    @Override
+    public final <K, V> Map<K, V> queryForMap(final Connection conn, final String sql, final Object[] params,
+            final IRowExtractor<K> keyExtractor, final IRowExtractor<V> valueExtractor) {
         return queryForMap(conn, sql, params, keyExtractor, valueExtractor, -1, true);
     }
 
-    public <K, V> Map<K, V> queryForMap(Connection conn, String sql, Object[] params, IRowExtractor<K> keyExtractor,
-            IRowExtractor<V> valueExtractor, long limit, boolean throwLimitExceedException) {
+    @Override
+    public final <K, V> Map<K, V> queryForMap(final Connection conn, final String sql, final Object[] params,
+            final IRowExtractor<K> keyExtractor, final IRowExtractor<V> valueExtractor, final long limit,
+            final boolean throwLimitExceedException) {
         Util.echo("Query SQL: [%s], args: %s\n", sql, Arrays.toString(params));
         final PreparedStatement pstmt = JdbcUtil.prepareStatementWithParams(conn, sql, params);
         ResultSet rs = null;
@@ -144,7 +165,9 @@ public class DefaultJdbcRead implements IJdbcRead {
         }
     }
 
-    public <T> T queryCustom(Connection conn, String sql, Object[] params, IResultSetExtractor<T> extractor) {
+    @Override
+    public final <T> T queryCustom(final Connection conn, final String sql, final Object[] params,
+            final IResultSetExtractor<T> extractor) {
         Util.echo("Query SQL: [%s], args: %s\n", sql, Arrays.toString(params));
         final PreparedStatement pstmt = JdbcUtil.prepareStatementWithParams(conn, sql, params);
         ResultSet rs = null;
