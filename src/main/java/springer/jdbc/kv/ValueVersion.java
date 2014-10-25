@@ -8,45 +8,74 @@ import springer.jdbc.IRowExtractor;
 import springer.jdbc.impl.JdbcUtil;
 import springer.util.Util;
 
+/**
+ * Bean class to hold value and version.
+ *
+ * @param <V> value type
+ */
 public class ValueVersion<V> implements Serializable {
 
+    /**
+     * Class version; {@link Serializable} requires it.
+     */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Stored value.
+     */
     public final V value;
+
+    /**
+     * Stored version.
+     */
     public final Long version;
 
-    public ValueVersion(final V value, final Long version) {
-        this.value = value;
-        this.version = version;
+    /**
+     * Construct instance from value and version.
+     * @param  theValue   the value
+     * @param  theVersion the version
+     */
+    public ValueVersion(final V theValue, final Long theVersion) {
+        this.value = theValue;
+        this.version = theVersion;
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         return String.format("value=%s, version=%d", value, version);
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         final String compositeString = "" + value + '|' + version;
         return compositeString.hashCode();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) return false;
-        if (this == obj) return true;
-        if (!(obj instanceof ValueVersion)) return false;
+    public final boolean equals(final Object obj) {
+        if (obj == null || !(obj instanceof ValueVersion)) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
         @SuppressWarnings("unchecked")
         ValueVersion<V> that = (ValueVersion<V>) obj;
-        return Util.equals(value, that.value) &&
-                Util.equals(version, that.version);
+        return Util.equals(value, that.value) && Util.equals(version, that.version);
     }
 
-    public static <V> IRowExtractor<ValueVersion<V>> makeExtractor(final Class<V> valueClass, final int valueColumnIndex,
-            final int versionColumnIndex) {
+    /**
+     * Create a row extractor from specified value and version meta data.
+     * @param  <V>                value type
+     * @param  valueClass         value class
+     * @param  valueColumnIndex   value column index in result set
+     * @param  versionColumnIndex version column index in result set
+     * @return                    row extractor
+     */
+    public static <V> IRowExtractor<ValueVersion<V>> makeExtractor(final Class<V> valueClass,
+            final int valueColumnIndex, final int versionColumnIndex) {
         return new IRowExtractor<ValueVersion<V>>() {
-            
-            public ValueVersion<V> extract(ResultSet rs) {
+            public ValueVersion<V> extract(final ResultSet rs) {
                 try {
                     return new ValueVersion<V>(valueClass.cast(JdbcUtil.getValue(rs, valueColumnIndex)),
                             rs.getLong(versionColumnIndex));
