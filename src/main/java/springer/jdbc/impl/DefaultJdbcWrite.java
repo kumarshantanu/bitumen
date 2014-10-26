@@ -51,18 +51,18 @@ public class DefaultJdbcWrite implements IJdbcWrite {
     }
 
     @Override
-    public final int[] batchUpdate(final Connection conn, final String sql, final Object[][] paramsArray) {
+    public final int[] batchUpdate(final Connection conn, final String sql, final Object[][] paramsBatch) {
         Util.echo("Update SQL: [%s], batch-size: %d, args: %s\n",
-                sql, paramsArray.length, Arrays.toString(JdbcUtil.eachStr(paramsArray)));
+                sql, paramsBatch.length, Arrays.toString(JdbcUtil.eachStr(paramsBatch)));
         final PreparedStatement pstmt = JdbcUtil.prepareStatement(conn, sql);
-        for (Object[] args: paramsArray) {
-            JdbcUtil.prepareParams(pstmt, args);
+        for (Object[] params: paramsBatch) {
+            JdbcUtil.prepareParams(pstmt, params);
             try {
                 pstmt.addBatch();
             } catch (SQLException e) {
                 JdbcUtil.close(pstmt);
                 throw new JdbcException(String.format("Unable to add batch arguments for SQL: [%s], args: %s",
-                        sql, Arrays.toString(args)), e);
+                        sql, Arrays.toString(params)), e);
             }
         }
         try {
@@ -70,7 +70,7 @@ public class DefaultJdbcWrite implements IJdbcWrite {
         } catch (SQLException e) {
             JdbcUtil.close(pstmt);
             throw new JdbcException(String.format("Unable to execute batch for SQL: [%s] (batch size = %d)",
-                    sql, paramsArray.length), e);
+                    sql, paramsBatch.length), e);
         } finally {
             JdbcUtil.close(pstmt);
         }

@@ -36,9 +36,9 @@ public interface IJdbcWrite {
      * for each parameter set in the batch. The same SQL statement is shared among all parameter sets in the batch.
      * @param  conn        a JDBC {@link Connection} to execute statement on
      * @param  sql         SQL statement
-     * @param  paramsArray parameter sets for the SQL statement
+     * @param  paramsBatch parameter sets for the SQL statement
      * @return             number of rows affected for each parameter set in the batch
      */
-    int[] batchUpdate(Connection conn, String sql, Object[][] paramsArray);
+    int[] batchUpdate(Connection conn, String sql, Object[][] paramsBatch);
 
 }

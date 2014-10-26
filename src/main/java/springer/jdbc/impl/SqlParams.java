@@ -225,13 +225,13 @@ public class SqlParams implements Serializable {
 
     /**
      * Same as {@link IJdbcWrite#batchUpdate(Connection, String, Object[][])}.
-     * @param  conn      JDBC connection
-     * @param  argsArray batches of SQL params
-     * @return           number of rows affected for each param set
-     * @see              IJdbcWrite#batchUpdate(Connection, String, Object[][])
+     * @param  conn        JDBC connection
+     * @param  paramsBatch batch of SQL params
+     * @return             number of rows affected for each param set
+     * @see                IJdbcWrite#batchUpdate(Connection, String, Object[][])
      */
-    public final int[] batchUpdate(final Connection conn, final Object[][] argsArray) {
-        return writer.batchUpdate(conn, sql, argsArray);
+    public final int[] batchUpdate(final Connection conn, final Object[][] paramsBatch) {
+        return writer.batchUpdate(conn, sql, paramsBatch);
     }
 
     // ===== Object methods =====
