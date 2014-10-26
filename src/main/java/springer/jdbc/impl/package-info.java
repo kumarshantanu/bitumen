@@ -1,4 +1,4 @@
 /**
- * Implementation for {@link springer.jdbc.package-info} interfaces.
+ * Implementation for <tt>springer.jdbc</tt> API.
  */
 package springer.jdbc.impl;
