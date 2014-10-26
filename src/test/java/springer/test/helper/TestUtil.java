@@ -98,7 +98,7 @@ public class TestUtil {
             public List<Long> execute(Connection conn) {
                 return new DefaultJdbcRead().queryForList(
                         conn, String.format("SELECT COUNT(*) FROM session WHERE skey IN (%s)",
-                        JdbcUtil.argPlaceholders(keys.size())), keys.toArray(),
+                        JdbcUtil.paramPlaceholders(keys.size())), keys.toArray(),
                         JdbcUtil.makeColumnExtractor(Long.class, 1));
             }
         }).get(0).longValue();

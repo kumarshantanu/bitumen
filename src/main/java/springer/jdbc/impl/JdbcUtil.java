@@ -430,7 +430,7 @@ public final class JdbcUtil {
      * @param  count number of parameters
      * @return       placeholder string
      */
-    public static String argPlaceholders(final int count) {
+    public static String paramPlaceholders(final int count) {
         return Util.repeat("?", count, ", ");
     }
 

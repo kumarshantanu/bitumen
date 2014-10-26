@@ -15,23 +15,51 @@ import springer.jdbc.kv.IKeyvalRead;
 import springer.jdbc.kv.ValueVersion;
 import springer.util.Util;
 
+/**
+ * A master-slave replication aware implementation of {@link IKeyvalRead}. The reads are directed to slaves in a
+ * Round-robin fashion.
+ *
+ * @param <K> key type
+ * @param <V> value type
+ */
 public class ReplicatedKeyvalRead<K, V> implements IKeyvalRead<K, V> {
 
-    public final IReplicationSlavesPointer slavesPointer;
-    public final IKeyvalRead<K, V> reader;
+    /** Source of slave data sources. */
+    private final IReplicationSlavesPointer slavesPointer;
 
-    public ReplicatedKeyvalRead(final TableMetadata meta, Class<K> keyClass, Class<V> valClass,
-            IReplicationSlavesPointer slavesPointer) {
-        this(slavesPointer, new DefaultKeyvalRead<K, V>(meta, keyClass, valClass));
+    /** JDBC reader. */
+    private final IKeyvalRead<K, V> reader;
+
+    /**
+     * Construct instance using required arguments to infer defaults.
+     * @param meta         table meta data
+     * @param keyClass     key class
+     * @param valClass     value class
+     * @param slavesSource source of slave data sources
+     */
+    public ReplicatedKeyvalRead(final TableMetadata meta, final Class<K> keyClass, final Class<V> valClass,
+            final IReplicationSlavesPointer slavesSource) {
+        this(slavesSource, new DefaultKeyvalRead<K, V>(meta, keyClass, valClass));
     }
 
-    public ReplicatedKeyvalRead(IReplicationSlavesPointer slavesPointer, IKeyvalRead<K, V> orig) {
-        this.slavesPointer = slavesPointer;
+    /**
+     * Construct instance using all required arguments.
+     * @param slavesSource source of slave data sources
+     * @param orig         key-value reader to actually connect and read
+     */
+    public ReplicatedKeyvalRead(final IReplicationSlavesPointer slavesSource, final IKeyvalRead<K, V> orig) {
+        this.slavesPointer = slavesSource;
         this.reader = orig;
     }
 
+    /** Index that loops from 0 until slave-count, at which point it rolls over to 0. */
     private volatile int index = 0;
-    private DataSource nextSlaveDataSource() { // this uses an approximate counter for efficiency
+
+    /**
+     * Obtain the next slave data source in round-robin fashion.
+     * @return next slave {@link DataSource} in Round-robin fashion.
+     */
+    private DataSource nextSlaveDataSource() { // this uses an approximate (but lock-free) counter for efficiency
         final List<DataSource> ds = slavesPointer.getDataSources();
         if (ds == null || ds.isEmpty()) {
             return null;
@@ -48,45 +76,73 @@ public class ReplicatedKeyvalRead<K, V> implements IKeyvalRead<K, V> {
 
     // ---- contains ----
 
-    public Long contains(Connection conn, K key) {
+    @Override
+    public final Long contains(final Connection conn, final K key) {
         return reader.contains(conn, key);
     }
 
-    public List<Long> batchContains(Connection conn, List<K> keys) {
+    @Override
+    public final List<Long> batchContains(final Connection conn, final List<K> keys) {
         return reader.batchContains(conn, keys);
     }
 
     // ---- containsVersion (requires old version) ----
 
-    public boolean containsVersion(Connection conn, K key, long version) {
+    @Override
+    public final boolean containsVersion(final Connection conn, final K key, final long version) {
         return reader.containsVersion(conn, key, version);
     }
 
-    public Map<K, Boolean> batchContainsVersion(Connection conn, Map<K, Long> keyVersions) {
+    @Override
+    public final Map<K, Boolean> batchContainsVersion(final Connection conn, final Map<K, Long> keyVersions) {
         return reader.batchContainsVersion(conn, keyVersions);
     }
 
     // ---- read ----
 
-    public V consistentRead(final Connection conn, DataSource slave, final K key) {
+    /**
+     * Read consistently across master and slave.
+     * @param  conn  JDBC connection
+     * @param  slave slave {@link DataSource}
+     * @param  key   key to find
+     * @return       corresponding value of the key (<tt>null</tt> if not key found)
+     */
+    public final V consistentRead(final Connection conn, final DataSource slave, final K key) {
         final Long latest = contains(conn, key);
         if (latest == null) {
             return null;
         }
         V copy = JdbcUtil.withConnection(slave, new IConnectionActivity<V>() {
-            public V execute(Connection conn) {
+            @Override
+            public V execute(final Connection conn) {
                 return reader.readForVersion(conn, key, latest);
             }
         });
-        return copy == null? reader.read(conn, key): copy;
+        if (copy == null) {
+            return reader.read(conn, key);
+        } else {
+            return copy;
+        }
     }
 
-    public V read(Connection conn, K key) {
+    @Override
+    public final V read(final Connection conn, final K key) {
         final DataSource slave = nextSlaveDataSource();
-        return slave == null? reader.read(conn, key): consistentRead(conn, slave, key);
+        if (slave == null) {
+            return reader.read(conn, key);
+        } else {
+            return consistentRead(conn, slave, key);
+        }
     }
 
-    public Map<K, V> consistentBatchRead(Connection conn, DataSource slave, final List<K> keys) {
+    /**
+     * Read batch consistently across master and slave.
+     * @param  conn  JDBC connection
+     * @param  slave slave {@link DataSource} instance
+     * @param  keys  keys to find
+     * @return       map of keys and corresponding values (<tt>null</tt> if key not found)
+     */
+    public final Map<K, V> consistentBatchRead(final Connection conn, final DataSource slave, final List<K> keys) {
         final List<Long> latest = batchContains(conn, keys);
         if (Util.areAllNull(latest)) {
             List<V> data = new ArrayList<V>(keys.size());
@@ -96,7 +152,8 @@ public class ReplicatedKeyvalRead<K, V> implements IKeyvalRead<K, V> {
             return Util.zipmap(keys, data);
         }
         final Map<K, V> copy = JdbcUtil.withConnection(slave, new IConnectionActivity<Map<K, V>>() {
-            public Map<K, V> execute(Connection conn) {
+            @Override
+            public Map<K, V> execute(final Connection conn) {
                 return reader.batchRead(conn, keys);
             }
         });
@@ -111,30 +168,61 @@ public class ReplicatedKeyvalRead<K, V> implements IKeyvalRead<K, V> {
         return copy;
     }
 
-    public Map<K, V> batchRead(Connection conn, List<K> keys) {
+    @Override
+    public final Map<K, V> batchRead(final Connection conn, final List<K> keys) {
         final DataSource slave = nextSlaveDataSource();
-        return slave == null? reader.batchRead(conn, keys): consistentBatchRead(conn, slave, keys);
+        if (slave == null) {
+            return reader.batchRead(conn, keys);
+        } else {
+            return consistentBatchRead(conn, slave, keys);
+        }
     }
 
     // ---- readVersion (requires old version) ----
 
-    public V consistentReadVersion(Connection conn, DataSource slave, final K key, final long version) {
-        V copy = JdbcUtil.withConnection(slave, new IConnectionActivity<V>() {
-            public V execute(Connection conn) {
+    /**
+     * Read value consistent across master and slave.
+     * @param  conn    JDBC connection
+     * @param  slave   slave {@link DataSource} instance
+     * @param  key     key to find
+     * @param  version version to match for specified key
+     * @return         corresponding value of the key
+     */
+    public final V consistentReadVersion(final Connection conn, final DataSource slave, final K key, final long version) {
+        final V copy = JdbcUtil.withConnection(slave, new IConnectionActivity<V>() {
+            @Override
+            public V execute(final Connection conn) {
                 return reader.readForVersion(conn, key, version);
             }
         });
-        return copy == null? reader.readForVersion(conn, key, version): copy;
+        if (copy == null) {
+            return reader.readForVersion(conn, key, version);
+        } else {
+            return copy;
+        }
     }
 
-    public V readForVersion(Connection conn, K key, long version) {
+    @Override
+    public final V readForVersion(final Connection conn, final K key, final long version) {
         final DataSource slave = nextSlaveDataSource();
-        return slave == null? reader.readForVersion(conn, key, version): consistentReadVersion(conn, slave, key, version);
+        if (slave == null) {
+            return reader.readForVersion(conn, key, version);
+        } else {
+            return consistentReadVersion(conn, slave, key, version);
+        }
     }
 
-    public Map<K, V> consistentBatchReadVersion(Connection conn, DataSource slave, final Map<K, Long> keyVersions) {
+    /**
+     * Read values consistently across master and slave.
+     * @param  conn        JDBC connection
+     * @param  slave       slave {@link DataSource} instance
+     * @param  keyVersions map of keys (to find) and corresponding versions (to match)
+     * @return             map of keys and corresponding values (<tt>null</tt> for each value when there was no match)
+     */
+    public final Map<K, V> consistentBatchReadVersion(final Connection conn, final DataSource slave, final Map<K, Long> keyVersions) {
         final Map<K, V> copy = JdbcUtil.withConnection(slave, new IConnectionActivity<Map<K, V>>() {
-            public Map<K, V> execute(Connection conn) {
+            @Override
+            public Map<K, V> execute(final Connection conn) {
                 return reader.batchReadForVersion(conn, keyVersions);
             }
         });
@@ -149,38 +237,68 @@ public class ReplicatedKeyvalRead<K, V> implements IKeyvalRead<K, V> {
         return copy;
     }
 
-    public Map<K, V> batchReadForVersion(Connection conn, Map<K, Long> keyVersions) {
+    @Override
+    public final Map<K, V> batchReadForVersion(final Connection conn, final Map<K, Long> keyVersions) {
         final DataSource slave = nextSlaveDataSource();
-        return slave == null? reader.batchReadForVersion(conn, keyVersions):
-            consistentBatchReadVersion(conn, slave, keyVersions);
+        if (slave == null) {
+            return reader.batchReadForVersion(conn, keyVersions);
+        } else {
+            return consistentBatchReadVersion(conn, slave, keyVersions);
+        }
     }
 
     // ---- readAll ----
 
-    public ValueVersion<V> consistentReadAll(Connection conn, DataSource slave, final K key) {
+    /**
+     * Read value and version for specified key consistently across master and slave.
+     * @param  conn  JDBC connection
+     * @param  slave slave {@link DataSource} instance
+     * @param  key   key to find
+     * @return       corresponding value and version (<tt>null</tt> when key not found)
+     */
+    public final ValueVersion<V> consistentReadAll(final Connection conn, final DataSource slave, final K key) {
         final Long latest = contains(conn, key);
         if (latest == null) {
             return null;
         }
-        ValueVersion<V> copy = JdbcUtil.withConnection(slave,
+        final ValueVersion<V> copy = JdbcUtil.withConnection(slave,
                 new IConnectionActivity<ValueVersion<V>>() {
-                    public ValueVersion<V> execute(Connection conn) {
+                   @Override
+                    public ValueVersion<V> execute(final Connection conn) {
                         return reader.readAll(conn, key);
                     }
                 });
-        return copy == null || !copy.version.equals(latest)? reader.readAll(conn, key): copy;
+        if (copy == null || !copy.version.equals(latest)) {
+            return reader.readAll(conn, key);
+        } else {
+            return copy;
+        }
     }
 
-    public ValueVersion<V> readAll(Connection conn, K key) {
+    @Override
+    public final ValueVersion<V> readAll(final Connection conn, final K key) {
         final DataSource slave = nextSlaveDataSource();
-        return slave == null? reader.readAll(conn, key): consistentReadAll(conn, slave, key);
+        if (slave == null) {
+            return reader.readAll(conn, key);
+        } else {
+            return consistentReadAll(conn, slave, key);
+        }
     }
 
-    public Map<K, ValueVersion<V>> consistentBatchReadAll(Connection conn, DataSource slave, List<K> keys) {
+    /**
+     * Read value and version of each key consistently across master and slave.
+     * @param  conn  JDBC connection
+     * @param  slave slave {@link DataSource} instance
+     * @param  keys  keys to find
+     * @return       map of keys to value-version tuple (<tt>null</tt> for each key that was not found)
+     */
+    public final Map<K, ValueVersion<V>> consistentBatchReadAll(final Connection conn, final DataSource slave,
+            final List<K> keys) {
         final List<Long> latest = batchContains(conn, keys);
         final Map<K, Long> keyVersions = Util.zipmap(keys, latest);
         final Map<K, V> slaveKeyVals = JdbcUtil.withConnection(slave, new IConnectionActivity<Map<K, V>>() {
-            public Map<K, V> execute(Connection slaveConn) {
+            @Override
+            public Map<K, V> execute(final Connection slaveConn) {
                 return reader.batchReadForVersion(slaveConn, keyVersions);
             }
         });
@@ -197,14 +315,19 @@ public class ReplicatedKeyvalRead<K, V> implements IKeyvalRead<K, V> {
         for (int i = 0; i < len; i++) {
             final K key = keys.get(i);
             final Long version = latest.get(i);
-            result.put(key, version==null? null: new ValueVersion<V>(slaveKeyVals.get(key), version));
+            result.put(key, version == null ? null : new ValueVersion<V>(slaveKeyVals.get(key), version));
         }
         return result;
     }
 
-    public Map<K, ValueVersion<V>> batchReadAll(Connection conn, List<K> keys) {
+    @Override
+    public final Map<K, ValueVersion<V>> batchReadAll(final Connection conn, final List<K> keys) {
         final DataSource slave = nextSlaveDataSource();
-        return slave == null? reader.batchReadAll(conn, keys): consistentBatchReadAll(conn, slave, keys);
+        if (slave == null) {
+            return reader.batchReadAll(conn, keys);
+        } else {
+            return consistentBatchReadAll(conn, slave, keys);
+        }
     }
 
 }

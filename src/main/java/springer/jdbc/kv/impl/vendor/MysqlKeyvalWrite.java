@@ -15,113 +15,150 @@ import springer.jdbc.kv.impl.DefaultKeyvalWrite;
 import springer.jdbc.kv.impl.TableMetadata;
 import springer.util.Util;
 
+/**
+ * MySQL specific key-value writer implementation of {@link IKeyvalWrite}.
+ *
+ * @param <K> key type
+ * @param <V> value type
+ */
 public class MysqlKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
 
+    /** MySQL's UPSERT format. */
     public static final String
-    upsertFormat = "INSERT INTO $tableName ($keyColname, $valueColname, $versionColname, $createTimestampColname, $updateTimestampColname)"
-            + " VALUES (?, ?, ?, $timestampValuePlaceholder, $timestampValuePlaceholder)"
-            + " ON DUPLICATE KEY UPDATE $valueColname = ?, $versionColname = ?, $updateTimestampColname = $timestampValuePlaceholder";
+    UPSERT_FORMAT = "INSERT INTO $tableName ($keyColname, $valueColname, $versionColname, $createTimestampColname, $updateTimestampColname)"
+    + " VALUES (?, ?, ?, $timestampValuePlaceholder, $timestampValuePlaceholder)"
+    + " ON DUPLICATE KEY UPDATE $valueColname = ?, $versionColname = ?, $updateTimestampColname = $timestampValuePlaceholder";
 
-    public final String upsertSql;
+    /** Rendered UPSERT SQL template. */
+    private final String upsertSql;
 
-    public final IJdbcWrite writer;
+    /** JDBC writer. */
+    private final IJdbcWrite writer;
 
-    public final DefaultKeyvalWrite<K, V> generic;
-    public final boolean populateTimestamp;
+    /** {@link IKeyvalWrite} instance for non-MySQL specific (generic) operations. */
+    private final DefaultKeyvalWrite<K, V> generic;
 
-    public MysqlKeyvalWrite(TableMetadata meta, boolean useMySQLTimestamp) {
+    /** Whether to use MySQL's 'NOW()' expression instead of of client's timestamp. */
+    private final boolean populateTimestamp;
+
+    /**
+     * Construct instance based on minimum arguments.
+     * @param meta              table meta data
+     * @param useMySQLTimestamp whether to use MySQL's 'NOW()' function or client's timestamp
+     */
+    public MysqlKeyvalWrite(final TableMetadata meta, final boolean useMySQLTimestamp) {
         this(meta, useMySQLTimestamp, new DefaultJdbcWrite());
     }
 
-    public MysqlKeyvalWrite(TableMetadata meta, boolean useMySQLTimestamp, IJdbcWrite writer) {
-        this.writer = writer;
+    /**
+     * Construct instance based on all required arguments.
+     * @param meta              table meta data
+     * @param useMySQLTimestamp whether to use MySQL's 'NOW()' function or client's timestamp
+     * @param dbWriter          JDBC writer for carrying out MySQL specific write operations
+     */
+    public MysqlKeyvalWrite(final TableMetadata meta, final boolean useMySQLTimestamp, final IJdbcWrite dbWriter) {
+        this.writer = dbWriter;
         this.generic = new DefaultKeyvalWrite<K, V>(meta);
-        final String template = meta.groovyReplaceKeep(upsertFormat);
+        final String template = meta.groovyReplaceKeep(UPSERT_FORMAT);
         this.upsertSql = Util.groovyReplace(template,
-                Collections.singletonMap("timestampValuePlaceholder", useMySQLTimestamp? "NOW()": "?"), true);
+                Collections.singletonMap("timestampValuePlaceholder", useMySQLTimestamp ? "NOW()" : "?"), true);
         this.populateTimestamp = !useMySQLTimestamp;
     }
 
-    public long insert(Connection conn, K key, V value) {
+    @Override
+    public final long insert(final Connection conn, final K key, final V value) {
         return generic.insert(conn, key, value);
     }
 
-    public long batchInsert(Connection conn, Map<K, V> pairs) {
+    @Override
+    public final long batchInsert(final Connection conn, final Map<K, V> pairs) {
         return generic.batchInsert(conn, pairs);
     }
 
     // ---- save, regardless of whether they already exist ----
 
-    public long save(Connection conn, K key, V value) {
+    @Override
+    public final long save(final Connection conn, final K key, final V value) {
         final long version = Util.newVersion();
         final Timestamp now = Util.now();
-        writer.update(conn, upsertSql, populateTimestamp?
-                new Object[] { key, value, version, now, now, value, version, now }:
-                    new Object[] { key, value, version, value, version });
+        writer.update(conn, upsertSql, populateTimestamp
+                ? new Object[] {key, value, version, now, now, value, version, now}
+                : new Object[] {key, value, version, value, version});
         return version;
     }
 
-    public long batchSave(Connection conn, Map<K, V> pairs) {
+    @Override
+    public final long batchSave(final Connection conn, final Map<K, V> pairs) {
         final long version = Util.newVersion();
         final Timestamp now = Util.now();
-        final Object[][] argsArray = new Object[pairs.size()][];
+        final Object[][] paramsBatch = new Object[pairs.size()][];
         int i = 0;
         for (Entry<K, V> entry: pairs.entrySet()) {
             final K key = entry.getKey();
             final V value = entry.getValue();
-            argsArray[i++] = populateTimestamp?
-                    new Object[] { key, value, version, now, now, value, version, now }:
-                        new Object[] { key, value, version, value, version };
+            paramsBatch[i++] = populateTimestamp
+                    ? new Object[] {key, value, version, now, now, value, version, now}
+                    : new Object[] {key, value, version, value, version};
         }
-        writer.batchUpdate(conn, upsertSql, argsArray);
+        writer.batchUpdate(conn, upsertSql, paramsBatch);
         return version;
     }
 
     // ---- swap (requires old version) ----
 
-    public Long swap(Connection conn, K key, V value, long version) {
+    @Override
+    public final Long swap(final Connection conn, final K key, final V value, final long version) {
         return generic.swap(conn, key, value, version);
     }
 
-    public Long batchSwap(Connection conn, Map<K, V> pairs, long version) {
+    @Override
+    public final Long batchSwap(final Connection conn, final Map<K, V> pairs, final long version) {
         return generic.batchSwap(conn, pairs, version);
     }
 
-    public Long batchSwap(Connection conn, List<KeyValueVersion<K, V>> triplets) {
+    @Override
+    public final Long batchSwap(final Connection conn, final List<KeyValueVersion<K, V>> triplets) {
         return generic.batchSwap(conn, triplets);
     }
 
     // ---- touch (update version) ----
 
-    public Long touch(Connection conn, K key) {
+    @Override
+    public final Long touch(final Connection conn, final K key) {
         return generic.touch(conn, key);
     }
 
-    public Long batchTouch(Connection conn, List<K> keys) {
+    @Override
+    public final Long batchTouch(final Connection conn, final List<K> keys) {
         return generic.batchTouch(conn, keys);
     }
 
     // ---- delete ----
 
-    public void delete(Connection conn, K key) {
+    @Override
+    public final void delete(final Connection conn, final K key) {
         generic.delete(conn, key);
     }
 
-    public void batchDelete(Connection conn, List<K> keys) {
+    @Override
+    public final void batchDelete(final Connection conn, final List<K> keys) {
         generic.batchDelete(conn, keys);
     }
 
     // ---- remove (requires old version) ----
 
-    public void remove(Connection conn, K key, long version) {
+    @Override
+    public final void remove(final Connection conn, final K key, final long version) {
         generic.remove(conn, key, version);
     }
 
-    public void batchRemove(Connection conn, List<K> keys, long version) {
+    @Override
+    public final void batchRemove(final Connection conn, final List<K> keys, final long version) {
         generic.batchRemove(conn, keys, version);
     }
 
-    public void batchRemove(Connection conn, Map<K, Long> keys) {
+    @Override
+    public final void batchRemove(final Connection conn, final Map<K, Long> keys) {
         generic.batchRemove(conn, keys);
     }
 
