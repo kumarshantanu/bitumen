@@ -15,7 +15,7 @@ public final class ThreadUtil {
      * Sleep for specified duration in milliseconds.
      * @param millis duration to sleep in milliseconds
      */
-    public static void sleep(long millis) {
+    public static void sleep(final long millis) {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException ie) {

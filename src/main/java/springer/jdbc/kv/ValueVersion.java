@@ -23,12 +23,28 @@ public class ValueVersion<V> implements Serializable {
     /**
      * Stored value.
      */
-    public final V value;
+    private final V value;
 
     /**
      * Stored version.
      */
-    public final Long version;
+    private final Long version;
+
+    /**
+     * Getter for value.
+     * @return value
+     */
+    public final V getValue() {
+        return value;
+    }
+
+    /**
+     * Getter for version.
+     * @return version
+     */
+    public final Long getVersion() {
+        return version;
+    }
 
     /**
      * Construct instance from value and version.

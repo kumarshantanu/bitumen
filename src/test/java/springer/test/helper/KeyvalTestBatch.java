@@ -292,8 +292,8 @@ public class KeyvalTestBatch implements KeyvalTestSuite {
         final List<String> vs = new ArrayList<String>(vv.size());
         final List<Long> vers = new ArrayList<Long>(vv.size());
         for (ValueVersion<String> each: vv) {
-            vs.add(each.value);
-            vers.add(each.version);
+            vs.add(each.getValue());
+            vers.add(each.getVersion());
         }
         Assert.assertEquals(vals1, vs);
         Assert.assertEquals(Arrays.asList(version1, version1, version1), vers);

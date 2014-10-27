@@ -268,7 +268,7 @@ public class ReplicatedKeyvalRead<K, V> implements IKeyvalRead<K, V> {
                         return reader.readAll(conn, key);
                     }
                 });
-        if (copy == null || !copy.version.equals(latest)) {
+        if (copy == null || !copy.getVersion().equals(latest)) {
             return reader.readAll(conn, key);
         } else {
             return copy;

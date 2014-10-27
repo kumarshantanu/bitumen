@@ -16,8 +16,56 @@ public class TableMetadata implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /** Meta data attributes. */
-    public final String tableName, keyColname, valueColname, versionColname,
+    private final String tableName, keyColname, valueColname, versionColname,
     createTimestampColname, updateTimestampColname;
+
+    /**
+     * Getter for tableName.
+     * @return tableName
+     */
+    public final String getTableName() {
+        return tableName;
+    }
+
+    /**
+     * Getter for keyColname.
+     * @return keyColname
+     */
+    public final String getKeyColname() {
+        return keyColname;
+    }
+
+    /**
+     * Getter for valueColname.
+     * @return valueColname
+     */
+    public final String getValueColname() {
+        return valueColname;
+    }
+
+    /**
+     * Getter for versionColname.
+     * @return versionColname
+     */
+    public final String getVersionColname() {
+        return versionColname;
+    }
+
+    /**
+     * Getter for createTimestampColname.
+     * @return createTimestampColname
+     */
+    public final String getCreateTimestampColname() {
+        return createTimestampColname;
+    }
+
+    /**
+     * Getter for updateTimestampColname.
+     * @return updateTimestampColname
+     */
+    public final String getUpdateTimestampColname() {
+        return updateTimestampColname;
+    }
 
     /**
      * Construct instance from arguments passed as a map.

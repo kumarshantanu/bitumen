@@ -20,17 +20,41 @@ public class KeyValueVersion<K, V> implements Serializable {
     /**
      * The key.
      */
-    public final K key;
+    private final K key;
 
     /**
      * The value.
      */
-    public final V value;
+    private final V value;
 
     /**
      * The version.
      */
-    public final Long version;
+    private final Long version;
+
+    /**
+     * Getter for key.
+     * @return key
+     */
+    public final K getKey() {
+        return key;
+    }
+
+    /**
+     * Getter for value.
+     * @return value
+     */
+    public final V getValue() {
+        return value;
+    }
+
+    /**
+     * Getter for version.
+     * @return version
+     */
+    public final Long getVersion() {
+        return version;
+    }
 
     /**
      * Construct instance from required arguments.

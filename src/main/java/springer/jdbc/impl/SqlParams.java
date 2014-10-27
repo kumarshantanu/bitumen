@@ -69,12 +69,12 @@ public class SqlParams implements Serializable {
     /**
      * Reader used for JDBC read operations.
      */
-    public final transient IJdbcRead reader;
+    private final transient IJdbcRead reader;
 
     /**
      * Writer used for JDBC write operations.
      */
-    public final transient IJdbcWrite writer;
+    private final transient IJdbcWrite writer;
 
 
     // ===== fluent interface methods =====
@@ -91,15 +91,23 @@ public class SqlParams implements Serializable {
     // ===== getters =====
 
 
-    public String getSql() {
+    /**
+     * Getter for SQL statement.
+     * @return SQL statement
+     */
+    public final String getSql() {
         return sql;
     }
 
-    public Object[] getParams() {
+    /**
+     * Getter for SQL statement params.
+     * @return SQL statement params
+     */
+    public final Object[] getParams() {
         return params.clone();
     }
 
-	/**
+    /**
      * Fluent style method to set JDBC reader.
      * @param  jdbcReader JDBC reader
      * @return            <tt>this</tt> object

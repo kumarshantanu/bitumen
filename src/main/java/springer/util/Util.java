@@ -267,7 +267,7 @@ public final class Util {
      * @param  notFound default value
      * @return          first element of collection, or the default value
      */
-    public static <T> T firstItem(final Collection<T> coll, T notFound) {
+    public static <T> T firstItem(final Collection<T> coll, final T notFound) {
         return coll.isEmpty() ? notFound : coll.iterator().next();
     }
 
@@ -276,8 +276,8 @@ public final class Util {
      * @param  coll the collection
      * @return      <tt>true</tt> or <tt>false</tt>
      */
-    public static <T> boolean areAllNull(final Collection<T> coll) {
-        for (T each: coll) {
+    public static boolean areAllNull(final Collection<?> coll) {
+        for (Object each: coll) {
             if (each != null) {
                 return false;
             }

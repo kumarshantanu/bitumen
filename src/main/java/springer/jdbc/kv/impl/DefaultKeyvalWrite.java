@@ -167,7 +167,7 @@ public class DefaultKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
         do { // do-while-false block to isolate mutable variables
             int i = 0;
             for (KeyValueVersion<K, V> each : triplets) {
-                argsArray[i++] = new Object[] {each.value, newVersion, now, each.key, each.version};
+                argsArray[i++] = new Object[] {each.getValue(), newVersion, now, each.getKey(), each.getVersion()};
             }
         } while (false);
         final int[] rowCount = writer.batchUpdate(conn, swapSql, argsArray);

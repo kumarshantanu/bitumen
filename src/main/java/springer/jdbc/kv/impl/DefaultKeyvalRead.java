@@ -62,7 +62,7 @@ public class DefaultKeyvalRead<K, V> implements IKeyvalRead<K, V> {
         if (expr != null) {
             return expr;
         }
-        final String newExpr = Util.repeat("(" + meta.keyColname + "= ? AND " + meta.versionColname + " = ?)",
+        final String newExpr = Util.repeat("(" + meta.getKeyColname() + "= ? AND " + meta.getVersionColname() + " = ?)",
                 count, " OR ");
         keyVersionExpressions.put(count, newExpr);  // idempotent, so skip the check for efficiency
         return newExpr;

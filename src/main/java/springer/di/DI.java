@@ -528,12 +528,12 @@ public final class DI {
             /**
              * Flag to tell whether a match happened.
              */
-            public final boolean match;
+            private final boolean match;
 
             /**
              * Matched value.
              */
-            public final Object value;
+            private final Object value;
 
             /**
              * Private constructor, used to create <tt>NO_MATCH</tt>.

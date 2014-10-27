@@ -234,8 +234,8 @@ public class KeyvalTestSingle implements KeyvalTestSuite {
                 return reader.readAll(conn, key);
             }
         });
-        Assert.assertEquals(newValue1, vv.value);
-        Assert.assertEquals(version1, vv.version);
+        Assert.assertEquals(newValue1, vv.getValue());
+        Assert.assertEquals(version1, vv.getVersion());
     }
 
 }
