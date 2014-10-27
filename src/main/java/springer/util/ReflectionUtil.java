@@ -351,17 +351,18 @@ public final class ReflectionUtil {
             final boolean includeTransients) {
         final Map<String, Object> fields = getFieldValues(object, clazz, includeTransients);
         final Map<String, Object> result = new LinkedHashMap<String, Object>();
-        for (String each: fields.keySet()) {
-            Object value = fields.get(each);
+        for (Entry<String, Object> entry: fields.entrySet()) {
+            final String key = entry.getKey();
+            final Object value = entry.getValue();
             String cname = value == null ? null : value.getClass().getName();
             if (value == null || cname.matches(JDK_CLASS_REGEX) || value instanceof Map || value instanceof Collection) {
                 if (value instanceof Map) {
-                    result.put(each, normalize((Map<?, ?>) value));
+                    result.put(key, normalize((Map<?, ?>) value));
                 } else {
-                    result.put(each, value);
+                    result.put(key, value);
                 }
             } else {
-                result.put(each, toMap(value));
+                result.put(key, toMap(value));
             }
         }
         return result;

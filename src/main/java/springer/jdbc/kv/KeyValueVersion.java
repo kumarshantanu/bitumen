@@ -46,7 +46,7 @@ public class KeyValueVersion<K, V> implements Serializable {
 
     @Override
     public final String toString() {
-        return String.format("key=%s, value=%v, version=%d", key, value, version);
+        return String.format("key=%s, value=%s, version=%d", key, value, version);
     }
 
     @Override

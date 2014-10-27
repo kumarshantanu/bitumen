@@ -27,12 +27,12 @@ public class SqlParams implements Serializable {
     /**
      * SQL statement.
      */
-    public final String sql;
+    private final String sql;
 
     /**
      * SQL statement parameters.
      */
-    public final Object[] params;
+    private final Object[] params;
 
     /**
      * Construct instance from only SQL statement.
@@ -61,7 +61,7 @@ public class SqlParams implements Serializable {
     public SqlParams(final String sqlStatement, final Object[] sqlParams, final IJdbcRead jdbcReader,
             final IJdbcWrite jdbcWriter) {
         this.sql = sqlStatement;
-        this.params = sqlParams;
+        this.params = sqlParams.clone();
         this.reader = jdbcReader;
         this.writer = jdbcWriter;
     }
@@ -76,6 +76,7 @@ public class SqlParams implements Serializable {
      */
     public final transient IJdbcWrite writer;
 
+
     // ===== fluent interface methods =====
 
     /**
@@ -87,7 +88,18 @@ public class SqlParams implements Serializable {
         return new SqlParams(sql, sqlParams, reader, writer);
     }
 
-    /**
+    // ===== getters =====
+
+
+    public String getSql() {
+        return sql;
+    }
+
+    public Object[] getParams() {
+        return params.clone();
+    }
+
+	/**
      * Fluent style method to set JDBC reader.
      * @param  jdbcReader JDBC reader
      * @return            <tt>this</tt> object

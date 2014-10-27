@@ -325,7 +325,7 @@ public final class DI {
         public NewInstanceComponentSourceByKey(final Class<T> classToInstantiate, final K[] argKeys,
                 final boolean shouldSetAccessible) {
             this.clazz = classToInstantiate;
-            this.constructorArgKeys = argKeys;
+            this.constructorArgKeys = argKeys.clone();
             this.shouldSetAccessibleConstructor = shouldSetAccessible;
         }
 
@@ -404,7 +404,7 @@ public final class DI {
         public NewInstanceComponentSourceBySource(final Class<T> classToInstantiate,
                 final IComponentSource<?, K>[] argSources, final boolean shouldSetAccessible) {
             this.clazz = classToInstantiate;
-            this.constructorArgSources = argSources;
+            this.constructorArgSources = argSources.clone();
             this.shouldSetAccessibleConstructor = shouldSetAccessible;
         }
 
@@ -457,9 +457,9 @@ public final class DI {
         @Override
         public final Object get(final Map<K, IComponentSource<?, K>> dependencies) {
             final IComponentSource<?, K> source = dependencies.get(componentKey);
-            if (!(source instanceof IComponentSource)) {
+            if (source == null) {
                 throw new IllegalArgumentException(String.format(
-                        "Expected an %s instance, but found %s", IComponentSource.class, source));
+                        "Expected an %s instance, but found NULL", IComponentSource.class));
             }
             return source.get(dependencies);
         }

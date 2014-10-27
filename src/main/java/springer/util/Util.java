@@ -88,7 +88,7 @@ public final class Util {
      */
     public static String groovyReplace(final String format, final Map<String, String> values,
             final boolean throwOnMissing) {
-        return JdbcUtil.embedReplace('$', format, values, throwOnMissing, false, null).sql;
+        return JdbcUtil.embedReplace('$', format, values, throwOnMissing, false, null).getSql();
     }
 
     /**
@@ -99,8 +99,13 @@ public final class Util {
      * @return     <tt>true</tt> if both are equal, <tt>false</tt> otherwise
      */
     public static <T> boolean equals(final T one, final T two) {
-        if (one == two) return true;
-        return (one == null? two.equals(one): one.equals(two));
+        if (one == null || two == null) {
+            return false;
+        }
+        if (one == two) {
+            return true;
+        }
+        return one.equals(two);
     }
 
     /**
