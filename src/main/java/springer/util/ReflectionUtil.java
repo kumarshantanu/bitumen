@@ -13,42 +13,83 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class ReflectionUtil {
+/**
+ * Utility functions for reflection.
+ *
+ */
+public final class ReflectionUtil {
 
+    /**
+     * Private constructor, because this is a utility class.
+     */
+    private ReflectionUtil() {
+        // do nothing
+    }
+
+    /**
+     * Class representing primitive types in Java.
+     *
+     */
     public static class Primitive {
         // These get initialized to their default values
-        private static boolean DEFAULT_BOOLEAN;
-        private static byte DEFAULT_BYTE;
-        private static char DEFAULT_CHAR;
-        private static short DEFAULT_SHORT;
-        private static int DEFAULT_INT;
-        private static long DEFAULT_LONG;
-        private static float DEFAULT_FLOAT;
-        private static double DEFAULT_DOUBLE;
 
-        public static Object getDefaultValue(Class<?> clazz) {
+        /** Default <tt>boolean</tt> value. */
+        private static boolean defaultBoolean;
+
+        /** Default <tt>byte</tt> value. */
+        private static byte defaultByte;
+
+        /** Default <tt>char</tt> value. */
+        private static char defaultChar;
+
+        /** Default <tt>short</tt> value. */
+        private static short defaultShort;
+
+        /** Default <tt>int</tt> value. */
+        private static int defaultInt;
+
+        /** Default <tt>long</tt> value. */
+        private static long defaultLong;
+
+        /** Default <tt>float</tt> value. */
+        private static float defaultFloat;
+
+        /** Default <tt>double</tt> value. */
+        private static double defaultDouble;
+
+        /**
+         * Return corresponding default value for the class specified. Return <tt>null</tt> for non-primitive class.
+         * @param  clazz primitive class
+         * @return       boxed default value of the specified primitive class
+         */
+        public static Object getDefaultValue(final Class<?> clazz) {
             if (clazz.equals(boolean.class)) {
-                return DEFAULT_BOOLEAN;
+                return defaultBoolean;
             } else if (clazz.equals(byte.class)) {
-                return DEFAULT_BYTE;
+                return defaultByte;
             } else if (clazz.equals(char.class)) {
-                return DEFAULT_CHAR;
+                return defaultChar;
             } else if (clazz.equals(short.class)) {
-                return DEFAULT_SHORT;
+                return defaultShort;
             } else if (clazz.equals(int.class)) {
-                return DEFAULT_INT;
+                return defaultInt;
             } else if (clazz.equals(long.class)) {
-                return DEFAULT_LONG;
+                return defaultLong;
             } else if (clazz.equals(float.class)) {
-                return DEFAULT_FLOAT;
+                return defaultFloat;
             } else if (clazz.equals(double.class)) {
-                return DEFAULT_DOUBLE;
+                return defaultDouble;
             } else {
                 return null;
             }
         }
 
-        public static Class<?> toWrapper(Class<?> clazz) {
+        /**
+         * Get equivalent boxed class for specified primitive class.
+         * @param  clazz primitive class
+         * @return       boxed class
+         */
+        public static Class<?> toWrapper(final Class<?> clazz) {
             if (clazz.equals(boolean.class)) {
                 return Boolean.class;
             } else if (clazz.equals(byte.class)) {
@@ -74,12 +115,13 @@ public class ReflectionUtil {
 
     /**
      * Instantiate gracefully and return the instance.
-     * @param cls the class to instantiate
-     * @param args arguments to pass to the constructor (in same order)
-     * @param shouldSetAccessible whether to setAccessible to true before instantiating (for non-public constructors)
-     * @return instance of the class
+     * @param  <T>                 type of the instance
+     * @param  cls                 the class to instantiate
+     * @param  args arguments      to pass to the constructor (in same order)
+     * @param  shouldSetAccessible whether to setAccessible to true before instantiating (for non-public constructors)
+     * @return                     instance of the class
      */
-    public static <T> T instantiate(Class<T> cls, Object[] args, boolean shouldSetAccessible) {
+    public static <T> T instantiate(final Class<T> cls, final Object[] args, final boolean shouldSetAccessible) {
         if (args == null || args.length == 0) {
             try {
                 return cls.newInstance();
@@ -127,10 +169,11 @@ public class ReflectionUtil {
 
     /**
      * Somehow instantiate the class, even though with null values in fields.
+     * @param  <T> instance type
      * @param  cls class to instantiate
      * @return     instance of class <tt>cls</tt>
      */
-    public static <T> T instantiate(Class<T> cls) {
+    public static <T> T instantiate(final Class<T> cls) {
         try {
             return cls.newInstance();
         } catch (InstantiationException e) {
@@ -140,10 +183,10 @@ public class ReflectionUtil {
             final List<Object> params = new ArrayList<Object>();
             try {
                 for (Class<?> pType : constr.getParameterTypes()) {
-                    params.add(pType.isPrimitive()? Primitive.toWrapper(pType).newInstance(): null);
+                    params.add(pType.isPrimitive() ? Primitive.toWrapper(pType).newInstance() : null);
                 }
                 return constr.newInstance(params.toArray());
-            } catch(IllegalAccessException e2) {
+            } catch (IllegalAccessException e2) {
                 throw new IllegalArgumentException(e2);
             } catch (InvocationTargetException e2) {
                 throw new IllegalArgumentException(e2);
@@ -155,7 +198,14 @@ public class ReflectionUtil {
         }
     }
 
-    public static <T> T populate(T instance, Map<String, ? extends Object> fieldValues) {
+    /**
+     * Populate specified instance using a map of field names to corresponding values.
+     * @param  <T>         object type being populated
+     * @param  instance    object to populate
+     * @param  fieldValues map of field names to values
+     * @return             populated instance (same as the <tt>instance</tt> argument)
+     */
+    public static <T> T populate(final T instance, final Map<String, ? extends Object> fieldValues) {
         final Field[] fields = instance.getClass().getDeclaredFields();
         try {
             for (Field each: fields) {
@@ -167,13 +217,20 @@ public class ReflectionUtil {
                 }
             }
             return instance;
-        } catch(IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
+    /**
+     * Instantiate a class using attribute values in a supplied map.
+     * @param  <T>   type of class to instantiate
+     * @param  map   map of attribute names and values
+     * @param  clazz class to instantiate
+     * @return       instantiated object
+     */
     @SuppressWarnings("unchecked")
-    public static <T> T fromMap(Map<String, ?> map, Class<T> clazz) {
+    public static <T> T fromMap(final Map<String, ?> map, final Class<T> clazz) {
         final Field[] fields = clazz.getDeclaredFields();
         try {
             final T result = populate(instantiate(clazz), map);
@@ -184,20 +241,27 @@ public class ReflectionUtil {
                 final Object value = map.get(fname);
                 final Class<?> fclass = each.getType();
                 if (!Modifier.isFinal(modifiers)) {
-                    final Object fvalue = value instanceof Map<?, ?> && !Map.class.isAssignableFrom(fclass)?
-                            fromMap((Map<String, ?>) value, fclass):
-                                value == null && fclass.isPrimitive()?
-                                        Primitive.getDefaultValue(fclass): value;
-                    each.set(Modifier.isStatic(modifiers)? null: result, cast(fclass, fvalue));
+                    final Object fvalue = value instanceof Map<?, ?> && !Map.class.isAssignableFrom(fclass)
+                            ? fromMap((Map<String, ?>) value, fclass)
+                                    : value == null && fclass.isPrimitive()
+                                    ? Primitive.getDefaultValue(fclass)
+                                            : value;
+                    each.set(Modifier.isStatic(modifiers) ? null : result, cast(fclass, fvalue));
                 }
             }
             return result;
-        } catch(IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
-    private static Object cast(Class<?> clazz, Object value) {
+    /**
+     * Cast a given object to another given class.
+     * @param  clazz class to cast as
+     * @param  value object to cast
+     * @return       same object, but cast as specified class
+     */
+    private static Object cast(final Class<?> clazz, final Object value) {
         if (value instanceof Number) {
             final Number n = (Number) value;
             if (clazz.equals(byte.class) || clazz.equals(Byte.class)) {
@@ -221,7 +285,16 @@ public class ReflectionUtil {
 
     }
 
-    protected static <T> Map<String, Object> getFieldValues(Object object, Class<T> clazz, boolean includeTransients) {
+    /**
+     * Return field values of a given object, restricting the scope to specified class.
+     * @param  <T>               type of scope class
+     * @param  object            any object
+     * @param  clazz             class to restrict the scope to
+     * @param  includeTransients whether to include transients in the result
+     * @return                   map of attribute names and values
+     */
+    public static <T> Map<String, Object> getFieldValues(final Object object, final Class<T> clazz,
+            final boolean includeTransients) {
         if (!clazz.isInstance(object)) {
             throw new IllegalArgumentException("Object " + object + " is not an instance of class " + clazz.getName());
         }
@@ -243,46 +316,73 @@ public class ReflectionUtil {
         return data;
     }
 
-    public static Map<String, Object> toMap(Object object) {
+    /**
+     * Return a map of non-transient attribute names and values for a given object.
+     * @param  object any object
+     * @return        map of attribute names and values
+     */
+    public static Map<String, Object> toMap(final Object object) {
         return toMap(object, object.getClass());
     }
 
-    public static <T> Map<String, Object> toMap(Object object, Class<T> clazz) {
+    /**
+     * Return a map of non-transient attribute names and values for a given object, scoped to only specified class.
+     * @param  <T>    scope class type
+     * @param  object any object
+     * @param  clazz  class to restrict the scope to
+     * @return        map of attribute names and values
+     */
+    public static <T> Map<String, Object> toMap(final Object object, final Class<T> clazz) {
         return toMap(object, clazz, false);
     }
 
+    /** Regex for package names beginning with 'java' or 'javax'. */
     public static final String JDK_CLASS_REGEX = "(java|javax)\\..+";
 
-    public static <T> Map<String, Object> toMap(Object object, Class<T> clazz, boolean includeTransients) {
+    /**
+     * Return a map of attribute names and values for a given object, restricting the scope to a specified class.
+     * @param  <T>               scope class type
+     * @param  object            any object
+     * @param  clazz             class to restrict the scope to
+     * @param  includeTransients whether to include transient fields in result
+     * @return                   map of attribute names to values
+     */
+    public static <T> Map<String, Object> toMap(final Object object, final Class<T> clazz,
+            final boolean includeTransients) {
         final Map<String, Object> fields = getFieldValues(object, clazz, includeTransients);
         final Map<String, Object> result = new LinkedHashMap<String, Object>();
         for (String each: fields.keySet()) {
             Object value = fields.get(each);
-            String cname = value == null? null: value.getClass().getName();
+            String cname = value == null ? null : value.getClass().getName();
             if (value == null || cname.matches(JDK_CLASS_REGEX) || value instanceof Map || value instanceof Collection) {
                 if (value instanceof Map) {
                     result.put(each, normalize((Map<?, ?>) value));
                 } else {
                     result.put(each, value);
                 }
-            } else {System.out.println("    ---- Branching out on fieldName = " + each);
+            } else {
                 result.put(each, toMap(value));
             }
         }
         return result;
     }
 
-    public static <K, V> Map<Object, Object> normalize(Map<K, V> map) {
+    /**
+     * In a map, expand value instances of non-JDK classes as maps and return the converted map.
+     * @param  map map of attribute names to values
+     * @return     converted map where instances of non-JDK classes are expanded to maps
+     */
+    public static Map<Object, Object> normalize(final Map<?, ?> map) {
         final Map<Object, Object> result = new LinkedHashMap<Object, Object>(map.size());
-        for (Entry<K, V> each: map.entrySet()) {
-            final K oldKey = each.getKey();
+        for (Entry<?, ?> each: map.entrySet()) {
+            final Object oldKey = each.getKey();
             final Class<?> oldKeyClass = oldKey.getClass();
-            final Object newKey = oldKeyClass.getName().matches(JDK_CLASS_REGEX)? oldKey: toMap(oldKey);
-            final V oldValue = each.getValue();
+            final Object newKey = oldKeyClass.getName().matches(JDK_CLASS_REGEX) ? oldKey : toMap(oldKey);
+            final Object oldValue = each.getValue();
             Object newValue = null;
             if (oldValue != null) {
                 final Class<?> oldValueClass = oldValue.getClass();
-                newValue = oldValueClass.getName().matches(JDK_CLASS_REGEX)? oldValue: toMap(oldValue);
+                newValue = oldValueClass.getName().matches(JDK_CLASS_REGEX) ? oldValue : toMap(oldValue);
             }
             result.put(newKey, newValue);
         }
