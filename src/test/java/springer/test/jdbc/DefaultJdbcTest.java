@@ -208,7 +208,6 @@ public class DefaultJdbcTest {
             dst.withTransactionNoResult(new IConnectionActivityNoResult() {
                 @Override
                 public void execute(Connection conn) {
-                    // TODO Auto-generated method stub
                     writer.update(conn,
                             "INSERT INTO session (skey, value, version, created, updated) VALUES (?, ?, ?, ?, ?)",
                             new Object[] {1001, s1.value, s1.version, s1.created, s1.updated});
