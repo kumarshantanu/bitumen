@@ -364,9 +364,9 @@ public final class DI {
      * @param  argSources component sources to be used to obtain constructor arguments for <tt>clazz</tt>
      * @return            component source that can instantiate <tt>clazz</tt>
      */
-    // @SafeVarargs // TODO uncomment when Java 7 is the minimum JDK version required
+    @SafeVarargs
     public static <T, K> IComponentSource<T, K> construct(final Class<T> clazz,
-            @SuppressWarnings("unchecked") final IComponentSource<?, K>...argSources) {
+            final IComponentSource<?, K>...argSources) {
         return instantiate(clazz, false, argSources);
     }
 
