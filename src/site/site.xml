@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="Springer - Project Documentation"
+<project name="Bitumen - Project Documentation"
   xmlns="http://maven.apache.org/DECORATION/1.3.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/DECORATION/1.3.0 http://maven.apache.org/xsd/decoration-1.3.0.xsd">
@@ -18,7 +18,7 @@
       <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
       <copyrightClass>pull-right</copyrightClass>
       <gitHub>
-        <projectId>kumarshantanu/springer</projectId>
+        <projectId>kumarshantanu/bitumen</projectId>
         <ribbonOrientation>right</ribbonOrientation>
         <ribbonColor>black</ribbonColor>
       </gitHub>

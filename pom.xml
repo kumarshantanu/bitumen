@@ -13,7 +13,7 @@
 
   <name>Bitumen</name>
   <description>Java helper library for Dependency injection, JDBC access and metrics helpers</description>
-  <url>https://github.com/kumarshantanu/springer</url>
+  <url>https://github.com/kumarshantanu/bitumen</url>
 
   <licenses>
     <license>
@@ -24,8 +24,8 @@
   </licenses>
 
   <scm>
-    <url>https://github.com/kumarshantanu/springer</url>
-    <connection>scm:git:git@github.com:kumarshantanu/springer.git</connection>
+    <url>https://github.com/kumarshantanu/bitumen</url>
+    <connection>scm:git:git@github.com:kumarshantanu/bitumen.git</connection>
   </scm>
 
   <developers>
@@ -74,7 +74,7 @@
   <build>
     <plugins>
 
-      <!-- make it compatible with Java 6 and above -->
+      <!-- make it compatible with Java 7 and above -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -85,7 +85,7 @@
         </configuration>
       </plugin>
 
-      <!-- generate springer-x.y.z-sources.jar -->
+      <!-- generate bitumen-x.y.z-sources.jar -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
@@ -100,7 +100,7 @@
         </executions>
       </plugin>
 
-      <!-- generate springer-x.y.z-javadoc.jar -->
+      <!-- generate bitumen-x.y.z-javadoc.jar -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
