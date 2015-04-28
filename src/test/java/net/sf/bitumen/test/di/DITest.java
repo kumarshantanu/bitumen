@@ -1,6 +1,7 @@
 package net.sf.bitumen.test.di;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -73,18 +74,15 @@ public class DITest {
     public void testConstruct() {
         // happy scenario
         final IComponentSource<?, String> bytes = DI.constantly("Hello".getBytes(), String.class);
-        @SuppressWarnings("unchecked")
         final IComponentSource<?, String> hello = DI.construct(String.class, bytes);
         assertEquals("Happy scenario - single constructor argument", "Hello", hello.get(EMPTY_DEPMAP));
         // happy scenario - more than one constructor argument
         final IComponentSource<?, String> offset = DI.constantly(1, String.class);
         final IComponentSource<?, String> length = DI.constantly(4, String.class);
-        @SuppressWarnings("unchecked")
         final IComponentSource<?, String> ello = DI.construct(String.class, bytes, offset, length);
         assertEquals("Happy scenario - multiple constructor args", "ello", ello.get(EMPTY_DEPMAP));
         // unhappy scenario
         final IComponentSource<?, String> integer = DI.constantly(10, String.class);
-        @SuppressWarnings("unchecked")
         final IComponentSource<?, String> nostr = DI.construct(String.class, integer);
         try {
             assertEquals("Unhappy scenario", "", nostr.get(EMPTY_DEPMAP));
