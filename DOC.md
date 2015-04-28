@@ -1,19 +1,19 @@
-# springer v0.1.x documentation
+# bitumen v0.1.x documentation
 
-Springer can be used to:
+Bitumen can be used to:
 
 * Accomplish Dependency Injection without XML/annotations
 * Work with SQL databases using JDBC
 * Emulate key-value store over JDBC
 
-Springer uses [`javax.sql.DataSource`](http://docs.oracle.com/javase/8/docs/api/javax/sql/DataSource.html) to obtain JDBC
+Bitumen uses [`javax.sql.DataSource`](http://docs.oracle.com/javase/8/docs/api/javax/sql/DataSource.html) to obtain JDBC
 connections. You can use [Apache DBCP](http://commons.apache.org/proper/commons-dbcp/), [BoneCP](http://jolbox.com/) or a
 suitable library to create a [`javax.sql.DataSource`](http://docs.oracle.com/javase/8/docs/api/javax/sql/DataSource.html)
 instance.
 
 ## Dependency Injection
 
-Springer provides a simple, programmatic API for dependency injection. Implicit setter-based injection is not supported.
+Bitumen provides a simple, programmatic API for dependency injection. Implicit setter-based injection is not supported.
 Constructor based injection is supported. Consider the Java 8 example below:
 
 ```java
@@ -21,20 +21,20 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import springer.di.DI;
-import springer.di.DependencyBuilder;
-import springer.di.IComponentSource;
-import springer.di.IDependencyBuilder;
-import springer.di.PropertyGetter;
-import springer.example.support.DefaultBizService;
-import springer.example.support.DefaultComplexService;
-import springer.example.support.DefaultDataAccess;
-import springer.example.support.DefaultEmailer;
-import springer.example.support.DummyDataSource;
-import springer.example.support.IBizService;
-import springer.example.support.IComplexService;
-import springer.example.support.IDataAccess;
-import springer.example.support.IEmailer;
+import net.sf.bitumen.di.DI;
+import net.sf.bitumen.di.DependencyBuilder;
+import net.sf.bitumen.di.IComponentSource;
+import net.sf.bitumen.di.IDependencyBuilder;
+import net.sf.bitumen.di.PropertyGetter;
+import net.sf.bitumen.example.support.DefaultBizService;
+import net.sf.bitumen.example.support.DefaultComplexService;
+import net.sf.bitumen.example.support.DefaultDataAccess;
+import net.sf.bitumen.example.support.DefaultEmailer;
+import net.sf.bitumen.example.support.DummyDataSource;
+import net.sf.bitumen.example.support.IBizService;
+import net.sf.bitumen.example.support.IComplexService;
+import net.sf.bitumen.example.support.IDataAccess;
+import net.sf.bitumen.example.support.IEmailer;
 
 public class DIExample {
 
@@ -123,7 +123,7 @@ public class DIExample {
 
 ## Work with SQL databases using JDBC
 
-Springer supports interface-based API for flexibility, as well as fluent interface. It also supports transactions,
+Bitumen supports interface-based API for flexibility, as well as fluent interface. It also supports transactions,
 positional parameters and named parameters.
 
 ### Interface-based API
@@ -136,12 +136,12 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import springer.jdbc.IJdbcRead;
-import springer.jdbc.IJdbcWrite;
-import springer.jdbc.impl.DataSourceTemplate;
-import springer.jdbc.impl.DefaultJdbcRead;
-import springer.jdbc.impl.DefaultJdbcWrite;
-import springer.jdbc.impl.IConnectionActivityNoResult;
+import net.sf.bitumen.jdbc.IJdbcRead;
+import net.sf.bitumen.jdbc.IJdbcWrite;
+import net.sf.bitumen.jdbc.impl.DataSourceTemplate;
+import net.sf.bitumen.jdbc.impl.DefaultJdbcRead;
+import net.sf.bitumen.jdbc.impl.DefaultJdbcWrite;
+import net.sf.bitumen.jdbc.impl.IConnectionActivityNoResult;
 
 public class JdbcExample {
 
@@ -213,11 +213,11 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import springer.jdbc.impl.DataSourceTemplate;
-import springer.jdbc.impl.IConnectionActivityNoResult;
-import springer.jdbc.impl.JdbcUtil;
-import springer.jdbc.impl.SqlParams;
-import springer.util.Util;
+import net.sf.bitumen.jdbc.impl.DataSourceTemplate;
+import net.sf.bitumen.jdbc.impl.IConnectionActivityNoResult;
+import net.sf.bitumen.jdbc.impl.JdbcUtil;
+import net.sf.bitumen.jdbc.impl.SqlParams;
+import net.sf.bitumen.util.Util;
 
 public class FluentExample {
 
@@ -279,11 +279,11 @@ public class FluentExample {
 
 ## Emulate key-value store over JDBC
 
-Springer can also help emulate key-value store over ordinary SQL databases. It is tested with H2, MySQL and PostgreSQL.
+Bitumen can also help emulate key-value store over ordinary SQL databases. It is tested with H2, MySQL and PostgreSQL.
 
 ### Pre-requisite
 
-Springer works with tables of an expected structure. You are free to choose the column names and type of the key and
+Bitumen works with tables of an expected structure. You are free to choose the column names and type of the key and
 value columns. The columns are:
 
 | Column  | Java Type | Constraints |
@@ -330,13 +330,13 @@ import java.sql.Connection;
 
 import javax.sql.DataSource;
 
-import springer.jdbc.impl.IConnectionActivity;
-import springer.jdbc.impl.DataSourceTemplate;
-import springer.jdbc.kv.IKeyvalRead;
-import springer.jdbc.kv.IKeyvalWrite;
-import springer.jdbc.kv.impl.DefaultKeyvalRead;
-import springer.jdbc.kv.impl.DefaultKeyvalWrite;
-import springer.jdbc.type.TableMetadata;
+import net.sf.bitumen.jdbc.impl.IConnectionActivity;
+import net.sf.bitumen.jdbc.impl.DataSourceTemplate;
+import net.sf.bitumen.jdbc.kv.IKeyvalRead;
+import net.sf.bitumen.jdbc.kv.IKeyvalWrite;
+import net.sf.bitumen.jdbc.kv.impl.DefaultKeyvalRead;
+import net.sf.bitumen.jdbc.kv.impl.DefaultKeyvalWrite;
+import net.sf.bitumen.jdbc.type.TableMetadata;
 
 public class Example {
 
