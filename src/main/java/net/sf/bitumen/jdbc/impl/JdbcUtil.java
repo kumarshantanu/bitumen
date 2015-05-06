@@ -8,10 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -432,99 +429,6 @@ public final class JdbcUtil {
      */
     public static String paramPlaceholders(final int count) {
         return Util.repeat("?", count, ", ");
-    }
-
-    /**
-     * Parse a 'format' string, identify variables and replace them with specified values, and do few more things
-     * useful for constructing and returning a {@link SqlParams} instance. '\' is the escape character; '\\' represents
-     * a single '\' in the 'format' string. Variable names are prefixed with a 'marker' character, and follow Java
-     * variable naming rules.
-     * @param  marker         character that is prefixed to every variable name in the 'format' string
-     * @param  format         the 'format' string
-     * @param  values         values to replace variables with
-     * @param  throwOnMissing whether throw exception on finding missing variable names (useful for partial rendering)
-     * @param  addToVals      whether variable values to be added to {@link SqlParams} 'params'
-     * @param  addVals        what values to add to {@link SqlParams} (different from <tt>values</tt>)
-     * @return                {@link SqlParams} instance
-     */
-    public static SqlParams embedReplace(final char marker, final String format, final Map<String, String> values,
-            final boolean throwOnMissing, final boolean addToVals, final Map<String, Object> addVals) {
-        final int len = format.length();
-        final StringBuilder sb = new StringBuilder(len);
-        final List<Object> vals = new ArrayList<Object>();
-        boolean escaped = false;
-        for (int i = 0; i < len; i++) {
-            final char c = format.charAt(i);
-            if (c == '\\') {
-                if (escaped) {
-                    escaped = false;
-                    sb.append(c);
-                    break;
-                }
-                if (len - i == 1) {
-                    throw new IllegalStateException("Dangling escape character found at the end of string: " + format);
-                }
-                escaped = true;
-            } else if (c == marker) {
-                if (escaped) {
-                    escaped = false;
-                    sb.append(c);
-                    break;
-                }
-                if (len - i == 1) {
-                    throw new IllegalStateException(
-                            "Dangling marker " + marker + " found at the end of string: " + format);
-                }
-                final char first = format.charAt(++i);
-                if (!Character.isJavaIdentifierStart(first)) {
-                    throw new IllegalStateException("Illegal identifier name start '" + first + "' in: " + format);
-                }
-                final StringBuilder name = new StringBuilder();
-                name.append(first);
-                i++; // hop to next char
-                while (i < len) {
-                    final char x = format.charAt(i);
-                    if (!Character.isJavaIdentifierPart(x)) {
-                        break;
-                    }
-                    name.append(x);
-                    i++; // hop to next char
-                }
-                final String nameStr = name.toString();
-                if (!values.containsKey(nameStr)) {
-                    if (throwOnMissing) {
-                        throw new IllegalArgumentException("No such key '" + nameStr + "' in: " + values.toString());
-                    } else {
-                        sb.append(marker).append(nameStr);
-                    }
-                } else {
-                    sb.append(values.get(nameStr));
-                    if (addToVals) {
-                        vals.add(addVals.get(nameStr));
-                    }
-                }
-                if (i < len) {
-                    i--;  // push back index if not end-of-string, so that current char is picked in next pass
-                }
-            } else {
-                escaped = false;
-                sb.append(c);
-            }
-        }
-        return new SqlParams(sb.toString(), vals.toArray());
-    }
-
-    /**
-     * Replace named parameters (i.e. variables with marker character ':') with placeholder '?' and add their values to
-     * {@link SqlParams} 'params'. Finally return a valid {@link SqlParams} instance.
-     * @param  format the SQL statement with embedded named parameters, e.g. "SELECT * FROM emp WHERE id = :id"
-     * @param  values values of named parameters, e.g. {"id" => 10}
-     * @return        {@link SqlParams} instance from derived SQL statement and parameter values
-     */
-    public static SqlParams namedParamReplace(final String format, final Map<String, Object> values) {
-        final Map<String, String> subsVals = Util.zipmap(new ArrayList<String>(values.keySet()),
-                Util.repeat("?", values.size()));
-        return embedReplace(':', format, subsVals, true, true, values);
     }
 
 }

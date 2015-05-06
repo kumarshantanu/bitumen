@@ -13,6 +13,7 @@ import net.sf.bitumen.jdbc.kv.IKeyvalWrite;
 import net.sf.bitumen.jdbc.kv.KeyValueVersion;
 import net.sf.bitumen.jdbc.kv.impl.DefaultKeyvalWrite;
 import net.sf.bitumen.jdbc.kv.impl.TableMetadata;
+import net.sf.bitumen.util.NamedParams;
 import net.sf.bitumen.util.Util;
 
 /**
@@ -60,7 +61,7 @@ public class MysqlKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
         this.writer = dbWriter;
         this.generic = new DefaultKeyvalWrite<K, V>(meta);
         final String template = meta.groovyReplaceKeep(UPSERT_FORMAT);
-        this.upsertSql = Util.groovyReplace(template,
+        this.upsertSql = NamedParams.groovyReplace(template,
                 Collections.singletonMap("timestampValuePlaceholder", useMySQLTimestamp ? "NOW()" : "?"), true);
         this.populateTimestamp = !useMySQLTimestamp;
     }

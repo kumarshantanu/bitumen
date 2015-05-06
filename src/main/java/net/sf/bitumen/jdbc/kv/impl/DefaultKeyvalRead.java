@@ -15,6 +15,7 @@ import net.sf.bitumen.jdbc.impl.DefaultJdbcRead;
 import net.sf.bitumen.jdbc.impl.JdbcUtil;
 import net.sf.bitumen.jdbc.kv.IKeyvalRead;
 import net.sf.bitumen.jdbc.kv.ValueVersion;
+import net.sf.bitumen.util.NamedParams;
 import net.sf.bitumen.util.Util;
 
 /**
@@ -147,7 +148,7 @@ public class DefaultKeyvalRead<K, V> implements IKeyvalRead<K, V> {
      */
     private String putKeysPlaceholder(final String format, final int count) {
         final String keysPlaceholder = JdbcUtil.paramPlaceholders(count);
-        return Util.groovyReplace(format, Collections.singletonMap("keysPlaceholder", keysPlaceholder), true);
+        return NamedParams.groovyReplace(format, Collections.singletonMap("keysPlaceholder", keysPlaceholder), true);
     }
 
     /**
@@ -191,7 +192,7 @@ public class DefaultKeyvalRead<K, V> implements IKeyvalRead<K, V> {
 
     @Override
     public final Map<K, Boolean> batchContainsVersion(final Connection conn, final Map<K, Long> keyVersions) {
-        final String sql = Util.groovyReplace(condMultiVersionSql, keyVersionExpression(keyVersions.size()), true);
+        final String sql = NamedParams.groovyReplace(condMultiVersionSql, keyVersionExpression(keyVersions.size()), true);
         final Object[] args = Util.argsArray(keyVersions);
         final Map<K, Long> keyVersionCount = reader.queryForMap(conn, sql, args, keyExtractor1, countExtractor2);
         final Map<K, Boolean> result = new LinkedHashMap<K, Boolean>(keyVersionCount.size());
@@ -226,7 +227,7 @@ public class DefaultKeyvalRead<K, V> implements IKeyvalRead<K, V> {
 
     @Override
     public final Map<K, V> batchReadForVersion(final Connection conn, final Map<K, Long> keyVersions) {
-        final String sql = Util.groovyReplace(condMultiFetchSql, keyVersionExpression(keyVersions.size()), true);
+        final String sql = NamedParams.groovyReplace(condMultiFetchSql, keyVersionExpression(keyVersions.size()), true);
         final Object[] args = Util.argsArray(keyVersions);
         return reader.queryForMap(conn, sql, args, keyExtractor1, valExtractor2);
     }

@@ -142,6 +142,7 @@ import net.sf.bitumen.jdbc.impl.DataSourceTemplate;
 import net.sf.bitumen.jdbc.impl.DefaultJdbcRead;
 import net.sf.bitumen.jdbc.impl.DefaultJdbcWrite;
 import net.sf.bitumen.jdbc.impl.IConnectionActivityNoResult;
+import net.sf.bitumen.jdbc.impl.NamedParams;
 
 public class JdbcExample {
 
@@ -167,10 +168,20 @@ public class JdbcExample {
                 Map<String, Object> row = reader.queryForList(conn,
                         "SELECT * FROM emp WHERE emp_id = ?",
                         new Object[] { "E-1196" }).get(0);
+                // read using named parameters
+                NamedParams<String> query = NamedParams.jdbcReplace("SELECT * FROM emp WHERE emp_id = :empID");
+                Map<String, Object> result = reader.queryForList(conn,
+                        query.getText(),
+                        query.getParams(Collections.singletonMap("empID", (Object) "E-1196"))).get(0);
                 // update
                 int updates = writer.update(conn,
                         "UPDATE emp SET emp_name = ? WHERE emp_id = ?",
                         new Object[] { "Joe Nixon", "E-1196" });
+                // update using named parameters
+                NamedParams<String> update = NamedParams.jdbcReplace("UPDATE emp SET emp_name = :empName WHERE emp_id = :empID");
+                int nUpdates = writer.update(conn,
+                        update.getText(),
+                        update.getParams(Util.makeParamMap("empName", "Mohan Das", "empID", "E-1234")));
                 // delete
                 int deletes = writer.update(conn,
                         "DELETE FROM emp WHERE emp_id = ?",
@@ -188,10 +199,20 @@ public class JdbcExample {
             Map<String, Object> row = reader.queryForList(conn,
                     "SELECT * FROM emp WHERE emp_id = ?",
                     new Object[] { "E-1196" }).get(0);
+            // read using named parameters
+            NamedParams<String> query = NamedParams.jdbcReplace("SELECT * FROM emp WHERE emp_id = :empID");
+            Map<String, Object> result = reader.queryForList(conn,
+                    query.getText(),
+                    query.getParams(Collections.singletonMap("empID", (Object) "E-1196"))).get(0);
             // update
             int updates = writer.update(conn,
                     "UPDATE emp SET emp_name = ? WHERE emp_id = ?",
                     new Object[] { "Joe Nixon", "E-1196" });
+            // update using named parameters
+            NamedParams<String> update = NamedParams.jdbcReplace("UPDATE emp SET emp_name = :empName WHERE emp_id = :empID");
+            int nUpdates = writer.update(conn,
+                    update.getText(),
+                    update.getParams(Util.makeParamMap("empName", "Mohan Das", "empID", "E-1234")));
             // delete
             int deletes = writer.update(conn,
                     "DELETE FROM emp WHERE emp_id = ?",
@@ -202,80 +223,6 @@ public class JdbcExample {
 }
 ```
 
-### Fluent-interface example
-
-The following example shows the usage of fluent API and named parameter support.
-
-```java
-import java.sql.Connection;
-import java.util.Collections;
-import java.util.Map;
-
-import javax.sql.DataSource;
-
-import net.sf.bitumen.jdbc.impl.DataSourceTemplate;
-import net.sf.bitumen.jdbc.impl.IConnectionActivityNoResult;
-import net.sf.bitumen.jdbc.impl.JdbcUtil;
-import net.sf.bitumen.jdbc.impl.SqlParams;
-import net.sf.bitumen.util.Util;
-
-public class FluentExample {
-
-    final DataSourceTemplate dst;
-
-    public FluentExample(DataSource ds) {
-        this.dst = new DataSourceTemplate(ds);
-    }
-
-    public void crud() {
-        // Java 7 and below
-        dst.withTransactionNoResult(new IConnectionActivityNoResult() {
-            @Override
-            public void execute(Connection conn) {
-                // insert using positional parameters
-                final long key = new SqlParams(
-                        "INSERT INTO emp (emp_id, emp_name) VALUES (?, ?)",
-                        new Object[] { "E-1196", "Joe Walker" }).genkey(conn).get().longValue();
-                // read using positional parameters
-                Map<String, Object> row = new SqlParams(
-                        "SELECT * FROM emp WHERE emp_id = ?",
-                        new Object[] { "E-1196" }).queryForList(conn).get(0);
-                // update using named parameters
-                int updates = Util.namedParamReplace(
-                        "UPDATE emp SET emp_name = :emp_name WHERE emp_id = :emp_id",
-                        Util.makeParamMap("emp_name", "Joe Nixon", "emp_id", "E-1196"))
-                        .update(conn);
-                // delete using named parameters
-                int deletes = Util.namedParamReplace(
-                        "DELETE FROM emp WHERE emp_id = :emp_id",
-                        Collections.singletonMap("emp_id", "E-1196"))
-                        .update(conn);
-            }
-        });
-
-        // Java 8 and beyond
-        dst.withTransactionNoResult(conn -> {
-            // insert using positional parameters
-            final long key = new SqlParams(
-                    "INSERT INTO emp (emp_id, emp_name) VALUES (?, ?)",
-                    new Object[] { "E-1196", "Joe Walker" }).genkey(conn).get().longValue();
-            // read using positional parameters
-            Map<String, Object> row = new SqlParams(
-                    "SELECT * FROM emp WHERE emp_id = ?",
-                    new Object[] { "E-1196" }).queryForList(conn).get(0);
-            // update using named parameters
-            int updates = Util.namedParamReplace(
-                    "UPDATE emp SET emp_name = :emp_name WHERE emp_id = :emp_id",
-                    Util.makeParamMap("emp_name", "Joe Nixon", "emp_id", "E-1196"))
-                    .update(conn);
-            // delete using named parameters
-            int deletes = Util.namedParamReplace(
-                    "DELETE FROM emp WHERE emp_id = :emp_id",
-                    Collections.singletonMap("emp_id", "E-1196"))
-                    .update(conn);
-        });
-    }
-```
 
 ## Emulate key-value store over JDBC
 

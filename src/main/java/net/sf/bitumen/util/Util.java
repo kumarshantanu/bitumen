@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import net.sf.bitumen.jdbc.impl.JdbcUtil;
-
 /**
  * General utility methods.
  *
@@ -76,19 +74,6 @@ public final class Util {
             result[i] = newVersion();
         }
         return result;
-    }
-
-    /**
-     * Given a 'format' string containing variables prefixed with '$' character, replace the variables with
-     * corresponding values in specified map.
-     * @param  format         the 'format string
-     * @param  values         map of variable names to values
-     * @param  throwOnMissing whether throw exception when encountered missing variable in value map
-     * @return                rendered string after replacing variables with their corresponding values
-     */
-    public static String groovyReplace(final String format, final Map<String, String> values,
-            final boolean throwOnMissing) {
-        return JdbcUtil.embedReplace('$', format, values, throwOnMissing, false, null).getSql();
     }
 
     /**

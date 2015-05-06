@@ -17,9 +17,8 @@ import net.sf.bitumen.jdbc.impl.DefaultJdbcRead;
 import net.sf.bitumen.jdbc.impl.DefaultJdbcWrite;
 import net.sf.bitumen.jdbc.impl.IConnectionActivity;
 import net.sf.bitumen.jdbc.impl.IConnectionActivityNoResult;
-import net.sf.bitumen.jdbc.impl.JdbcUtil;
-import net.sf.bitumen.jdbc.impl.SqlParams;
 import net.sf.bitumen.test.helper.TestUtil;
+import net.sf.bitumen.util.NamedParams;
 import net.sf.bitumen.util.Util;
 
 import org.junit.After;
@@ -160,23 +159,20 @@ public class DefaultJdbcTest {
             @Override
             public void execute(Connection conn) {
                 // insert
-                SqlParams insert = JdbcUtil.namedParamReplace(
-                        "INSERT INTO session (skey, value, version, created, updated) VALUES (:skey, :value, :version, :created, :updated)",
-                        Util.makeParamMap("skey", s1.skey, "value", s1.value, "version", s1.version, "created", s1.created, "updated", s1.updated));
-                int id = (Integer) insert.genkey(conn).get().intValue();
+                NamedParams<String> insert = NamedParams.jdbcReplace(
+                        "INSERT INTO session (skey, value, version, created, updated) VALUES (:skey, :value, :version, :created, :updated)");
+                int id = writer.genkey(conn, insert.getText(),
+                        insert.getParams(Util.makeParamMap("skey", s1.skey, "value", s1.value, "version", s1.version, "created", s1.created, "updated", s1.updated)))
+                        .get().intValue();
                 Assert.assertNotNull(id);
                 Assert.assertEquals(s1, readSession(conn, id));  // read
                 // update
-                SqlParams update = JdbcUtil.namedParamReplace(
-                        "UPDATE session SET value = :value WHERE id = :id",
-                        Util.makeParamMap("value", s2.value, "id", id));
-                update.update(conn);
+                NamedParams<String> update = NamedParams.jdbcReplace("UPDATE session SET value = :value WHERE id = :id");
+                writer.update(conn, update.getText(), update.getParams(Util.makeParamMap("value", s2.value, "id", id)));
                 Assert.assertEquals(s2, readSession(conn, id));  // read
                 // delete
-                SqlParams delete = JdbcUtil.namedParamReplace(
-                        "DELETE FROM session WHERE id = :id",
-                        Collections.singletonMap("id", (Object) id));
-                delete.update(conn);
+                NamedParams<String> delete = NamedParams.jdbcReplace("DELETE FROM session WHERE id = :id");
+                writer.update(conn, delete.getText(), delete.getParams(Collections.singletonMap("id", (Object) id)));
                 Assert.assertNull(readSession(conn, id));
             }
         });

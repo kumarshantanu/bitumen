@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.bitumen.util.NamedParams;
 import net.sf.bitumen.util.Util;
 
 /**
@@ -129,7 +130,7 @@ public class TableMetadata implements Serializable {
      *                variable causes {@link RuntimeException}
      */
     public final String groovyReplace(final String format) {
-        return Util.groovyReplace(format, toMap(), true);
+        return NamedParams.groovyReplace(format, toMap(), true);
     }
 
     /**
@@ -141,7 +142,7 @@ public class TableMetadata implements Serializable {
      * @see           #groovyReplace(String)
      */
     public final String groovyReplaceKeep(final String format) {
-        return Util.groovyReplace(format, toMap(), false);
+        return NamedParams.groovyReplace(format, toMap(), false);
     }
 
     /**
