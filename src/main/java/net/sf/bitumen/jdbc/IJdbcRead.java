@@ -27,7 +27,7 @@ public interface IJdbcRead {
      * @param  params SQL statement parameters
      * @return        {@link List} of row values - each row is represented by a {@link Map} of column names to values
      */
-    List<Map<String, Object>> queryForList(Connection conn, String sql, Object[] params);
+    List<Map<String, Object>> queryForList(Connection conn, String sql, Iterable<?> params);
 
     /**
      * Execute SQL query and return result as a list, while honoring specified row count <i>limit</i>.
@@ -38,7 +38,7 @@ public interface IJdbcRead {
      * @param  throwLimitExceedException whether to throw exception when row count limit is exceeded
      * @return        {@link List} of row values - each row is represented by a {@link Map} of column names to values
      */
-    List<Map<String, Object>> queryForList(Connection conn, String sql, Object[] params,
+    List<Map<String, Object>> queryForList(Connection conn, String sql, Iterable<?> params,
             long limit, boolean throwLimitExceedException);
 
     /**
@@ -50,7 +50,7 @@ public interface IJdbcRead {
      * @param  extractor row extractor that extracts each row as a list item
      * @return           {@link List} of extracted rows
      */
-    <T> List<T> queryForList(Connection conn, String sql, Object[] params, IRowExtractor<T> extractor);
+    <T> List<T> queryForList(Connection conn, String sql, Iterable<?> params, IRowExtractor<T> extractor);
 
     /**
      * Execute SQL query and return result as a list, using a row-extractor to extract each row as a list item, while
@@ -64,7 +64,7 @@ public interface IJdbcRead {
      * @param  throwLimitExceedException whether to throw exception when row count limit is exceeded
      * @return           {@link List} of extracted rows
      */
-    <T> List<T> queryForList(Connection conn, String sql, Object[] params, IRowExtractor<T> extractor,
+    <T> List<T> queryForList(Connection conn, String sql, Iterable<?> params, IRowExtractor<T> extractor,
             long limit, boolean throwLimitExceedException);
 
     /**
@@ -79,7 +79,7 @@ public interface IJdbcRead {
      * @param  valueExtractor value extractor that extracts the value from a row
      * @return                {@link Map} of extracted key-value pairs
      */
-    <K, V> Map<K, V> queryForMap(Connection conn, String sql, Object[] params, IRowExtractor<K> keyExtractor,
+    <K, V> Map<K, V> queryForMap(Connection conn, String sql, Iterable<?> params, IRowExtractor<K> keyExtractor,
             IRowExtractor<V> valueExtractor);
 
     /**
@@ -96,7 +96,7 @@ public interface IJdbcRead {
      * @param  throwLimitExceedException whether to throw exception when row count limit is exceeded
      * @return                {@link Map} of extracted key-value pairs
      */
-    <K, V> Map<K, V> queryForMap(Connection conn, String sql, Object[] params, IRowExtractor<K> keyExtractor,
+    <K, V> Map<K, V> queryForMap(Connection conn, String sql, Iterable<?> params, IRowExtractor<K> keyExtractor,
             IRowExtractor<V> valueExtractor, long limit, boolean throwLimitExceedException);
 
     /**
@@ -108,6 +108,6 @@ public interface IJdbcRead {
      * @param  extractor result-set extractor that determines the return value based on the query result-set
      * @return           value determined by result-set extractor
      */
-    <T> T queryCustom(Connection conn, String sql, Object[] params, IResultSetExtractor<T> extractor);
+    <T> T queryCustom(Connection conn, String sql, Iterable<?> params, IResultSetExtractor<T> extractor);
 
 }

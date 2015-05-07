@@ -23,18 +23,18 @@ public class NamedParams<K> {
     }
 
     /**
-     * Given a params map, lay out the values in an array in the same order as keys and return it.
+     * Given a params map, lay out the values in the same order as keys and return it.
      * @param paramMap  the params map
-     * @return          array of parameter values in the same order as keys
+     * @return          list of parameter values in the same order as keys
      */
-    public Object[] getParams(final Map<K, ?> paramMap) {
-        final Object[] result = new Object[keys.length];
+    public List<?> getParams(final Map<K, ?> paramMap) {
+        final ArrayList<Object> result = new ArrayList<Object>(keys.length);
         for (int i = 0; i < keys.length; i++) {
             final K k = keys[i];
             if (!paramMap.containsKey(k)) {
                 throw new IllegalArgumentException("No value found for key: " + String.valueOf(k));
             }
-            result[i] = paramMap.get(k);
+            result.add(paramMap.get(k));
         }
         return result;
     }

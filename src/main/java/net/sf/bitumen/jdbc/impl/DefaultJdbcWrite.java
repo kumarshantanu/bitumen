@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.Collection;
 
 import net.sf.bitumen.jdbc.IJdbcRead;
 import net.sf.bitumen.jdbc.IJdbcWrite;
@@ -18,13 +18,13 @@ import net.sf.bitumen.util.Util;
 public class DefaultJdbcWrite implements IJdbcWrite {
 
     @Override
-    public final GeneratedKeyHolder genkey(final Connection conn, final String sql, final Object[] params) {
+    public final GeneratedKeyHolder genkey(final Connection conn, final String sql, final Iterable<?> params) {
         final PreparedStatement pstmt = JdbcUtil.prepareStatementWithParams(conn, sql, params, true);
         try {
             pstmt.executeUpdate();
         } catch (SQLException e) {
             throw new JdbcException(String.format("Unable to execute SQL statement: [%s], args: %s",
-                    sql, Arrays.toString(params)), e);
+                    sql, String.valueOf(params)), e);
         }
         try {
             final ResultSet rs = pstmt.getGeneratedKeys();
@@ -32,37 +32,38 @@ public class DefaultJdbcWrite implements IJdbcWrite {
                     IJdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
         } catch (SQLException e) {
             throw new JdbcException(String.format("Unable to extract gnerated keys for SQL statement: [%s], args: %s",
-                    sql, Arrays.toString(params)), e);
+                    sql, String.valueOf(params)), e);
         }
     }
 
     @Override
-    public final int update(final Connection conn, final String sql, final Object[] params) {
-        Util.echo("Update SQL: [%s], args: %s\n", sql, Arrays.toString(params));
+    public final int update(final Connection conn, final String sql, final Iterable<?> params) {
+        Util.echo("Update SQL: [%s], args: %s\n", sql, String.valueOf(params));
         final PreparedStatement pstmt = JdbcUtil.prepareStatementWithParams(conn, sql, params);
         try {
             return pstmt.executeUpdate();
         } catch (SQLException e) {
             throw new JdbcException(String.format("Unable to execute SQL statement: [%s], args: %s",
-                    sql, Arrays.toString(params)), e);
+                    sql, String.valueOf(params)), e);
         } finally {
             JdbcUtil.close(pstmt);
         }
     }
 
     @Override
-    public final int[] batchUpdate(final Connection conn, final String sql, final Object[][] paramsBatch) {
+    public final int[] batchUpdate(final Connection conn, final String sql,
+            final Collection<? extends Iterable<?>> paramsBatch) {
         Util.echo("Update SQL: [%s], batch-size: %d, args: %s\n",
-                sql, paramsBatch.length, Arrays.toString(JdbcUtil.eachStr(paramsBatch)));
+                sql, paramsBatch.size(), String.valueOf(paramsBatch));
         final PreparedStatement pstmt = JdbcUtil.prepareStatement(conn, sql);
-        for (Object[] params: paramsBatch) {
+        for (final Iterable<?> params: paramsBatch) {
             JdbcUtil.prepareParams(pstmt, params);
             try {
                 pstmt.addBatch();
             } catch (SQLException e) {
                 JdbcUtil.close(pstmt);
                 throw new JdbcException(String.format("Unable to add batch arguments for SQL: [%s], args: %s",
-                        sql, Arrays.toString(params)), e);
+                        sql, String.valueOf(params)), e);
             }
         }
         try {
@@ -70,7 +71,7 @@ public class DefaultJdbcWrite implements IJdbcWrite {
         } catch (SQLException e) {
             JdbcUtil.close(pstmt);
             throw new JdbcException(String.format("Unable to execute batch for SQL: [%s] (batch size = %d)",
-                    sql, paramsBatch.length), e);
+                    sql, paramsBatch.size()), e);
         } finally {
             JdbcUtil.close(pstmt);
         }

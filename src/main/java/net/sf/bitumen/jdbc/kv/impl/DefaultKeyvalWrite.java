@@ -2,6 +2,9 @@ package net.sf.bitumen.jdbc.kv.impl;
 
 import java.sql.Connection;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -67,7 +70,7 @@ public class DefaultKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
     public final long insert(final Connection conn, final K key, final V value) {
         final long version = Util.newVersion();
         final Timestamp now = Util.now();
-        writer.update(conn, insertSql, new Object[] {key, value, version, now, now});
+        writer.update(conn, insertSql, Arrays.asList(key, value, version, now, now));
         return version;
     }
 
@@ -75,12 +78,11 @@ public class DefaultKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
     public final long batchInsert(final Connection conn, final Map<K, V> pairs) {
         final Timestamp now = Util.now();
         final long version = Util.newVersion();
-        final Object[][] insertArgsArray = new Object[pairs.size()][];
-        int i = 0;
+        final Collection<Iterable<?>> insertParamBatch = new ArrayList<>(pairs.size());
         for (Entry<K, V> each: pairs.entrySet()) {
-            insertArgsArray[i++] = new Object[] {each.getKey(), each.getValue(), version, now, now};
+            insertParamBatch.add(Arrays.asList(each.getKey(), each.getValue(), version, now, now));
         }
-        writer.batchUpdate(conn, insertSql, insertArgsArray);
+        writer.batchUpdate(conn, insertSql, insertParamBatch);
         return version;
     }
 
@@ -90,9 +92,9 @@ public class DefaultKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
     public final long save(final Connection conn, final K key, final V value) {
         final long version = Util.newVersion();
         final Timestamp now = Util.now();
-        int rows = writer.update(conn, updateSql, new Object[] {value, version, now, key});
+        int rows = writer.update(conn, updateSql, Arrays.asList(value, version, now, key));
         if (rows == 0) {
-            writer.update(conn, insertSql, new Object[] {key, value, version, now, now});
+            writer.update(conn, insertSql, Arrays.asList(key, value, version, now, now));
         }
         return version;
     }
@@ -101,15 +103,11 @@ public class DefaultKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
     public final long batchSave(final Connection conn, final Map<K, V> pairs) {
         final Timestamp now = Util.now();
         final long version = Util.newVersion();
-        int[] rows = null;
-        do { // do-while-false block to isolate mutable variables
-            final Object[][] updateArgsArray = new Object[pairs.size()][];
-            int i = 0;
-            for (Entry<K, V> each : pairs.entrySet()) {
-                updateArgsArray[i++] = new Object[] {each.getValue(), version, now, each.getKey()};
-            }
-            rows = writer.batchUpdate(conn, updateSql, updateArgsArray);
-        } while (false);
+        final Collection<Iterable<?>> updateParamBatch = new ArrayList<>(pairs.size());
+        for (Entry<K, V> each : pairs.entrySet()) {
+            updateParamBatch.add(Arrays.asList(each.getValue(), version, now, each.getKey()));
+        }
+        final int[] rows = writer.batchUpdate(conn, updateSql, updateParamBatch);
         int toInsert = 0;
         for (int i = 0; i < rows.length; i++) {
             if (rows[i] == 0) {
@@ -117,14 +115,14 @@ public class DefaultKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
             }
         }
         if (toInsert > 0) {
-            final Object[][] insertArgsArray = new Object[toInsert][];
-            int i = 0, j = 0;
+            final Collection<Iterable<?>> insertParamBatch = new ArrayList<>(toInsert);
+            int i = 0;
             for (Entry<K, V> each: pairs.entrySet()) {
                 if (rows[i++] == 0) {
-                    insertArgsArray[j++] = new Object[] {each.getKey(), each.getValue(), version, now, now};
+                    insertParamBatch.add(Arrays.asList(each.getKey(), each.getValue(), version, now, now));
                 }
             }
-            writer.batchUpdate(conn, insertSql, insertArgsArray);
+            writer.batchUpdate(conn, insertSql, insertParamBatch);
         }
         return version;
     }
@@ -135,7 +133,7 @@ public class DefaultKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
     public final Long swap(final Connection conn, final K key, final V value, final long version) {
         final long tmpVersion = Util.newVersion();
         final long newVersion = version == tmpVersion ? version + 1 : tmpVersion;
-        int rowCount = writer.update(conn, swapSql, new Object[] {value, newVersion, Util.now(), key, version});
+        int rowCount = writer.update(conn, swapSql, Arrays.asList(value, newVersion, Util.now(), key, version));
         return rowCount > 0 ? newVersion : null;
     }
 
@@ -144,14 +142,11 @@ public class DefaultKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
         final Timestamp now = Util.now();
         final long tmpVersion = Util.newVersion();
         final long newVersion = version == tmpVersion ? version + 1 : tmpVersion;
-        final Object[][] argsArray = new Object[pairs.size()][];
-        do { // do-while-false block to isolate mutable variables
-            int i = 0;
-            for (Entry<K, V> each : pairs.entrySet()) {
-                argsArray[i++] = new Object[] {each.getValue(), newVersion, now, each.getKey(), version};
-            }
-        } while (false);
-        final int[] rowCount = writer.batchUpdate(conn, swapSql, argsArray);
+        final Collection<Iterable<?>> paramBatch = new ArrayList<>(pairs.size());
+        for (Entry<K, V> each : pairs.entrySet()) {
+            paramBatch.add(Arrays.asList(each.getValue(), newVersion, now, each.getKey(), version));
+        }
+        final int[] rowCount = writer.batchUpdate(conn, swapSql, paramBatch);
         int totalRowCount = 0;
         for (int j = 0; j < rowCount.length; j++) {
             totalRowCount += rowCount[j];
@@ -163,14 +158,11 @@ public class DefaultKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
     public final Long batchSwap(final Connection conn, final List<KeyValueVersion<K, V>> triplets) {
         final Timestamp now = Util.now();
         final long newVersion = Util.newVersion();
-        final Object[][] argsArray = new Object[triplets.size()][];
-        do { // do-while-false block to isolate mutable variables
-            int i = 0;
-            for (KeyValueVersion<K, V> each : triplets) {
-                argsArray[i++] = new Object[] {each.getValue(), newVersion, now, each.getKey(), each.getVersion()};
-            }
-        } while (false);
-        final int[] rowCount = writer.batchUpdate(conn, swapSql, argsArray);
+        final Collection<Iterable<?>> paramBatch = new ArrayList<>(triplets.size());
+        for (KeyValueVersion<K, V> each : triplets) {
+            paramBatch.add(Arrays.asList(each.getValue(), newVersion, now, each.getKey(), each.getVersion()));
+        }
+        final int[] rowCount = writer.batchUpdate(conn, swapSql, paramBatch);
         int totalRowCount = 0;
         for (int j = 0; j < rowCount.length; j++) {
             totalRowCount += rowCount[j];
@@ -184,7 +176,7 @@ public class DefaultKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
     public final Long touch(final Connection conn, final K key) {
         final Timestamp now = Util.now();
         final long version = Util.newVersion();
-        final int rowCount = writer.update(conn, touchSql, new Object[] {version, now, key});
+        final int rowCount = writer.update(conn, touchSql, Arrays.asList(version, now, key));
         return rowCount > 0 ? version : null;
     }
 
@@ -192,14 +184,11 @@ public class DefaultKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
     public final Long batchTouch(final Connection conn, final List<K> keys) {
         final Timestamp now = Util.now();
         final long version = Util.newVersion();
-        final Object[][] argsArray = new Object[keys.size()][];
-        do { // do-while-false block to isolate mutable variables
-            int i = 0;
-            for (K each : keys) {
-                argsArray[i++] = new Object[] {version, now, each};
-            }
-        } while (false);
-        final int[] rowCount = writer.batchUpdate(conn, swapSql, argsArray);
+        final Collection<Iterable<?>> paramBatch = new ArrayList<>(keys.size());
+        for (K each : keys) {
+            paramBatch.add(Arrays.asList(version, now, each));
+        }
+        final int[] rowCount = writer.batchUpdate(conn, swapSql, paramBatch);
         int totalRowCount = 0;
         for (int j = 0; j < rowCount.length; j++) {
             totalRowCount += rowCount[j];
@@ -211,44 +200,41 @@ public class DefaultKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
 
     @Override
     public final void delete(final Connection conn, final K key) {
-        writer.update(conn, deleteSql, new Object[] {key});
+        writer.update(conn, deleteSql, Arrays.asList(key));
     }
 
     @Override
     public final void batchDelete(final Connection conn, final List<K> keys) {
-        final Object[][] argsArray = new Object[keys.size()][];
-        int i = 0;
+        final Collection<Iterable<?>> paramBatch = new ArrayList<>(keys.size());
         for (K each: keys) {
-            argsArray[i++] = new Object[] {each};
+            paramBatch.add(Arrays.asList(each));
         }
-        writer.batchUpdate(conn, deleteSql, argsArray);
+        writer.batchUpdate(conn, deleteSql, paramBatch);
     }
 
     // ---- remove (requires old version) ----
 
     @Override
     public final void remove(final Connection conn, final K key, final long version) {
-        writer.update(conn, condDeleteSql, new Object[] {key, version});
+        writer.update(conn, condDeleteSql, Arrays.asList(key, version));
     }
 
     @Override
     public final void batchRemove(final Connection conn, final List<K> keys, final long version) {
-        final Object[][] argsArray = new Object[keys.size()][];
-        int i = 0;
+        final Collection<Iterable<?>> paramBatch = new ArrayList<>(keys.size());
         for (K each: keys) {
-            argsArray[i++] = new Object[] {each, version};
+            paramBatch.add(Arrays.asList(each, version));
         }
-        writer.batchUpdate(conn, condDeleteSql, argsArray);
+        writer.batchUpdate(conn, condDeleteSql, paramBatch);
     }
 
     @Override
     public final void batchRemove(final Connection conn, final Map<K, Long> keys) {
-        final Object[][] argsArray = new Object[keys.size()][];
-        int i = 0;
+        final Collection<Iterable<?>> paramBatch = new ArrayList<>(keys.size());
         for (Entry<K, Long> each: keys.entrySet()) {
-            argsArray[i++] = new Object[] {each.getKey(), each.getValue()};
+            paramBatch.add(Arrays.asList(each.getKey(), each.getValue()));
         }
-        writer.batchUpdate(conn, condDeleteSql, argsArray);
+        writer.batchUpdate(conn, condDeleteSql, paramBatch);
     }
 
 }

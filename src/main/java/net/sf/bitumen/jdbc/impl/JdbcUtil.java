@@ -287,14 +287,14 @@ public final class JdbcUtil {
     /**
      * Create and return a {@link PreparedStatement} from specified {@link Connection} object, SQL statement and
      * its parameters.
-     * @param  conn {@link Connection} object
-     * @param  sql  SQL statement
-     * @param  args SQL statement parameters
-     * @return      {@link PreparedStatement} instance
+     * @param  conn   {@link Connection} object
+     * @param  sql    SQL statement
+     * @param  params SQL statement parameters
+     * @return        {@link PreparedStatement} instance
      */
     public static PreparedStatement prepareStatementWithParams(final Connection conn, final String sql,
-            final Object[] args) {
-        return prepareStatementWithParams(conn, sql, args, false);
+            final Iterable<?> params) {
+        return prepareStatementWithParams(conn, sql, params, false);
     }
 
     /**
@@ -302,14 +302,14 @@ public final class JdbcUtil {
      * its parameters.
      * @param  conn                {@link Connection} object
      * @param  sql                 SQL statement
-     * @param  args                SQL statement parameters
+     * @param  params              SQL statement parameters
      * @param  returnGeneratedkeys whether statement should return generated keys
      * @return                     {@link PreparedStatement} instance
      */
     public static PreparedStatement prepareStatementWithParams(final Connection conn, final String sql,
-            final Object[] args, final boolean returnGeneratedkeys) {
+            final Iterable<?> params, final boolean returnGeneratedkeys) {
         PreparedStatement pstmt = prepareStatement(conn, sql, returnGeneratedkeys);
-        prepareParams(pstmt, args);
+        prepareParams(pstmt, params);
         return pstmt;
     }
 
@@ -348,12 +348,13 @@ public final class JdbcUtil {
      * @param  pstmt  {@link PreparedStatement} instance
      * @param  params statement parameters
      */
-    public static void prepareParams(final PreparedStatement pstmt, final Object[] params) {
+    public static void prepareParams(final PreparedStatement pstmt, final Iterable<?> params) {
         if (params != null) {
-            int i = -1;
+            int i = 1;
+            Object lastParam = null;
             try {
-                for (i = 1; i <= params.length; i++) {
-                    final Object param = params[i - 1];
+                for (final Object param: params) {
+                    lastParam = param;
                     if (param instanceof Integer) {
                         pstmt.setInt(i, (Integer) param);
                     } else if (param instanceof Long) {
@@ -365,11 +366,12 @@ public final class JdbcUtil {
                     } else {
                         pstmt.setObject(i, param);
                     }
+                    i++;
                 }
             } catch (SQLException e) {
                 close(pstmt);
-                throw new JdbcException(String.format("Unable to set parameter for prepared statement: %d %s",
-                        i, params[i]), e);
+                throw new JdbcException(String.format("Unable to set parameter for prepared statement: [%d] %s",
+                        i, String.valueOf(lastParam)), e);
             } catch (RuntimeException e) {
                 close(pstmt);
                 throw e;

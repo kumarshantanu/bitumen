@@ -149,12 +149,11 @@ public final class Util {
      * @param  map the key value map
      * @return     flattened keys and values
      */
-    public static Object[] argsArray(final Map<?, ?> map) {
-        final Object[] result = new Object[map.size() * 2];
-        int i = 0;
+    public static List<?> paramList(final Map<?, ?> map) {
+        final List<Object> result = new ArrayList<Object>(map.size() * 2);
         for (Entry<?, ?> entry: map.entrySet()) {
-            result[i++] = entry.getKey();
-            result[i++] = entry.getValue();
+            result.add(entry.getKey());
+            result.add(entry.getValue());
         }
         return result;
     }

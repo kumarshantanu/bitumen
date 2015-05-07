@@ -2,6 +2,7 @@ package net.sf.bitumen.jdbc.kv.impl;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -166,14 +167,14 @@ public class DefaultKeyvalRead<K, V> implements IKeyvalRead<K, V> {
 
     @Override
     public final Long contains(final Connection conn, final K key) {
-        return Util.firstItem(reader.queryForList(conn, versionSql, new Object[] {key}, versionExtractor1, 1,
+        return Util.firstItem(reader.queryForList(conn, versionSql, Arrays.asList(key), versionExtractor1, 1,
                 IJdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
     }
 
     @Override
     public final List<Long> batchContains(final Connection conn, final List<K> keys) {
         final String sql = putKeysPlaceholder(multiVersionSql, keys.size());
-        final Map<K, Long> rows = reader.queryForMap(conn, sql, keys.toArray(), keyExtractor1, versionExtractor2);
+        final Map<K, Long> rows = reader.queryForMap(conn, sql, keys, keyExtractor1, versionExtractor2);
         final List<Long> result = new ArrayList<Long>(keys.size());
         for (K each: keys) {
             result.add(rows.get(each));
@@ -186,15 +187,15 @@ public class DefaultKeyvalRead<K, V> implements IKeyvalRead<K, V> {
     @Override
     public final boolean containsVersion(final Connection conn, final K key, final long version) {
         return Util.firstItem(reader.queryForList(
-                conn, condVersionSql, new Object[] {key, version}, versionExtractor1, 1,
+                conn, condVersionSql, Arrays.asList(key, version), versionExtractor1, 1,
                 IJdbcRead.NO_LIMIT_EXCEED_EXCEPTION)) > 0;
     }
 
     @Override
     public final Map<K, Boolean> batchContainsVersion(final Connection conn, final Map<K, Long> keyVersions) {
         final String sql = NamedParams.groovyReplace(condMultiVersionSql, keyVersionExpression(keyVersions.size()), true);
-        final Object[] args = Util.argsArray(keyVersions);
-        final Map<K, Long> keyVersionCount = reader.queryForMap(conn, sql, args, keyExtractor1, countExtractor2);
+        final Iterable<?> params = Util.paramList(keyVersions);
+        final Map<K, Long> keyVersionCount = reader.queryForMap(conn, sql, params, keyExtractor1, countExtractor2);
         final Map<K, Boolean> result = new LinkedHashMap<K, Boolean>(keyVersionCount.size());
         for (K key: keyVersions.keySet()) {
             Long count = keyVersionCount.get(key);
@@ -207,43 +208,43 @@ public class DefaultKeyvalRead<K, V> implements IKeyvalRead<K, V> {
 
     @Override
     public final V read(final Connection conn, final K key) {
-        return Util.firstItem(reader.queryForList(conn, fetchSql, new Object[] {key}, valExtractor1, 1,
+        return Util.firstItem(reader.queryForList(conn, fetchSql, Arrays.asList(key), valExtractor1, 1,
                 IJdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
     }
 
     @Override
     public final Map<K, V> batchRead(final Connection conn, final List<K> keys) {
         final String sql = putKeysPlaceholder(multiFetchSql, keys.size());
-        return reader.queryForMap(conn, sql, keys.toArray(), keyExtractor1, valExtractor2);
+        return reader.queryForMap(conn, sql, keys, keyExtractor1, valExtractor2);
     }
 
     // ---- readVersion ----
 
     @Override
     public final V readForVersion(final Connection conn, final K key, final long version) {
-        return Util.firstItem(reader.queryForList(conn, condFetchSql, new Object[] {key, version}, valExtractor1, 1,
+        return Util.firstItem(reader.queryForList(conn, condFetchSql, Arrays.asList(key, version), valExtractor1, 1,
                 IJdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
     }
 
     @Override
     public final Map<K, V> batchReadForVersion(final Connection conn, final Map<K, Long> keyVersions) {
         final String sql = NamedParams.groovyReplace(condMultiFetchSql, keyVersionExpression(keyVersions.size()), true);
-        final Object[] args = Util.argsArray(keyVersions);
-        return reader.queryForMap(conn, sql, args, keyExtractor1, valExtractor2);
+        final Iterable<?> params = Util.paramList(keyVersions);
+        return reader.queryForMap(conn, sql, params, keyExtractor1, valExtractor2);
     }
 
     // ---- readAll ----
 
     @Override
     public final ValueVersion<V> readAll(final Connection conn, final K key) {
-        return Util.firstItem(reader.queryForList(conn, fetchAllSql, new Object[] {key}, valueVersionExtractor12, 1,
+        return Util.firstItem(reader.queryForList(conn, fetchAllSql, Arrays.asList(key), valueVersionExtractor12, 1,
                 IJdbcRead.NO_LIMIT_EXCEED_EXCEPTION));
     }
 
     @Override
     public final Map<K, ValueVersion<V>> batchReadAll(final Connection conn, final List<K> keys) {
         final String sql = putKeysPlaceholder(batchFetchAllSql, keys.size());
-        return reader.queryForMap(conn, sql, keys.toArray(), keyExtractor1, valueVersionExtractor23);
+        return reader.queryForMap(conn, sql, keys, keyExtractor1, valueVersionExtractor23);
     }
 
 }

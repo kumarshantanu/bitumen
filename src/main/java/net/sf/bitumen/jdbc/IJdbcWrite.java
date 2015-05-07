@@ -1,6 +1,7 @@
 package net.sf.bitumen.jdbc;
 
 import java.sql.Connection;
+import java.util.Collection;
 
 /**
  * JDBC write operations.
@@ -17,7 +18,7 @@ public interface IJdbcWrite {
      * @param  params parameters for the SQL statement
      * @return        key holder to access generated keys
      */
-    IKeyHolder genkey(Connection conn, String sql, Object[] params);
+    IKeyHolder genkey(Connection conn, String sql, Iterable<?> params);
 
     // update
 
@@ -29,7 +30,7 @@ public interface IJdbcWrite {
      * @param  params parameters for the SQL statement
      * @return        number of rows affected
      */
-    int update(Connection conn, String sql, Object[] params);
+    int update(Connection conn, String sql, Iterable<?> params);
 
     /**
      * Execute a batch update (e.g. INSERT, UPDATE, DELETE etc.) SQL statement and return the number of rows affected
@@ -39,6 +40,6 @@ public interface IJdbcWrite {
      * @param  paramsBatch parameter sets for the SQL statement
      * @return             number of rows affected for each parameter set in the batch
      */
-    int[] batchUpdate(Connection conn, String sql, Object[][] paramsBatch);
+    int[] batchUpdate(Connection conn, String sql, Collection<? extends Iterable<?>> paramsBatch);
 
 }

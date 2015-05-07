@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,13 +24,13 @@ public class DefaultJdbcRead implements IJdbcRead {
 
     @Override
     public final List<Map<String, Object>> queryForList(final Connection conn, final String sql,
-            final Object[] params) {
+            final Iterable<?> params) {
         return queryForList(conn, sql, params, -1, true);
     }
 
     @Override
-    public final List<Map<String, Object>> queryForList(final Connection conn, final String sql, final Object[] params,
-            final long limit, final boolean throwLimitExceedException) {
+    public final List<Map<String, Object>> queryForList(final Connection conn, final String sql,
+            final Iterable<?> params, final long limit, final boolean throwLimitExceedException) {
         return queryCustom(conn, sql, params, new IResultSetExtractor<List<Map<String, Object>>>() {
             public List<Map<String, Object>> extract(final ResultSet rs) {
                 try {
@@ -88,13 +87,13 @@ public class DefaultJdbcRead implements IJdbcRead {
     }
 
     @Override
-    public final <T> List<T> queryForList(final Connection conn, final String sql, final Object[] params,
+    public final <T> List<T> queryForList(final Connection conn, final String sql, final Iterable<?> params,
             final IRowExtractor<T> extractor) {
         return queryForList(conn, sql, params, extractor, -1, true);
     }
 
     @Override
-    public final <T> List<T> queryForList(final Connection conn, final String sql, final Object[] params,
+    public final <T> List<T> queryForList(final Connection conn, final String sql, final Iterable<?> params,
             final IRowExtractor<T> extractor, final long limit, final boolean throwLimitExceedException) {
         return queryCustom(conn, sql, params, new IResultSetExtractor<List<T>>() {
             public List<T> extract(final ResultSet rs) {
@@ -125,16 +124,16 @@ public class DefaultJdbcRead implements IJdbcRead {
     }
 
     @Override
-    public final <K, V> Map<K, V> queryForMap(final Connection conn, final String sql, final Object[] params,
+    public final <K, V> Map<K, V> queryForMap(final Connection conn, final String sql, final Iterable<?> params,
             final IRowExtractor<K> keyExtractor, final IRowExtractor<V> valueExtractor) {
         return queryForMap(conn, sql, params, keyExtractor, valueExtractor, -1, true);
     }
 
     @Override
-    public final <K, V> Map<K, V> queryForMap(final Connection conn, final String sql, final Object[] params,
+    public final <K, V> Map<K, V> queryForMap(final Connection conn, final String sql, final Iterable<?> params,
             final IRowExtractor<K> keyExtractor, final IRowExtractor<V> valueExtractor, final long limit,
             final boolean throwLimitExceedException) {
-        Util.echo("Query SQL: [%s], args: %s\n", sql, Arrays.toString(params));
+        Util.echo("Query SQL: [%s], args: %s\n", sql, String.valueOf(params));
         final PreparedStatement pstmt = JdbcUtil.prepareStatementWithParams(conn, sql, params);
         ResultSet rs = null;
         try {
@@ -166,9 +165,9 @@ public class DefaultJdbcRead implements IJdbcRead {
     }
 
     @Override
-    public final <T> T queryCustom(final Connection conn, final String sql, final Object[] params,
+    public final <T> T queryCustom(final Connection conn, final String sql, final Iterable<?> params,
             final IResultSetExtractor<T> extractor) {
-        Util.echo("Query SQL: [%s], args: %s\n", sql, Arrays.toString(params));
+        Util.echo("Query SQL: [%s], args: %s\n", sql, String.valueOf(params));
         final PreparedStatement pstmt = JdbcUtil.prepareStatementWithParams(conn, sql, params);
         ResultSet rs = null;
         try {

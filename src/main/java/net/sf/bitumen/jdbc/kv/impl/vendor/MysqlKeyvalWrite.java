@@ -2,6 +2,9 @@ package net.sf.bitumen.jdbc.kv.impl.vendor;
 
 import java.sql.Connection;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -83,8 +86,8 @@ public class MysqlKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
         final long version = Util.newVersion();
         final Timestamp now = Util.now();
         writer.update(conn, upsertSql, populateTimestamp
-                ? new Object[] {key, value, version, now, now, value, version, now}
-                : new Object[] {key, value, version, value, version});
+                ? Arrays.asList(key, value, version, now, now, value, version, now)
+                : Arrays.asList(key, value, version, value, version));
         return version;
     }
 
@@ -92,14 +95,13 @@ public class MysqlKeyvalWrite<K, V> implements IKeyvalWrite<K, V> {
     public final long batchSave(final Connection conn, final Map<K, V> pairs) {
         final long version = Util.newVersion();
         final Timestamp now = Util.now();
-        final Object[][] paramsBatch = new Object[pairs.size()][];
-        int i = 0;
+        final Collection<Iterable<?>> paramsBatch = new ArrayList<>(pairs.size());
         for (Entry<K, V> entry: pairs.entrySet()) {
             final K key = entry.getKey();
             final V value = entry.getValue();
-            paramsBatch[i++] = populateTimestamp
-                    ? new Object[] {key, value, version, now, now, value, version, now}
-                    : new Object[] {key, value, version, value, version};
+            paramsBatch.add(populateTimestamp
+                    ? Arrays.asList(key, value, version, now, now, value, version, now)
+                    : Arrays.asList(key, value, version, value, version));
         }
         writer.batchUpdate(conn, upsertSql, paramsBatch);
         return version;

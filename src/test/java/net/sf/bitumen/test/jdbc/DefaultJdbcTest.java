@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -112,7 +113,7 @@ public class DefaultJdbcTest {
 
     private Session readSession(Connection conn, long id) {
         final List<Session> slist = reader.queryForList(conn,
-                "SELECT skey, value, version, created, updated FROM session WHERE id = ?", new Object[] { id },
+                "SELECT skey, value, version, created, updated FROM session WHERE id = ?", Arrays.asList(id),
                 sessionExtractor);
         return slist.isEmpty()? null: slist.get(0);
     }
@@ -140,14 +141,14 @@ public class DefaultJdbcTest {
                 // insert
                 int id = writer.genkey(conn,
                         "INSERT INTO session (skey, value, version, created, updated) VALUES (?, ?, ?, ?, ?)",
-                        new Object[] {s1.skey, s1.value, s1.version, s1.created, s1.updated}).get().intValue();
+                        Arrays.asList(s1.skey, s1.value, s1.version, s1.created, s1.updated)).get().intValue();
                 Assert.assertNotNull(id);
                 Assert.assertEquals(s1, readSession(conn, id));  // read
                 // update
-                writer.update(conn, "UPDATE session SET value = ? WHERE id = ?", new Object[] { s2.value, id });
+                writer.update(conn, "UPDATE session SET value = ? WHERE id = ?", Arrays.asList(s2.value, id));
                 Assert.assertEquals(s2, readSession(conn, id));  // read
                 // delete
-                writer.update(conn, "DELETE FROM session WHERE id = ?", new Object[] { id });
+                writer.update(conn, "DELETE FROM session WHERE id = ?", Arrays.asList(id));
                 Assert.assertNull(readSession(conn, id));
             }
         });
@@ -186,7 +187,7 @@ public class DefaultJdbcTest {
             public Integer execute(Connection conn) {
                 final int id = writer.genkey(conn,
                         "INSERT INTO session (skey, value, version, created, updated) VALUES (?, ?, ?, ?, ?)",
-                        new Object[] {s1.skey, s1.value, s1.version, s1.created, s1.updated}).get().intValue();
+                        Arrays.asList(s1.skey, s1.value, s1.version, s1.created, s1.updated)).get().intValue();
                 Assert.assertNotNull(id);
                 return id;
             }
@@ -206,11 +207,11 @@ public class DefaultJdbcTest {
                 public void execute(Connection conn) {
                     writer.update(conn,
                             "INSERT INTO session (skey, value, version, created, updated) VALUES (?, ?, ?, ?, ?)",
-                            new Object[] {1001, s1.value, s1.version, s1.created, s1.updated});
+                            Arrays.asList(1001, s1.value, s1.version, s1.created, s1.updated));
                     if (go) throw new RuntimeException();
                     writer.update(conn,
                             "INSERT INTO session (skey, value, version, created, updated) VALUES (?, ?, ?, ?, ?)",
-                            new Object[] {1002, s1.value, s1.version, s1.created, s1.updated});
+                            Arrays.asList(1002, s1.value, s1.version, s1.created, s1.updated));
                 }
             });
         } catch (RuntimeException e) {

@@ -123,8 +123,7 @@ public class DIExample {
 
 ## Work with SQL databases using JDBC
 
-Bitumen supports interface-based API for flexibility, as well as fluent interface. It also supports transactions,
-positional parameters and named parameters.
+Bitumen supports interface-based API for flexibility It also supports transactions, positional and named parameters.
 
 ### Interface-based API
 
@@ -132,6 +131,7 @@ The following example shows the usage of interface based API.
 
 ```java
 import java.sql.Connection;
+import java.util.Arrays;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -163,11 +163,11 @@ public class JdbcExample {
                 // insert
                 final long key = writer.genkey(conn,
                         "INSERT INTO emp (emp_id, emp_name) VALUES (?, ?)",
-                        new Object[] { "E-1196", "Joe Walker" }).get().longValue();
+                        Arrays.asList("E-1196", "Joe Walker")).get().longValue();
                 // read
                 Map<String, Object> row = reader.queryForList(conn,
                         "SELECT * FROM emp WHERE emp_id = ?",
-                        new Object[] { "E-1196" }).get(0);
+                        Arrays.asList("E-1196")).get(0);
                 // read using named parameters
                 NamedParams<String> query = NamedParams.jdbcReplace("SELECT * FROM emp WHERE emp_id = :empID");
                 Map<String, Object> result = reader.queryForList(conn,
@@ -176,7 +176,7 @@ public class JdbcExample {
                 // update
                 int updates = writer.update(conn,
                         "UPDATE emp SET emp_name = ? WHERE emp_id = ?",
-                        new Object[] { "Joe Nixon", "E-1196" });
+                        Arrays.asList("Joe Nixon", "E-1196"));
                 // update using named parameters
                 NamedParams<String> update = NamedParams.jdbcReplace("UPDATE emp SET emp_name = :empName WHERE emp_id = :empID");
                 int nUpdates = writer.update(conn,
@@ -185,7 +185,7 @@ public class JdbcExample {
                 // delete
                 int deletes = writer.update(conn,
                         "DELETE FROM emp WHERE emp_id = ?",
-                        new Object[] { "E-1196" });
+                        Arrays.asList("E-1196"));
             }
         });
 
@@ -194,11 +194,11 @@ public class JdbcExample {
             // insert
             final long key = writer.genkey(conn,
                     "INSERT INTO emp (emp_id, emp_name) VALUES (?, ?)",
-                    new Object[] { "E-1196", "Joe Walker" }).get().longValue();
+                    Arrays.asList("E-1196", "Joe Walker")).get().longValue();
             // read
             Map<String, Object> row = reader.queryForList(conn,
                     "SELECT * FROM emp WHERE emp_id = ?",
-                    new Object[] { "E-1196" }).get(0);
+                    Arrays.asList("E-1196")).get(0);
             // read using named parameters
             NamedParams<String> query = NamedParams.jdbcReplace("SELECT * FROM emp WHERE emp_id = :empID");
             Map<String, Object> result = reader.queryForList(conn,
@@ -207,7 +207,7 @@ public class JdbcExample {
             // update
             int updates = writer.update(conn,
                     "UPDATE emp SET emp_name = ? WHERE emp_id = ?",
-                    new Object[] { "Joe Nixon", "E-1196" });
+                    Arrays.asList("Joe Nixon", "E-1196"));
             // update using named parameters
             NamedParams<String> update = NamedParams.jdbcReplace("UPDATE emp SET emp_name = :empName WHERE emp_id = :empID");
             int nUpdates = writer.update(conn,
@@ -216,7 +216,7 @@ public class JdbcExample {
             // delete
             int deletes = writer.update(conn,
                     "DELETE FROM emp WHERE emp_id = ?",
-                    new Object[] { "E-1196" });
+                    Arrays.asList("E-1196"));
         });
     }
 
