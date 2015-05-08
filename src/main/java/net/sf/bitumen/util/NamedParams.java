@@ -150,7 +150,7 @@ public class NamedParams<K> {
                 final String nameStr = name.toString();
                 if (!replaceWith.containsKey(nameStr)) {
                     if (throwOnMissing) {
-                        throw new IllegalArgumentException("No such key '" + nameStr + "' in: " + replaceWith.toString());
+                        throw new IllegalArgumentException("No such key '" + nameStr + "' in: " + replaceWith);
                     } else {
                         sb.append(marker).append(nameStr);
                     }
