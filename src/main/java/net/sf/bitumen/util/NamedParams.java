@@ -141,7 +141,7 @@ public class NamedParams<K> {
                 i++; // hop to next char
                 while (i < len) {
                     final char x = format.charAt(i);
-                    if (!Character.isJavaIdentifierPart(x)) {
+                    if (!(Character.isJavaIdentifierPart(x) || x == '-' /* allow dash for Clojure keywords */)) {
                         break;
                     }
                     name.append(x);
