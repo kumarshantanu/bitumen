@@ -1,7 +1,6 @@
 package net.sf.bitumen.jdbc;
 
 import java.sql.Connection;
-import java.util.Collection;
 
 /**
  * JDBC write operations.
@@ -40,6 +39,6 @@ public interface IJdbcWrite {
      * @param  paramsBatch parameter sets for the SQL statement
      * @return             number of rows affected for each parameter set in the batch
      */
-    int[] batchUpdate(Connection conn, String sql, Collection<? extends Iterable<?>> paramsBatch);
+    int[] batchUpdate(Connection conn, String sql, Iterable<? extends Iterable<?>> paramsBatch);
 
 }

@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 
 import net.sf.bitumen.jdbc.IJdbcRead;
 import net.sf.bitumen.jdbc.IJdbcWrite;
@@ -52,11 +51,12 @@ public class DefaultJdbcWrite implements IJdbcWrite {
 
     @Override
     public final int[] batchUpdate(final Connection conn, final String sql,
-            final Collection<? extends Iterable<?>> paramsBatch) {
-        Util.echo("Update SQL: [%s], batch-size: %d, args: %s\n",
-                sql, paramsBatch.size(), String.valueOf(paramsBatch));
+            final Iterable<? extends Iterable<?>> paramsBatch) {
+        Util.echo("Update SQL: [%s], args: %s\n", sql, String.valueOf(paramsBatch));
         final PreparedStatement pstmt = JdbcUtil.prepareStatement(conn, sql);
+        int batchSize = 0;
         for (final Iterable<?> params: paramsBatch) {
+            batchSize++;
             JdbcUtil.prepareParams(pstmt, params);
             try {
                 pstmt.addBatch();
@@ -71,7 +71,7 @@ public class DefaultJdbcWrite implements IJdbcWrite {
         } catch (SQLException e) {
             JdbcUtil.close(pstmt);
             throw new JdbcException(String.format("Unable to execute batch for SQL: [%s] (batch size = %d)",
-                    sql, paramsBatch.size()), e);
+                    sql, batchSize), e);
         } finally {
             JdbcUtil.close(pstmt);
         }
