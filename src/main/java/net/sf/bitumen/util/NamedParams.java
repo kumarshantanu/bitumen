@@ -105,7 +105,7 @@ public class NamedParams<K> {
      * @return                {@link NamedParams} instance
      */
     public static <K> NamedParams<K> replace(final char marker, final String format, final Replacement replaceWith,
-            final boolean throwOnMissing, final boolean addToKeys, final IFunction1<K, String> keyEncoder) {
+            final boolean throwOnMissing, final boolean addToKeys, final IFunction1<String, K> keyEncoder) {
         final int len = format.length();
         final StringBuilder sb = new StringBuilder(len);
         final List<K> keys = addToKeys? new ArrayList<K>(): null;
@@ -202,7 +202,7 @@ public class NamedParams<K> {
      * @param  keyEncoder the key encoder
      * @return        {@link NamedParams<String>} instance from derived SQL statement and parameter values
      */
-    public static <K> NamedParams<K> jdbcReplace(final String format, final IFunction1<K, String> keyEncoder) {
+    public static <K> NamedParams<K> jdbcReplace(final String format, final IFunction1<String, K> keyEncoder) {
         return replace(':', format, replaceWith("?"), true, true, keyEncoder);
     }
 

@@ -1,7 +1,7 @@
 package net.sf.bitumen.util;
 
-public interface IFunction1<T, X> {
+public interface IFunction1<T, R> {
 
-    public T invoke(X arg);
+    public R invoke(T arg);
 
 }
